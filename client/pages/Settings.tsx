@@ -580,7 +580,7 @@ export function Settings() {
 
             <TabsTrigger value="notifications" className="flex items-center">
               <Bell className="h-4 w-4 mr-1" />
-              <span className="hidden sm:inline">Notificações</span>
+              <span className="hidden sm:inline">Notificaç��es</span>
             </TabsTrigger>
             <TabsTrigger value="legal" className="flex items-center">
               <Scale className="h-4 w-4 mr-1" />
@@ -1430,7 +1430,7 @@ export function Settings() {
                             }}
                             className="bg-orange-600 hover:bg-orange-700"
                           >
-                            <Settings className="h-4 w-4 mr-2" />
+                            <SettingsIcon className="h-4 w-4 mr-2" />
                             Arquivar Processo
                           </Button>
                         </div>
@@ -1912,7 +1912,7 @@ export function Settings() {
                     srcDoc={templateContent
                       .replace(
                         /\[NOME_EMPRESA\]/g,
-                        "Escrit��rio Silva & Associados",
+                        "Escritório Silva & Associados",
                       )
                       .replace(
                         /\[DATA\]/g,
