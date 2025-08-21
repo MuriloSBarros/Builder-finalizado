@@ -957,10 +957,7 @@ export function Receivables() {
                             variant="ghost"
                             size="sm"
                             className="mt-2"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleViewClient(cliente);
-                            }}
+                            onClick={() => handleViewClient(cliente)}
                           >
                             <Eye className="h-4 w-4 mr-2" />
                             Visualizar
