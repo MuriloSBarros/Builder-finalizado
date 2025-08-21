@@ -567,8 +567,7 @@ export function Publications() {
                       {searchResults.map((process) => (
                         <div
                           key={process.id}
-                          className="border rounded-lg p-4 cursor-pointer hover:shadow-md transition-shadow bg-white"
-                          onClick={() => handleViewProcessDetails(process)}
+                          className="border rounded-lg p-4 hover:shadow-md transition-shadow bg-white"
                         >
                           {/* Header do Card */}
                           <div className="flex items-center justify-between mb-3">
