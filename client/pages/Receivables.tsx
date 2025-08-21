@@ -913,8 +913,7 @@ export function Receivables() {
                   {getClientsFromInvoices().map((cliente) => (
                     <div
                       key={cliente.id}
-                      className="border rounded-lg p-4 cursor-pointer hover:bg-muted/30 transition-colors"
-                      onClick={() => handleViewClient(cliente)}
+                      className="border rounded-lg p-4 hover:bg-muted/30 transition-colors"
                     >
                       <div className="flex items-center justify-between">
                         <div className="flex items-center space-x-4">
