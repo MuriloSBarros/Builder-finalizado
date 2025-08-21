@@ -278,6 +278,19 @@ export function Publications() {
     alert(`Abrindo processo ${process.numero} no sistema do tribunal`);
   };
 
+  const handleArchiveProcess = (process: any) => {
+    if (confirm(`Deseja arquivar o processo ${process.numero}?\n\nO processo será movido para a seção de processos arquivados.`)) {
+      // Aqui você implementaria a lógica para arquivar o processo
+      // BACKEND: POST /api/processos/{id}/arquivar
+      console.log("Arquivando processo:", process);
+
+      // Atualizar a lista removendo o processo arquivado
+      setSearchResults(prev => prev.filter(p => p.id !== process.id));
+
+      alert(`✅ Processo ${process.numero} arquivado com sucesso!\n\nO processo foi movido para a seção de arquivados.`);
+    }
+  };
+
   const getProcessStatusColor = (status: string) => {
     const colors: Record<string, string> = {
       "Em Andamento": "bg-blue-100 text-blue-800 border-blue-200",
@@ -571,8 +584,9 @@ export function Publications() {
                                 className="h-6 w-6 p-0"
                                 onClick={(e) => {
                                   e.stopPropagation();
-                                  alert("Arquivar processo");
+                                  handleArchiveProcess(process);
                                 }}
+                                title="Arquivar Processo"
                               >
                                 🗂️
                               </Button>
