@@ -86,7 +86,7 @@ ${invoice.status === 'pendente'
   ? '⏰ Sua fatura está próxima do vencimento. Para evitar atraso, efetue o pagamento até a data de vencimento.'
   : invoice.status === 'nova'
   ? '🆕 Nova fatura disponível para pagamento.'
-  : '💼 Informações sobre sua fatura.'
+  : '��� Informações sobre sua fatura.'
 }
 
 ${invoice.linkPagamento 
@@ -100,13 +100,6 @@ Equipe Financeira`;
 
   const defaultMessage = getDefaultMessage();
   const displayMessage = isEditingMessage ? customMessage : defaultMessage;
-
-  const formatCurrency = (value: number) => {
-    return new Intl.NumberFormat('pt-BR', {
-      style: 'currency',
-      currency: 'BRL'
-    }).format(value);
-  };
 
   const handleSendNotification = () => {
     const notificationData = {
