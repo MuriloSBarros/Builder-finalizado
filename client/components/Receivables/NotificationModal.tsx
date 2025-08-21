@@ -59,6 +59,14 @@ export function NotificationModal({
 
   if (!invoice) return null;
 
+  // Função para formatar moeda
+  const formatCurrency = (value: number) => {
+    return new Intl.NumberFormat('pt-BR', {
+      style: 'currency',
+      currency: 'BRL'
+    }).format(value);
+  };
+
   // Mensagem padrão baseada no status da fatura
   const getDefaultMessage = () => {
     const clientName = invoice.clienteNome || "Cliente";
