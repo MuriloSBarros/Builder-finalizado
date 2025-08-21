@@ -577,10 +577,8 @@ export function Publications() {
                                 variant="ghost"
                                 size="sm"
                                 className="h-6 w-6 p-0"
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  handleViewProcessDetails(process);
-                                }}
+                                onClick={() => handleViewProcessDetails(process)}
+                                title="Ver Detalhes"
                               >
                                 📋
                               </Button>
@@ -588,10 +586,7 @@ export function Publications() {
                                 variant="ghost"
                                 size="sm"
                                 className="h-6 w-6 p-0"
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  handleArchiveProcess(process);
-                                }}
+                                onClick={() => handleArchiveProcess(process)}
                                 title="Arquivar Processo"
                               >
                                 🗂️
