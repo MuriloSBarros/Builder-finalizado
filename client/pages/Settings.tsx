@@ -1391,7 +1391,7 @@ export function Settings() {
                               </>
                             ) : (
                               <>
-                                <Settings className="h-4 w-4 mr-2" />
+                                <SettingsIcon className="h-4 w-4 mr-2" />
                                 Arquivar
                               </>
                             )}
@@ -1912,7 +1912,7 @@ export function Settings() {
                     srcDoc={templateContent
                       .replace(
                         /\[NOME_EMPRESA\]/g,
-                        "Escritório Silva & Associados",
+                        "Escrit��rio Silva & Associados",
                       )
                       .replace(
                         /\[DATA\]/g,
