@@ -1947,7 +1947,13 @@ export function Settings() {
               <DialogTitle className="flex items-center">
                 <Edit className="h-5 w-5 mr-2" />
                 Editor de Template -{" "}
-                {currentTemplate === "budget" ? "Orçamento" : "Fatura"}
+                {currentTemplate === "budget" ? "Orçamento" :
+                 currentTemplate === "invoice" ? "Fatura" :
+                 currentTemplate === "contrato_honorarios" ? "Contrato de Honorários" :
+                 currentTemplate === "procuracao_judicial" ? "Procuração Judicial" :
+                 currentTemplate === "acordo_mediacao" ? "Acordo de Mediação" :
+                 currentTemplate === "termo_confidencialidade" ? "Termo de Confidencialidade" :
+                 "Template"}
               </DialogTitle>
               <DialogDescription>
                 Edite o template HTML e veja o preview em tempo real. Use as
