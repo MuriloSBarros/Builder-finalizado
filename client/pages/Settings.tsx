@@ -1487,7 +1487,7 @@ export function Settings() {
 
         <div class="clause">
             <div class="clause-title">CLÁUSULA 1ª - DO OBJETO</div>
-            <p>As partes, em litígio referente a [OBJETO_LITIGIO], concordam em resolver a questão através de mediação, conforme os termos estabelecidos neste acordo.</p>
+            <p>As partes, em litígio referente a [OBJETO_LITIGIO], concordam em resolver a quest��o através de mediação, conforme os termos estabelecidos neste acordo.</p>
         </div>
 
         <div class="clause">
@@ -2202,6 +2202,72 @@ export function Settings() {
                       .replace(/\[NOME_CLIENTE\]/g, "Maria Silva Santos")
                       .replace(/\[DOCUMENTO_CLIENTE\]/g, "123.456.789-00")
                       .replace(/\[VALOR_TOTAL\]/g, "R$ 2.500,00")
+                      .replace(
+                        /\[DESCRICAO_SERVICOS\]/g,
+                        "Consultoria jurídica especializada em direito civil",
+                      )
+                      .replace(
+                        /\[ASSINATURA\]/g,
+                        "Dr. João Silva<br>OAB/SP 123.456",
+                      )
+                      .replace(/\[NUMERO_ORCAMENTO\]/g, "ORC-001")
+                      .replace(/\[NUMERO_FATURA\]/g, "FAT-001")
+                      .replace(
+                        /\[DATA_EMISSAO\]/g,
+                        new Date().toLocaleDateString("pt-BR"),
+                      )
+                      .replace(
+                        /\[DATA_VENCIMENTO\]/g,
+                        new Date(
+                          Date.now() + 30 * 24 * 60 * 60 * 1000,
+                        ).toLocaleDateString("pt-BR"),
+                      )
+                      .replace(
+                        /\[DATA_VALIDADE\]/g,
+                        new Date(
+                          Date.now() + 15 * 24 * 60 * 60 * 1000,
+                        ).toLocaleDateString("pt-BR"),
+                      )
+                      .replace(
+                        /\[FORMA_PAGAMENTO\]/g,
+                        "PIX ou Transferência Bancária",
+                      )
+                      // Variáveis dos contratos
+                      .replace(/\[NUMERO_CONTRATO\]/g, "CONT-001/2025")
+                      .replace(/\[NUMERO_PROCURACAO\]/g, "PROC-001/2025")
+                      .replace(/\[NUMERO_ACORDO\]/g, "ACRD-001/2025")
+                      .replace(/\[NUMERO_TERMO\]/g, "CONF-001/2025")
+                      .replace(/\[ENDERECO_CLIENTE\]/g, "Rua das Flores, 123 - São Paulo/SP")
+                      .replace(/\[NUMERO_OAB\]/g, "123.456")
+                      .replace(/\[ESTADO_OAB\]/g, "SP")
+                      .replace(/\[ENDERECO_ESCRITORIO\]/g, "Av. Paulista, 1000 - São Paulo/SP")
+                      .replace(/\[CONDICOES_PAGAMENTO\]/g, "3x de R$ 1.666,67")
+                      .replace(/\[DATA_INICIO\]/g, new Date().toLocaleDateString("pt-BR"))
+                      .replace(/\[DATA_TERMINO\]/g, new Date(Date.now() + 180 * 24 * 60 * 60 * 1000).toLocaleDateString("pt-BR"))
+                      .replace(/\[CIDADE\]/g, "São Paulo")
+                      .replace(/\[ASSINATURA_ADVOGADO\]/g, "Dr. João Silva")
+                      .replace(/\[NOME_ADVOGADO\]/g, "Dr. Jo��o Silva")
+                      .replace(/\[ESTADO_CIVIL\]/g, "solteira")
+                      .replace(/\[PROFISSAO\]/g, "empresária")
+                      .replace(/\[PODERES_ESPECIFICOS\]/g, "propor e acompanhar ações de cobrança")
+                      .replace(/\[NOME_PARTE1\]/g, "João Santos")
+                      .replace(/\[QUALIFICACAO_PARTE1\]/g, "brasileiro, casado, empresário")
+                      .replace(/\[NOME_PARTE2\]/g, "Maria Costa")
+                      .replace(/\[QUALIFICACAO_PARTE2\]/g, "brasileira, solteira, advogada")
+                      .replace(/\[NOME_MEDIADOR\]/g, "Dr. Carlos Medeiros")
+                      .replace(/\[QUALIFICACAO_MEDIADOR\]/g, "mediador certificado pelo CNJ")
+                      .replace(/\[OBJETO_LITIGIO\]/g, "rescisão contratual")
+                      .replace(/\[OBRIGACOES_PARTE1\]/g, "Pagamento de R$ 10.000,00")
+                      .replace(/\[OBRIGACOES_PARTE2\]/g, "Entrega dos documentos")
+                      .replace(/\[DATA_CUMPRIMENTO\]/g, new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toLocaleDateString("pt-BR"))
+                      .replace(/\[PENALIDADES\]/g, "multa de 10% sobre o valor")
+                      .replace(/\[NOME_REVELADORA\]/g, "Empresa ABC Ltda")
+                      .replace(/\[QUALIFICACAO_REVELADORA\]/g, "empresa brasileira")
+                      .replace(/\[NOME_RECEPTORA\]/g, "Consultoria XYZ")
+                      .replace(/\[QUALIFICACAO_RECEPTORA\]/g, "empresa de consultoria")
+                      .replace(/\[DEFINICAO_INFORMACOES\]/g, "dados técnicos, comerciais e estratégicos")
+                      .replace(/\[PRAZO_VIGENCIA\]/g, "2 anos")
+                      .replace(/\[VALOR_MULTA\]/g, "R$ 50.000,00")
                       .replace(
                         /\[DESCRICAO_SERVICOS\]/g,
                         "Consultoria jurídica especializada em direito civil e elaboração de contratos",
