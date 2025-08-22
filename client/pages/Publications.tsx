@@ -709,6 +709,128 @@ export function Publications() {
               </CardContent>
             </Card>
           </TabsContent>
+
+          {/* ABA PROJETOS ARQUIVADOS */}
+          <TabsContent value="arquivados" className="space-y-4">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center space-x-2">
+                  <Building2 className="h-5 w-5" />
+                  <span>Projetos Arquivados</span>
+                </CardTitle>
+                <p className="text-sm text-muted-foreground">
+                  Projetos que foram finalizados e arquivados
+                </p>
+              </CardHeader>
+              <CardContent>
+                {archivedProjects.length > 0 ? (
+                  <div className="space-y-4">
+                    <div className="flex items-center justify-between">
+                      <h3 className="text-lg font-semibold">
+                        Projetos Arquivados ({archivedProjects.length})
+                      </h3>
+                      <Badge variant="outline" className="text-gray-600 border-gray-600">
+                        📁 Arquivados
+                      </Badge>
+                    </div>
+
+                    {/* Layout de Cards lado a lado */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                      {archivedProjects.map((project) => (
+                        <div
+                          key={project.id}
+                          className="border rounded-lg p-4 hover:shadow-md transition-shadow bg-gray-50 dark:bg-gray-800"
+                        >
+                          {/* Header do Card */}
+                          <div className="flex items-center justify-between mb-3">
+                            <span className="text-xs text-muted-foreground font-medium">DATA DO PROJETO</span>
+                            <div className="flex space-x-1">
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                className="h-6 w-6 p-0 text-green-600 hover:text-green-700"
+                                onClick={() => handleRestoreProject(project)}
+                                title="Restaurar Projeto"
+                              >
+                                ↩️
+                              </Button>
+                            </div>
+                          </div>
+
+                          {/* Data */}
+                          <div className="text-lg font-semibold mb-2">
+                            {project.dataUltimaMovimentacao?.toLocaleDateString('pt-BR') || '21/08/2025'}
+                          </div>
+
+                          {/* Cliente */}
+                          <div className="mb-3">
+                            <span className="text-xs text-muted-foreground font-medium">CLIENTE</span>
+                            <div className="font-medium text-sm mt-1">
+                              <span className="text-blue-600">{project.cliente}</span>
+                            </div>
+                            <div className="text-xs text-green-600 font-medium mt-1">
+                              VISUALIZAR PROJETO
+                            </div>
+                          </div>
+
+                          {/* Status de Arquivado */}
+                          <div className="mb-3">
+                            <Badge className="bg-gray-100 text-gray-800 border-gray-200 text-xs">
+                              📁 Arquivado
+                            </Badge>
+                          </div>
+
+                          {/* Informações Adicionais */}
+                          <div className="mt-3 pt-3 border-t space-y-2">
+                            <div className="text-xs text-muted-foreground">
+                              <strong>Número:</strong> {project.numero}
+                            </div>
+                            <div className="text-xs text-muted-foreground">
+                              <strong>Tipo:</strong> {project.tipo}
+                            </div>
+                            <div className="text-xs text-muted-foreground">
+                              <strong>Valor:</strong> {project.valor}
+                            </div>
+                            {project.dataArquivamento && (
+                              <div className="text-xs text-muted-foreground">
+                                <strong>Arquivado em:</strong> {project.dataArquivamento.toLocaleDateString('pt-BR')}
+                              </div>
+                            )}
+
+                            {/* Botão Abrir Projeto */}
+                            <div className="mt-3 pt-2">
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                className="w-full"
+                                onClick={() => handleViewProcessDetails(project)}
+                              >
+                                Visualizar Projeto
+                              </Button>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                ) : (
+                  <div className="text-center py-8 text-muted-foreground">
+                    <div className="space-y-2">
+                      <Building2 className="h-12 w-12 mx-auto opacity-50" />
+                      <p className="font-medium">Nenhum projeto arquivado</p>
+                      <p className="text-sm">
+                        Os projetos arquivados aparecerão aqui
+                      </p>
+                      <p className="text-xs">
+                        Arquive projetos finalizados para manter a organização
+                      </p>
+                    </div>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </TabsContent>
+
         </Tabs>
 
         {/* Modal de Visualização de Processo */}
