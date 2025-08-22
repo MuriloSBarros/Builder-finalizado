@@ -459,7 +459,9 @@ export function Receivables() {
 
   const handleEditInvoice = (invoice: Invoice) => {
     console.log("Editando fatura:", invoice.numeroFatura);
-    // Implementar modal de edição
+    // Abrir modal de visualização que contém o botão de edição
+    setViewingInvoice(invoice);
+    setShowViewDialog(true);
   };
 
   const handleDeleteInvoice = (invoice: Invoice) => {
