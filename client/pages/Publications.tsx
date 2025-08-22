@@ -319,14 +319,18 @@ export function Publications() {
         </div>
 
         <Tabs defaultValue="publicacoes" className="space-y-4">
-          <TabsList className="grid w-full grid-cols-2">
+          <TabsList className="grid w-full grid-cols-3">
             <TabsTrigger value="publicacoes" className="flex items-center space-x-2">
               <Newspaper className="h-4 w-4" />
               <span>Publicações</span>
             </TabsTrigger>
             <TabsTrigger value="consultar" className="flex items-center space-x-2">
               <FileSearch className="h-4 w-4" />
-              <span>Consultar Cliente/Processos</span>
+              <span>Consultar Cliente/Projetos</span>
+            </TabsTrigger>
+            <TabsTrigger value="arquivados" className="flex items-center space-x-2">
+              <Building2 className="h-4 w-4" />
+              <span>Arquivados</span>
             </TabsTrigger>
           </TabsList>
 
@@ -450,16 +454,16 @@ export function Publications() {
             </Card>
           </TabsContent>
 
-          {/* ABA CONSULTAR CLIENTE/PROCESSOS */}
+          {/* ABA CONSULTAR CLIENTE/PROJETOS */}
           <TabsContent value="consultar" className="space-y-4">
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center space-x-2">
                   <FileSearch className="h-5 w-5" />
-                  <span>Consultar Cliente/Processos</span>
+                  <span>Consultar Cliente/Projetos</span>
                 </CardTitle>
                 <p className="text-sm text-muted-foreground">
-                  Digite o número da OAB do advogado para consultar os processos atribuídos
+                  Digite o número da OAB do advogado para consultar os projetos atribuídos
                 </p>
               </CardHeader>
               <CardContent className="space-y-6">
@@ -519,7 +523,7 @@ export function Publications() {
                         className="w-full"
                       >
                         <Search className="h-4 w-4 mr-2" />
-                        Consultar Processos
+                        Consultar Projetos
                       </Button>
                     </div>
                   </div>
@@ -532,9 +536,9 @@ export function Publications() {
                         <p className="font-medium mb-1">Como funciona a consulta:</p>
                         <ul className="space-y-1 text-xs">
                           <li>• Digite o número da OAB e o estado do advogado</li>
-                          <li>• O sistema buscará todos os processos onde este advogado está atuando</li>
-                          <li>• Serão exibidos apenas processos com status ativo</li>
-                          <li>• Clique em qualquer processo para ver os detalhes completos</li>
+                          <li>• O sistema buscará todos os projetos onde este advogado está atuando</li>
+                          <li>• Serão exibidos apenas projetos com status ativo</li>
+                          <li>• Clique em qualquer projeto para ver os detalhes completos</li>
                         </ul>
                       </div>
                     </div>
@@ -546,7 +550,7 @@ export function Publications() {
                   <div className="flex items-center justify-center py-8">
                     <div className="text-center space-y-2">
                       <div className="animate-spin h-8 w-8 border-4 border-primary border-t-transparent rounded-full mx-auto"></div>
-                      <p className="text-sm text-muted-foreground">Consultando processos...</p>
+                      <p className="text-sm text-muted-foreground">Consultando projetos...</p>
                     </div>
                   </div>
                 )}
@@ -555,7 +559,7 @@ export function Publications() {
                   <div className="space-y-4">
                     <div className="flex items-center justify-between">
                       <h3 className="text-lg font-semibold">
-                        Processos Encontrados ({searchResults.length})
+                        Projetos Encontrados ({searchResults.length})
                       </h3>
                       <Badge variant="outline" className="text-green-600 border-green-600">
                         Consulta realizada com sucesso
@@ -564,78 +568,67 @@ export function Publications() {
 
                     {/* Layout de Cards lado a lado */}
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                      {searchResults.map((process) => (
+                      {searchResults.map((project) => (
                         <div
-                          key={process.id}
-                          className="border rounded-lg p-4 hover:shadow-md transition-shadow bg-white"
+                          key={project.id}
+                          className="border rounded-lg p-4 hover:shadow-md transition-shadow bg-white dark:bg-card"
                         >
                           {/* Header do Card */}
                           <div className="flex items-center justify-between mb-3">
-                            <span className="text-xs text-muted-foreground">DATA DO PROCESSO</span>
+                            <span className="text-xs text-muted-foreground font-medium">DATA DO PROJETO</span>
                             <div className="flex space-x-1">
                               <Button
                                 variant="ghost"
                                 size="sm"
-                                className="h-6 w-6 p-0"
-                                onClick={() => handleViewProcessDetails(process)}
-                                title="Ver Detalhes"
+                                className="h-6 w-6 p-0 text-gray-500 hover:text-gray-700"
+                                onClick={() => handleArchiveProcess(project)}
+                                title="Arquivar"
                               >
-                                📋
-                              </Button>
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                className="h-6 w-6 p-0"
-                                onClick={() => handleArchiveProcess(process)}
-                                title="Arquivar Processo"
-                              >
-                                🗂️
+                                📁
                               </Button>
                             </div>
                           </div>
 
                           {/* Data */}
-                          <div className="text-lg font-semibold mb-1">
-                            {process.dataUltimaMovimentacao?.toLocaleDateString('pt-BR') || '21/08/2025'}
+                          <div className="text-lg font-semibold mb-2">
+                            {project.dataUltimaMovimentacao?.toLocaleDateString('pt-BR') || '21/08/2025'}
                           </div>
 
                           {/* Cliente */}
-                          <div className="mb-2">
-                            <span className="text-xs text-muted-foreground">CLIENTE</span>
-                            <div className="font-medium text-sm">
-                              <span className="text-green-600">{process.cliente}</span>
+                          <div className="mb-3">
+                            <span className="text-xs text-muted-foreground font-medium">CLIENTE</span>
+                            <div className="font-medium text-sm mt-1">
+                              <span className="text-blue-600">{project.cliente}</span>
                             </div>
-                          </div>
-
-                          {/* Badges de Status */}
-                          <div className="space-y-1">
-                            <div className="flex items-center space-x-1 text-xs">
-                              <span className="w-2 h-2 bg-blue-500 rounded-full"></span>
-                              <span>RESUMO DO PROCESSO</span>
-                            </div>
-                            <div className="flex items-center space-x-1 text-xs">
-                              <span className="w-2 h-2 bg-green-500 rounded-full"></span>
-                              <span>PROCESSO DETALHADO</span>
-                            </div>
-                            <div className="flex items-center space-x-1 text-xs">
-                              <span className="w-2 h-2 bg-orange-500 rounded-full"></span>
-                              <span>PARECER TÉCNICO</span>
+                            <div className="text-xs text-green-600 font-medium mt-1">
+                              VISUALIZAR PROJETO
                             </div>
                           </div>
 
                           {/* Informações Adicionais */}
-                          <div className="mt-3 pt-3 border-t">
-                            <div className="text-xs text-muted-foreground mb-1">
-                              <strong>Número:</strong> {process.numero}
+                          <div className="mt-3 pt-3 border-t space-y-2">
+                            <div className="text-xs text-muted-foreground">
+                              <strong>Número:</strong> {project.numero}
                             </div>
-                            <div className="text-xs text-muted-foreground mb-1">
+                            <div className="text-xs text-muted-foreground">
                               <strong>Status:</strong>
-                              <Badge className={`ml-1 ${getProcessStatusColor(process.status)} text-xs`}>
-                                {process.status}
+                              <Badge className={`ml-1 ${getProcessStatusColor(project.status)} text-xs`}>
+                                {project.status}
                               </Badge>
                             </div>
                             <div className="text-xs text-muted-foreground">
-                              <strong>Vara:</strong> {process.vara}
+                              <strong>Vara:</strong> {project.vara}
+                            </div>
+
+                            {/* Botão Abrir Projeto */}
+                            <div className="mt-3 pt-2">
+                              <Button
+                                size="sm"
+                                className="w-full bg-blue-600 hover:bg-blue-700 text-white"
+                                onClick={() => handleViewProcessDetails(project)}
+                              >
+                                Abrir Projeto
+                              </Button>
                             </div>
                           </div>
                         </div>
@@ -648,9 +641,9 @@ export function Publications() {
                   <div className="text-center py-8 text-muted-foreground">
                     <div className="space-y-2">
                       <FileSearch className="h-12 w-12 mx-auto opacity-50" />
-                      <p className="font-medium">Nenhum processo encontrado</p>
+                      <p className="font-medium">Nenhum projeto encontrado</p>
                       <p className="text-sm">
-                        Não foram encontrados processos para a OAB {oabNumber}/{oabState}
+                        Não foram encontrados projetos para a OAB {oabNumber}/{oabState}
                       </p>
                       <p className="text-xs">
                         Verifique se o número da OAB está correto e tente novamente
