@@ -313,66 +313,75 @@ export function Settings() {
     try {
       // Criar cabeçalho do CSV
       const headers = [
-        'Nome',
-        'Email',
-        'Telefone',
-        'País',
-        'Estado',
-        'Endereço',
-        'Cidade',
-        'CEP',
-        'CPF',
-        'RG'
+        "Nome",
+        "Email",
+        "Telefone",
+        "País",
+        "Estado",
+        "Endereço",
+        "Cidade",
+        "CEP",
+        "CPF",
+        "RG",
       ];
 
       // Converter dados para CSV
       const csvContent = [
-        headers.join(','),
-        ...mockClientsForExport.map(client => [
-          `"${client.nome}"`,
-          `"${client.email}"`,
-          `"${client.telefone}"`,
-          `"${client.pais}"`,
-          `"${client.estado}"`,
-          `"${client.endereco}"`,
-          `"${client.cidade}"`,
-          `"${client.cep}"`,
-          `"${client.cpf}"`,
-          `"${client.rg}"`,
-        ].join(','))
-      ].join('\n');
+        headers.join(","),
+        ...mockClientsForExport.map((client) =>
+          [
+            `"${client.nome}"`,
+            `"${client.email}"`,
+            `"${client.telefone}"`,
+            `"${client.pais}"`,
+            `"${client.estado}"`,
+            `"${client.endereco}"`,
+            `"${client.cidade}"`,
+            `"${client.cep}"`,
+            `"${client.cpf}"`,
+            `"${client.rg}"`,
+          ].join(","),
+        ),
+      ].join("\n");
 
       // Criar e baixar arquivo
-      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-      const link = document.createElement('a');
+      const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+      const link = document.createElement("a");
       const url = URL.createObjectURL(blob);
-      link.setAttribute('href', url);
-      link.setAttribute('download', `clientes_export_${new Date().toISOString().split('T')[0]}.csv`);
-      link.style.visibility = 'hidden';
+      link.setAttribute("href", url);
+      link.setAttribute(
+        "download",
+        `clientes_export_${new Date().toISOString().split("T")[0]}.csv`,
+      );
+      link.style.visibility = "hidden";
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
 
-      alert(`✅ Exportação concluída!\n\n📊 ${mockClientsForExport.length} clientes exportados\n📁 Arquivo: clientes_export_${new Date().toISOString().split('T')[0]}.csv\n\n🔽 Download iniciado automaticamente`);
+      alert(
+        `✅ Exportação concluída!\n\n📊 ${mockClientsForExport.length} clientes exportados\n📁 Arquivo: clientes_export_${new Date().toISOString().split("T")[0]}.csv\n\n🔽 Download iniciado automaticamente`,
+      );
     } catch (error) {
       setError("Erro ao exportar clientes para CSV");
     }
   };
 
-  const handleImportClientsCSV = async (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleImportClientsCSV = async (
+    event: React.ChangeEvent<HTMLInputElement>,
+  ) => {
     const file = event.target.files?.[0];
     if (!file) return;
 
     try {
       // Verificar se é um arquivo CSV
-      if (!file.name.toLowerCase().endsWith('.csv')) {
+      if (!file.name.toLowerCase().endsWith(".csv")) {
         alert("❌ Erro: Por favor, selecione um arquivo CSV (.csv)");
         return;
       }
 
       // Ler arquivo
       const text = await file.text();
-      const lines = text.split('\n').filter(line => line.trim());
+      const lines = text.split("\n").filter((line) => line.trim());
 
       if (lines.length < 2) {
         alert("❌ Erro: Arquivo CSV vazio ou sem dados");
@@ -380,16 +389,20 @@ export function Settings() {
       }
 
       // Processar cabeçalho
-      const headers = lines[0].split(',').map(h => h.replace(/"/g, '').trim().toLowerCase());
+      const headers = lines[0]
+        .split(",")
+        .map((h) => h.replace(/"/g, "").trim().toLowerCase());
 
       // Validar campos obrigatórios
-      const requiredFields = ['nome', 'cpf'];
-      const missingFields = requiredFields.filter(field =>
-        !headers.some(header => header.includes(field))
+      const requiredFields = ["nome", "cpf"];
+      const missingFields = requiredFields.filter(
+        (field) => !headers.some((header) => header.includes(field)),
       );
 
       if (missingFields.length > 0) {
-        alert(`❌ Erro: Campos obrigatórios ausentes no CSV:\n\n• ${missingFields.join('\n• ')}\n\nCampos obrigatórios: Nome, CPF`);
+        alert(
+          `❌ Erro: Campos obrigatórios ausentes no CSV:\n\n• ${missingFields.join("\n• ")}\n\nCampos obrigatórios: Nome, CPF`,
+        );
         return;
       }
 
@@ -398,7 +411,9 @@ export function Settings() {
       const errors = [];
 
       for (let i = 1; i < lines.length; i++) {
-        const values = lines[i].split(',').map(v => v.replace(/"/g, '').trim());
+        const values = lines[i]
+          .split(",")
+          .map((v) => v.replace(/"/g, "").trim());
 
         if (values.length < headers.length) {
           errors.push(`Linha ${i + 1}: Número de colunas insuficiente`);
@@ -407,17 +422,19 @@ export function Settings() {
 
         const client: any = {};
         headers.forEach((header, index) => {
-          if (header.includes('nome')) client.nome = values[index];
-          else if (header.includes('email')) client.email = values[index];
-          else if (header.includes('telefone')) client.telefone = values[index];
-          else if (header.includes('país') || header.includes('pais')) client.pais = values[index];
-          else if (header.includes('estado')) client.estado = values[index];
-          else if (header.includes('endereço') || header.includes('endereco')) client.endereco = values[index];
-          else if (header.includes('cidade')) client.cidade = values[index];
-          else if (header.includes('cep')) client.cep = values[index];
-          else if (header.includes('cpf')) client.cpf = values[index];
-          else if (header.includes('cnpj')) client.cnpj = values[index];
-          else if (header.includes('rg')) client.rg = values[index];
+          if (header.includes("nome")) client.nome = values[index];
+          else if (header.includes("email")) client.email = values[index];
+          else if (header.includes("telefone")) client.telefone = values[index];
+          else if (header.includes("país") || header.includes("pais"))
+            client.pais = values[index];
+          else if (header.includes("estado")) client.estado = values[index];
+          else if (header.includes("endereço") || header.includes("endereco"))
+            client.endereco = values[index];
+          else if (header.includes("cidade")) client.cidade = values[index];
+          else if (header.includes("cep")) client.cep = values[index];
+          else if (header.includes("cpf")) client.cpf = values[index];
+          else if (header.includes("cnpj")) client.cnpj = values[index];
+          else if (header.includes("rg")) client.rg = values[index];
         });
 
         // Validar campos obrigatórios
@@ -429,29 +446,34 @@ export function Settings() {
         // Adicionar campos padrão
         client.id = `imported_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
         client.createdAt = new Date().toISOString();
-        client.status = 'active';
+        client.status = "active";
 
         importedClients.push(client);
       }
 
       // Mostrar resultado
       if (importedClients.length > 0) {
-        alert(`✅ Importação concluída!\n\n📊 ${importedClients.length} cliente(s) importado(s) com sucesso${errors.length > 0 ? `\n⚠️ ${errors.length} erro(s) encontrado(s)` : ''}\n\n🔄 Os clientes foram adicionados ao CRM automaticamente`);
+        alert(
+          `✅ Importação concluída!\n\n📊 ${importedClients.length} cliente(s) importado(s) com sucesso${errors.length > 0 ? `\n⚠️ ${errors.length} erro(s) encontrado(s)` : ""}\n\n🔄 Os clientes foram adicionados ao CRM automaticamente`,
+        );
 
         console.log("📝 Clientes importados:", importedClients);
         if (errors.length > 0) {
           console.warn("⚠️ Erros de importação:", errors);
         }
       } else {
-        alert(`❌ Importação falhou!\n\nNenhum cliente válido encontrado.\n\nErros:\n• ${errors.join('\n• ')}`);
+        alert(
+          `❌ Importação falhou!\n\nNenhum cliente válido encontrado.\n\nErros:\n• ${errors.join("\n• ")}`,
+        );
       }
-
     } catch (error) {
       setError("Erro ao processar arquivo CSV");
-      alert("❌ Erro ao processar arquivo CSV. Verifique se o formato está correto.");
+      alert(
+        "❌ Erro ao processar arquivo CSV. Verifique se o formato está correto.",
+      );
     } finally {
       // Limpar input
-      event.target.value = '';
+      event.target.value = "";
     }
   };
 
@@ -1617,7 +1639,6 @@ export function Settings() {
                       </Button>
                     </div>
                   </div>
-
                 </CardContent>
               </Card>
 
@@ -1873,9 +1894,12 @@ export function Settings() {
                   </div>
 
                   <div className="space-y-4">
-                    <h3 className="text-lg font-medium">Exportação e Importação de Clientes</h3>
+                    <h3 className="text-lg font-medium">
+                      Exportação e Importação de Clientes
+                    </h3>
                     <p className="text-sm text-muted-foreground">
-                      Exporte todos os clientes em formato CSV ou importe uma lista de clientes
+                      Exporte todos os clientes em formato CSV ou importe uma
+                      lista de clientes
                     </p>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -1889,7 +1913,11 @@ export function Settings() {
                       <div>
                         <Button
                           variant="outline"
-                          onClick={() => document.getElementById('import-clients-csv')?.click()}
+                          onClick={() =>
+                            document
+                              .getElementById("import-clients-csv")
+                              ?.click()
+                          }
                         >
                           <Upload className="h-4 w-4 mr-2" />
                           Importar Clientes
@@ -1909,9 +1937,16 @@ export function Settings() {
                         📋 Formato do CSV de Importação
                       </h5>
                       <div className="text-xs text-blue-700 dark:text-blue-300 space-y-1">
-                        <p><strong>Campos obrigatórios:</strong> Nome, CPF</p>
-                        <p><strong>Campos opcionais:</strong> Email, Telefone, País, Estado, Endereço, Cidade, CEP, CNPJ, RG</p>
-                        <p><strong>Formato:</strong> UTF-8, separado por vírgulas</p>
+                        <p>
+                          <strong>Campos obrigatórios:</strong> Nome, CPF
+                        </p>
+                        <p>
+                          <strong>Campos opcionais:</strong> Email, Telefone,
+                          País, Estado, Endereço, Cidade, CEP, CNPJ, RG
+                        </p>
+                        <p>
+                          <strong>Formato:</strong> UTF-8, separado por vírgulas
+                        </p>
                       </div>
                     </div>
                   </div>
@@ -1947,13 +1982,19 @@ export function Settings() {
               <DialogTitle className="flex items-center">
                 <Edit className="h-5 w-5 mr-2" />
                 Editor de Template -{" "}
-                {currentTemplate === "budget" ? "Orçamento" :
-                 currentTemplate === "invoice" ? "Fatura" :
-                 currentTemplate === "contrato_honorarios" ? "Contrato de Honorários" :
-                 currentTemplate === "procuracao_judicial" ? "Procuração Judicial" :
-                 currentTemplate === "acordo_mediacao" ? "Acordo de Mediação" :
-                 currentTemplate === "termo_confidencialidade" ? "Termo de Confidencialidade" :
-                 "Template"}
+                {currentTemplate === "budget"
+                  ? "Orçamento"
+                  : currentTemplate === "invoice"
+                    ? "Fatura"
+                    : currentTemplate === "contrato_honorarios"
+                      ? "Contrato de Honorários"
+                      : currentTemplate === "procuracao_judicial"
+                        ? "Procuração Judicial"
+                        : currentTemplate === "acordo_mediacao"
+                          ? "Acordo de Mediação"
+                          : currentTemplate === "termo_confidencialidade"
+                            ? "Termo de Confidencialidade"
+                            : "Template"}
               </DialogTitle>
               <DialogDescription>
                 Edite o template HTML e veja o preview em tempo real. Use as
@@ -2025,59 +2066,135 @@ export function Settings() {
                     )}
                     {currentTemplate === "contrato_honorarios" && (
                       <>
-                        <code className="bg-white px-1 rounded">[NUMERO_CONTRATO]</code>
-                        <code className="bg-white px-1 rounded">[ENDERECO_CLIENTE]</code>
-                        <code className="bg-white px-1 rounded">[NUMERO_OAB]</code>
-                        <code className="bg-white px-1 rounded">[ESTADO_OAB]</code>
-                        <code className="bg-white px-1 rounded">[ENDERECO_ESCRITORIO]</code>
-                        <code className="bg-white px-1 rounded">[CONDICOES_PAGAMENTO]</code>
-                        <code className="bg-white px-1 rounded">[DATA_INICIO]</code>
-                        <code className="bg-white px-1 rounded">[DATA_TERMINO]</code>
+                        <code className="bg-white px-1 rounded">
+                          [NUMERO_CONTRATO]
+                        </code>
+                        <code className="bg-white px-1 rounded">
+                          [ENDERECO_CLIENTE]
+                        </code>
+                        <code className="bg-white px-1 rounded">
+                          [NUMERO_OAB]
+                        </code>
+                        <code className="bg-white px-1 rounded">
+                          [ESTADO_OAB]
+                        </code>
+                        <code className="bg-white px-1 rounded">
+                          [ENDERECO_ESCRITORIO]
+                        </code>
+                        <code className="bg-white px-1 rounded">
+                          [CONDICOES_PAGAMENTO]
+                        </code>
+                        <code className="bg-white px-1 rounded">
+                          [DATA_INICIO]
+                        </code>
+                        <code className="bg-white px-1 rounded">
+                          [DATA_TERMINO]
+                        </code>
                         <code className="bg-white px-1 rounded">[CIDADE]</code>
-                        <code className="bg-white px-1 rounded">[ASSINATURA_ADVOGADO]</code>
+                        <code className="bg-white px-1 rounded">
+                          [ASSINATURA_ADVOGADO]
+                        </code>
                       </>
                     )}
                     {currentTemplate === "procuracao_judicial" && (
                       <>
-                        <code className="bg-white px-1 rounded">[NUMERO_PROCURACAO]</code>
-                        <code className="bg-white px-1 rounded">[ESTADO_CIVIL]</code>
-                        <code className="bg-white px-1 rounded">[PROFISSAO]</code>
-                        <code className="bg-white px-1 rounded">[ENDERECO_CLIENTE]</code>
-                        <code className="bg-white px-1 rounded">[NOME_ADVOGADO]</code>
-                        <code className="bg-white px-1 rounded">[NUMERO_OAB]</code>
-                        <code className="bg-white px-1 rounded">[ESTADO_OAB]</code>
-                        <code className="bg-white px-1 rounded">[ENDERECO_ESCRITORIO]</code>
-                        <code className="bg-white px-1 rounded">[PODERES_ESPECIFICOS]</code>
+                        <code className="bg-white px-1 rounded">
+                          [NUMERO_PROCURACAO]
+                        </code>
+                        <code className="bg-white px-1 rounded">
+                          [ESTADO_CIVIL]
+                        </code>
+                        <code className="bg-white px-1 rounded">
+                          [PROFISSAO]
+                        </code>
+                        <code className="bg-white px-1 rounded">
+                          [ENDERECO_CLIENTE]
+                        </code>
+                        <code className="bg-white px-1 rounded">
+                          [NOME_ADVOGADO]
+                        </code>
+                        <code className="bg-white px-1 rounded">
+                          [NUMERO_OAB]
+                        </code>
+                        <code className="bg-white px-1 rounded">
+                          [ESTADO_OAB]
+                        </code>
+                        <code className="bg-white px-1 rounded">
+                          [ENDERECO_ESCRITORIO]
+                        </code>
+                        <code className="bg-white px-1 rounded">
+                          [PODERES_ESPECIFICOS]
+                        </code>
                         <code className="bg-white px-1 rounded">[CIDADE]</code>
                       </>
                     )}
                     {currentTemplate === "acordo_mediacao" && (
                       <>
-                        <code className="bg-white px-1 rounded">[NUMERO_ACORDO]</code>
-                        <code className="bg-white px-1 rounded">[NOME_PARTE1]</code>
-                        <code className="bg-white px-1 rounded">[QUALIFICACAO_PARTE1]</code>
-                        <code className="bg-white px-1 rounded">[NOME_PARTE2]</code>
-                        <code className="bg-white px-1 rounded">[QUALIFICACAO_PARTE2]</code>
-                        <code className="bg-white px-1 rounded">[NOME_MEDIADOR]</code>
-                        <code className="bg-white px-1 rounded">[QUALIFICACAO_MEDIADOR]</code>
-                        <code className="bg-white px-1 rounded">[OBJETO_LITIGIO]</code>
-                        <code className="bg-white px-1 rounded">[OBRIGACOES_PARTE1]</code>
-                        <code className="bg-white px-1 rounded">[OBRIGACOES_PARTE2]</code>
-                        <code className="bg-white px-1 rounded">[DATA_CUMPRIMENTO]</code>
-                        <code className="bg-white px-1 rounded">[PENALIDADES]</code>
+                        <code className="bg-white px-1 rounded">
+                          [NUMERO_ACORDO]
+                        </code>
+                        <code className="bg-white px-1 rounded">
+                          [NOME_PARTE1]
+                        </code>
+                        <code className="bg-white px-1 rounded">
+                          [QUALIFICACAO_PARTE1]
+                        </code>
+                        <code className="bg-white px-1 rounded">
+                          [NOME_PARTE2]
+                        </code>
+                        <code className="bg-white px-1 rounded">
+                          [QUALIFICACAO_PARTE2]
+                        </code>
+                        <code className="bg-white px-1 rounded">
+                          [NOME_MEDIADOR]
+                        </code>
+                        <code className="bg-white px-1 rounded">
+                          [QUALIFICACAO_MEDIADOR]
+                        </code>
+                        <code className="bg-white px-1 rounded">
+                          [OBJETO_LITIGIO]
+                        </code>
+                        <code className="bg-white px-1 rounded">
+                          [OBRIGACOES_PARTE1]
+                        </code>
+                        <code className="bg-white px-1 rounded">
+                          [OBRIGACOES_PARTE2]
+                        </code>
+                        <code className="bg-white px-1 rounded">
+                          [DATA_CUMPRIMENTO]
+                        </code>
+                        <code className="bg-white px-1 rounded">
+                          [PENALIDADES]
+                        </code>
                         <code className="bg-white px-1 rounded">[CIDADE]</code>
                       </>
                     )}
                     {currentTemplate === "termo_confidencialidade" && (
                       <>
-                        <code className="bg-white px-1 rounded">[NUMERO_TERMO]</code>
-                        <code className="bg-white px-1 rounded">[NOME_REVELADORA]</code>
-                        <code className="bg-white px-1 rounded">[QUALIFICACAO_REVELADORA]</code>
-                        <code className="bg-white px-1 rounded">[NOME_RECEPTORA]</code>
-                        <code className="bg-white px-1 rounded">[QUALIFICACAO_RECEPTORA]</code>
-                        <code className="bg-white px-1 rounded">[DEFINICAO_INFORMACOES]</code>
-                        <code className="bg-white px-1 rounded">[PRAZO_VIGENCIA]</code>
-                        <code className="bg-white px-1 rounded">[VALOR_MULTA]</code>
+                        <code className="bg-white px-1 rounded">
+                          [NUMERO_TERMO]
+                        </code>
+                        <code className="bg-white px-1 rounded">
+                          [NOME_REVELADORA]
+                        </code>
+                        <code className="bg-white px-1 rounded">
+                          [QUALIFICACAO_REVELADORA]
+                        </code>
+                        <code className="bg-white px-1 rounded">
+                          [NOME_RECEPTORA]
+                        </code>
+                        <code className="bg-white px-1 rounded">
+                          [QUALIFICACAO_RECEPTORA]
+                        </code>
+                        <code className="bg-white px-1 rounded">
+                          [DEFINICAO_INFORMACOES]
+                        </code>
+                        <code className="bg-white px-1 rounded">
+                          [PRAZO_VIGENCIA]
+                        </code>
+                        <code className="bg-white px-1 rounded">
+                          [VALOR_MULTA]
+                        </code>
                         <code className="bg-white px-1 rounded">[CIDADE]</code>
                       </>
                     )}
@@ -2146,35 +2263,87 @@ export function Settings() {
                           .replace(/\[NUMERO_PROCURACAO\]/g, "PROC-001/2025")
                           .replace(/\[NUMERO_ACORDO\]/g, "ACRD-001/2025")
                           .replace(/\[NUMERO_TERMO\]/g, "CONF-001/2025")
-                          .replace(/\[ENDERECO_CLIENTE\]/g, "Rua das Flores, 123 - São Paulo/SP")
+                          .replace(
+                            /\[ENDERECO_CLIENTE\]/g,
+                            "Rua das Flores, 123 - São Paulo/SP",
+                          )
                           .replace(/\[NUMERO_OAB\]/g, "123.456")
                           .replace(/\[ESTADO_OAB\]/g, "SP")
-                          .replace(/\[ENDERECO_ESCRITORIO\]/g, "Av. Paulista, 1000 - São Paulo/SP")
-                          .replace(/\[CONDICOES_PAGAMENTO\]/g, "3x de R$ 1.666,67")
-                          .replace(/\[DATA_INICIO\]/g, new Date().toLocaleDateString("pt-BR"))
-                          .replace(/\[DATA_TERMINO\]/g, new Date(Date.now() + 180 * 24 * 60 * 60 * 1000).toLocaleDateString("pt-BR"))
+                          .replace(
+                            /\[ENDERECO_ESCRITORIO\]/g,
+                            "Av. Paulista, 1000 - São Paulo/SP",
+                          )
+                          .replace(
+                            /\[CONDICOES_PAGAMENTO\]/g,
+                            "3x de R$ 1.666,67",
+                          )
+                          .replace(
+                            /\[DATA_INICIO\]/g,
+                            new Date().toLocaleDateString("pt-BR"),
+                          )
+                          .replace(
+                            /\[DATA_TERMINO\]/g,
+                            new Date(
+                              Date.now() + 180 * 24 * 60 * 60 * 1000,
+                            ).toLocaleDateString("pt-BR"),
+                          )
                           .replace(/\[CIDADE\]/g, "São Paulo")
                           .replace(/\[ASSINATURA_ADVOGADO\]/g, "Dr. João Silva")
                           .replace(/\[NOME_ADVOGADO\]/g, "Dr. João Silva")
                           .replace(/\[ESTADO_CIVIL\]/g, "solteira")
                           .replace(/\[PROFISSAO\]/g, "empresária")
-                          .replace(/\[PODERES_ESPECIFICOS\]/g, "propor e acompanhar ações de cobrança")
+                          .replace(
+                            /\[PODERES_ESPECIFICOS\]/g,
+                            "propor e acompanhar ações de cobrança",
+                          )
                           .replace(/\[NOME_PARTE1\]/g, "João Santos")
-                          .replace(/\[QUALIFICACAO_PARTE1\]/g, "brasileiro, casado, empresário")
+                          .replace(
+                            /\[QUALIFICACAO_PARTE1\]/g,
+                            "brasileiro, casado, empresário",
+                          )
                           .replace(/\[NOME_PARTE2\]/g, "Maria Costa")
-                          .replace(/\[QUALIFICACAO_PARTE2\]/g, "brasileira, solteira, advogada")
+                          .replace(
+                            /\[QUALIFICACAO_PARTE2\]/g,
+                            "brasileira, solteira, advogada",
+                          )
                           .replace(/\[NOME_MEDIADOR\]/g, "Dr. Carlos Medeiros")
-                          .replace(/\[QUALIFICACAO_MEDIADOR\]/g, "mediador certificado pelo CNJ")
+                          .replace(
+                            /\[QUALIFICACAO_MEDIADOR\]/g,
+                            "mediador certificado pelo CNJ",
+                          )
                           .replace(/\[OBJETO_LITIGIO\]/g, "rescisão contratual")
-                          .replace(/\[OBRIGACOES_PARTE1\]/g, "Pagamento de R$ 10.000,00")
-                          .replace(/\[OBRIGACOES_PARTE2\]/g, "Entrega dos documentos")
-                          .replace(/\[DATA_CUMPRIMENTO\]/g, new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toLocaleDateString("pt-BR"))
-                          .replace(/\[PENALIDADES\]/g, "multa de 10% sobre o valor")
+                          .replace(
+                            /\[OBRIGACOES_PARTE1\]/g,
+                            "Pagamento de R$ 10.000,00",
+                          )
+                          .replace(
+                            /\[OBRIGACOES_PARTE2\]/g,
+                            "Entrega dos documentos",
+                          )
+                          .replace(
+                            /\[DATA_CUMPRIMENTO\]/g,
+                            new Date(
+                              Date.now() + 30 * 24 * 60 * 60 * 1000,
+                            ).toLocaleDateString("pt-BR"),
+                          )
+                          .replace(
+                            /\[PENALIDADES\]/g,
+                            "multa de 10% sobre o valor",
+                          )
                           .replace(/\[NOME_REVELADORA\]/g, "Empresa ABC Ltda")
-                          .replace(/\[QUALIFICACAO_REVELADORA\]/g, "empresa brasileira")
+                          .replace(
+                            /\[QUALIFICACAO_REVELADORA\]/g,
+                            "empresa brasileira",
+                          )
                           .replace(/\[NOME_RECEPTORA\]/g, "Consultoria XYZ")
-                          .replace(/\[QUALIFICACAO_RECEPTORA\]/g, "empresa de consultoria")
-                          .replace(/\[DEFINICAO_INFORMACOES\]/g, "dados técnicos, comerciais e estratégicos")
+                          .replace(
+                            /\[QUALIFICACAO_RECEPTORA\]/g,
+                            "empresa de consultoria",
+                          )
+                          .replace(
+                            /\[DEFINICAO_INFORMACOES\]/g,
+                            "dados técnicos, comerciais e estratégicos",
+                          )
                           .replace(/\[PRAZO_VIGENCIA\]/g, "2 anos")
                           .replace(/\[VALOR_MULTA\]/g, "R$ 50.000,00");
 
@@ -2237,35 +2406,81 @@ export function Settings() {
                       .replace(/\[NUMERO_PROCURACAO\]/g, "PROC-001/2025")
                       .replace(/\[NUMERO_ACORDO\]/g, "ACRD-001/2025")
                       .replace(/\[NUMERO_TERMO\]/g, "CONF-001/2025")
-                      .replace(/\[ENDERECO_CLIENTE\]/g, "Rua das Flores, 123 - São Paulo/SP")
+                      .replace(
+                        /\[ENDERECO_CLIENTE\]/g,
+                        "Rua das Flores, 123 - São Paulo/SP",
+                      )
                       .replace(/\[NUMERO_OAB\]/g, "123.456")
                       .replace(/\[ESTADO_OAB\]/g, "SP")
-                      .replace(/\[ENDERECO_ESCRITORIO\]/g, "Av. Paulista, 1000 - São Paulo/SP")
+                      .replace(
+                        /\[ENDERECO_ESCRITORIO\]/g,
+                        "Av. Paulista, 1000 - São Paulo/SP",
+                      )
                       .replace(/\[CONDICOES_PAGAMENTO\]/g, "3x de R$ 1.666,67")
-                      .replace(/\[DATA_INICIO\]/g, new Date().toLocaleDateString("pt-BR"))
-                      .replace(/\[DATA_TERMINO\]/g, new Date(Date.now() + 180 * 24 * 60 * 60 * 1000).toLocaleDateString("pt-BR"))
+                      .replace(
+                        /\[DATA_INICIO\]/g,
+                        new Date().toLocaleDateString("pt-BR"),
+                      )
+                      .replace(
+                        /\[DATA_TERMINO\]/g,
+                        new Date(
+                          Date.now() + 180 * 24 * 60 * 60 * 1000,
+                        ).toLocaleDateString("pt-BR"),
+                      )
                       .replace(/\[CIDADE\]/g, "São Paulo")
                       .replace(/\[ASSINATURA_ADVOGADO\]/g, "Dr. João Silva")
                       .replace(/\[NOME_ADVOGADO\]/g, "Dr. Jo��o Silva")
                       .replace(/\[ESTADO_CIVIL\]/g, "solteira")
                       .replace(/\[PROFISSAO\]/g, "empresária")
-                      .replace(/\[PODERES_ESPECIFICOS\]/g, "propor e acompanhar ações de cobrança")
+                      .replace(
+                        /\[PODERES_ESPECIFICOS\]/g,
+                        "propor e acompanhar ações de cobrança",
+                      )
                       .replace(/\[NOME_PARTE1\]/g, "João Santos")
-                      .replace(/\[QUALIFICACAO_PARTE1\]/g, "brasileiro, casado, empresário")
+                      .replace(
+                        /\[QUALIFICACAO_PARTE1\]/g,
+                        "brasileiro, casado, empresário",
+                      )
                       .replace(/\[NOME_PARTE2\]/g, "Maria Costa")
-                      .replace(/\[QUALIFICACAO_PARTE2\]/g, "brasileira, solteira, advogada")
+                      .replace(
+                        /\[QUALIFICACAO_PARTE2\]/g,
+                        "brasileira, solteira, advogada",
+                      )
                       .replace(/\[NOME_MEDIADOR\]/g, "Dr. Carlos Medeiros")
-                      .replace(/\[QUALIFICACAO_MEDIADOR\]/g, "mediador certificado pelo CNJ")
+                      .replace(
+                        /\[QUALIFICACAO_MEDIADOR\]/g,
+                        "mediador certificado pelo CNJ",
+                      )
                       .replace(/\[OBJETO_LITIGIO\]/g, "rescisão contratual")
-                      .replace(/\[OBRIGACOES_PARTE1\]/g, "Pagamento de R$ 10.000,00")
-                      .replace(/\[OBRIGACOES_PARTE2\]/g, "Entrega dos documentos")
-                      .replace(/\[DATA_CUMPRIMENTO\]/g, new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toLocaleDateString("pt-BR"))
+                      .replace(
+                        /\[OBRIGACOES_PARTE1\]/g,
+                        "Pagamento de R$ 10.000,00",
+                      )
+                      .replace(
+                        /\[OBRIGACOES_PARTE2\]/g,
+                        "Entrega dos documentos",
+                      )
+                      .replace(
+                        /\[DATA_CUMPRIMENTO\]/g,
+                        new Date(
+                          Date.now() + 30 * 24 * 60 * 60 * 1000,
+                        ).toLocaleDateString("pt-BR"),
+                      )
                       .replace(/\[PENALIDADES\]/g, "multa de 10% sobre o valor")
                       .replace(/\[NOME_REVELADORA\]/g, "Empresa ABC Ltda")
-                      .replace(/\[QUALIFICACAO_REVELADORA\]/g, "empresa brasileira")
+                      .replace(
+                        /\[QUALIFICACAO_REVELADORA\]/g,
+                        "empresa brasileira",
+                      )
                       .replace(/\[NOME_RECEPTORA\]/g, "Consultoria XYZ")
-                      .replace(/\[QUALIFICACAO_RECEPTORA\]/g, "empresa de consultoria")
-                      .replace(/\[DEFINICAO_INFORMACOES\]/g, "dados técnicos, comerciais e estratégicos")
+                      .replace(
+                        /\[QUALIFICACAO_RECEPTORA\]/g,
+                        "empresa de consultoria",
+                      )
+                      .replace(
+                        /\[DEFINICAO_INFORMACOES\]/g,
+                        "dados técnicos, comerciais e estratégicos",
+                      )
                       .replace(/\[PRAZO_VIGENCIA\]/g, "2 anos")
                       .replace(/\[VALOR_MULTA\]/g, "R$ 50.000,00")
                       .replace(

@@ -29,16 +29,16 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { 
-  Newspaper, 
-  Search, 
-  Filter, 
-  Eye, 
+import {
+  Newspaper,
+  Search,
+  Filter,
+  Eye,
   Plus,
   FileSearch,
   Calendar,
   Building2,
-  Scale
+  Scale,
 } from "lucide-react";
 import { Publication, PublicationStatus } from "@/types/publications";
 import { ProcessViewDialog } from "@/components/Publications/ProcessViewDialog";
@@ -69,7 +69,7 @@ const mockPublications: Publication[] = [
     nomePesquisado: "João Silva Santos",
     status: "nova", // Status inicial de publicações da API
     conteudo: "Intimação para audiência de conciliação...",
-    urgencia: "alta"
+    urgencia: "alta",
   },
   {
     id: "2",
@@ -80,7 +80,7 @@ const mockPublications: Publication[] = [
     nomePesquisado: "Maria Oliveira Costa",
     status: "pendente", // Já foi visualizada
     conteudo: "Sentença publicada nos autos...",
-    urgencia: "media"
+    urgencia: "media",
   },
   {
     id: "3",
@@ -91,7 +91,7 @@ const mockPublications: Publication[] = [
     nomePesquisado: "Carlos Eduardo Lima",
     status: "descartada",
     conteudo: "Publicação não relacionada ao caso...",
-    urgencia: "baixa"
+    urgencia: "baixa",
   },
   {
     id: "4",
@@ -109,8 +109,8 @@ const mockPublications: Publication[] = [
       nome: "Dr. Silva",
       email: "silva@escritorio.com",
       cargo: "Gerente",
-      ativo: true
-    }
+      ativo: true,
+    },
   },
 ];
 
@@ -119,28 +119,31 @@ const getStatusBadge = (status: PublicationStatus) => {
     nova: {
       label: "Nova",
       variant: "default" as const,
-      color: "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200"
+      color: "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200",
     },
     pendente: {
       label: "Pendente",
       variant: "secondary" as const,
-      color: "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200"
+      color:
+        "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200",
     },
     atribuida: {
       label: "Atribuída",
       variant: "outline" as const,
-      color: "bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200"
+      color:
+        "bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200",
     },
     finalizada: {
       label: "Finalizada",
       variant: "outline" as const,
-      color: "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200"
+      color:
+        "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200",
     },
     descartada: {
       label: "Descartada",
       variant: "destructive" as const,
-      color: "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200"
-    }
+      color: "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200",
+    },
   };
 
   return statusConfig[status];
@@ -148,10 +151,14 @@ const getStatusBadge = (status: PublicationStatus) => {
 
 const getUrgencyColor = (urgencia?: string) => {
   switch (urgencia) {
-    case 'alta': return 'text-red-600';
-    case 'media': return 'text-yellow-600';
-    case 'baixa': return 'text-green-600';
-    default: return 'text-gray-600';
+    case "alta":
+      return "text-red-600";
+    case "media":
+      return "text-yellow-600";
+    case "baixa":
+      return "text-green-600";
+    default:
+      return "text-gray-600";
   }
 };
 
@@ -172,9 +179,11 @@ export function Publications() {
 
   const handleViewPublication = (publication: Publication) => {
     // BACKEND: Implementar mudança automática de status NOVA -> PENDENTE
-    if (publication.status === 'nova') {
+    if (publication.status === "nova") {
       // Fazer PATCH /api/publicacoes/{id}/status para mudar para 'pendente'
-      console.log(`Mudando status da publicação ${publication.id} de NOVA para PENDENTE`);
+      console.log(
+        `Mudando status da publicação ${publication.id} de NOVA para PENDENTE`,
+      );
     }
     navigate(`/publicacoes/${publication.id}`);
   };
@@ -186,24 +195,25 @@ export function Publications() {
       // const response = await fetch('/api/publicacoes/carregar');
       // const newPublications = await response.json();
 
-      console.log('Carregando novas publicações da API...');
+      console.log("Carregando novas publicações da API...");
 
       // Simular carregamento
-      await new Promise(resolve => setTimeout(resolve, 2000));
+      await new Promise((resolve) => setTimeout(resolve, 2000));
 
       // TODO: Atualizar estado com novas publicações
-      console.log('Publicações carregadas com sucesso!');
+      console.log("Publicações carregadas com sucesso!");
     } catch (error) {
-      console.error('Erro ao carregar publicações:', error);
+      console.error("Erro ao carregar publicações:", error);
     } finally {
       setIsLoading(false);
     }
   };
 
-  const filteredPublications = mockPublications.filter(pub =>
-    pub.processo.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    pub.nomePesquisado.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    pub.varaComarca.toLowerCase().includes(searchTerm.toLowerCase())
+  const filteredPublications = mockPublications.filter(
+    (pub) =>
+      pub.processo.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      pub.nomePesquisado.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      pub.varaComarca.toLowerCase().includes(searchTerm.toLowerCase()),
   );
 
   // Dados mock de projetos para consulta
@@ -218,7 +228,7 @@ export function Publications() {
       dataUltimaMovimentacao: new Date("2025-01-21"),
       advogado: "123456/SP",
       tipo: "Ação Trabalhista",
-      valor: "R$ 45.000,00"
+      valor: "R$ 45.000,00",
     },
     {
       id: "2",
@@ -230,8 +240,8 @@ export function Publications() {
       dataUltimaMovimentacao: new Date("2025-01-20"),
       advogado: "123456/SP",
       tipo: "Revisão Contratual",
-      valor: "R$ 28.500,00"
-    }
+      valor: "R$ 28.500,00",
+    },
   ];
 
   // Dados mock de projetos arquivados
@@ -247,7 +257,7 @@ export function Publications() {
       advogado: "123456/SP",
       tipo: "Consultoria Empresarial",
       valor: "R$ 65.000,00",
-      dataArquivamento: new Date("2024-12-20")
+      dataArquivamento: new Date("2024-12-20"),
     },
     {
       id: "arch2",
@@ -260,8 +270,8 @@ export function Publications() {
       advogado: "123456/SP",
       tipo: "Mediação Familiar",
       valor: "R$ 18.000,00",
-      dataArquivamento: new Date("2024-12-05")
-    }
+      dataArquivamento: new Date("2024-12-05"),
+    },
   ];
 
   const handleSearchProcesses = async () => {
@@ -279,18 +289,21 @@ export function Publications() {
       // const processes = await response.json();
 
       // Simular tempo de consulta
-      await new Promise(resolve => setTimeout(resolve, 2000));
+      await new Promise((resolve) => setTimeout(resolve, 2000));
 
       // Filtrar projetos mock baseado na OAB (simulação)
       const searchQuery = `${oabNumber}/${oabState}`;
-      const filteredResults = mockProjectResults.filter(project =>
-        project.advogado === searchQuery
+      const filteredResults = mockProjectResults.filter(
+        (project) => project.advogado === searchQuery,
       );
 
       setSearchResults(filteredResults);
       setHasSearched(true);
 
-      console.log(`Consulta realizada para OAB: ${searchQuery}`, filteredResults);
+      console.log(
+        `Consulta realizada para OAB: ${searchQuery}`,
+        filteredResults,
+      );
     } catch (error) {
       console.error("Erro ao consultar processos:", error);
       alert("Erro ao consultar processos. Tente novamente.");
@@ -311,7 +324,11 @@ export function Publications() {
   };
 
   const handleArchiveProcess = (project: any) => {
-    if (confirm(`Deseja arquivar o projeto ${project.numero}?\n\nO projeto será movido para a seção de projetos arquivados.`)) {
+    if (
+      confirm(
+        `Deseja arquivar o projeto ${project.numero}?\n\nO projeto será movido para a seção de projetos arquivados.`,
+      )
+    ) {
       // Aqui você implementaria a lógica para arquivar o projeto
       // BACKEND: POST /api/projetos/{id}/arquivar
       console.log("Arquivando projeto:", project);
@@ -320,28 +337,34 @@ export function Publications() {
       const archivedProject = {
         ...project,
         dataArquivamento: new Date(),
-        status: "Arquivado"
+        status: "Arquivado",
       };
-      setArchivedProjects(prev => [archivedProject, ...prev]);
+      setArchivedProjects((prev) => [archivedProject, ...prev]);
 
       // Remover da lista ativa
-      setSearchResults(prev => prev.filter(p => p.id !== project.id));
+      setSearchResults((prev) => prev.filter((p) => p.id !== project.id));
 
-      alert(`✅ Projeto ${project.numero} arquivado com sucesso!\n\nO projeto foi movido para a seção de arquivados.`);
+      alert(
+        `✅ Projeto ${project.numero} arquivado com sucesso!\n\nO projeto foi movido para a seção de arquivados.`,
+      );
     }
   };
 
   const handleRestoreProject = (project: any) => {
-    if (confirm(`Deseja restaurar o projeto ${project.numero}?\n\nO projeto será movido de volta para a seção ativa.`)) {
+    if (
+      confirm(
+        `Deseja restaurar o projeto ${project.numero}?\n\nO projeto será movido de volta para a seção ativa.`,
+      )
+    ) {
       // Restaurar projeto
       const restoredProject = {
         ...project,
-        status: "Em Andamento"
+        status: "Em Andamento",
       };
       delete restoredProject.dataArquivamento;
 
-      setSearchResults(prev => [restoredProject, ...prev]);
-      setArchivedProjects(prev => prev.filter(p => p.id !== project.id));
+      setSearchResults((prev) => [restoredProject, ...prev]);
+      setArchivedProjects((prev) => prev.filter((p) => p.id !== project.id));
 
       alert(`✅ Projeto ${project.numero} restaurado com sucesso!`);
     }
@@ -350,10 +373,11 @@ export function Publications() {
   const getProcessStatusColor = (status: string) => {
     const colors: Record<string, string> = {
       "Em Andamento": "bg-blue-100 text-blue-800 border-blue-200",
-      "Aguardando Documentos": "bg-yellow-100 text-yellow-800 border-yellow-200",
-      "Finalizado": "bg-green-100 text-green-800 border-green-200",
-      "Arquivado": "bg-gray-100 text-gray-800 border-gray-200",
-      "Suspenso": "bg-red-100 text-red-800 border-red-200",
+      "Aguardando Documentos":
+        "bg-yellow-100 text-yellow-800 border-yellow-200",
+      Finalizado: "bg-green-100 text-green-800 border-green-200",
+      Arquivado: "bg-gray-100 text-gray-800 border-gray-200",
+      Suspenso: "bg-red-100 text-red-800 border-red-200",
     };
     return colors[status] || "bg-gray-100 text-gray-800 border-gray-200";
   };
@@ -375,15 +399,24 @@ export function Publications() {
 
         <Tabs defaultValue="publicacoes" className="space-y-4">
           <TabsList className="grid w-full grid-cols-3">
-            <TabsTrigger value="publicacoes" className="flex items-center space-x-2">
+            <TabsTrigger
+              value="publicacoes"
+              className="flex items-center space-x-2"
+            >
               <Newspaper className="h-4 w-4" />
               <span>Publicações</span>
             </TabsTrigger>
-            <TabsTrigger value="consultar" className="flex items-center space-x-2">
+            <TabsTrigger
+              value="consultar"
+              className="flex items-center space-x-2"
+            >
               <FileSearch className="h-4 w-4" />
               <span>Consultar Cliente/Projetos</span>
             </TabsTrigger>
-            <TabsTrigger value="arquivados" className="flex items-center space-x-2">
+            <TabsTrigger
+              value="arquivados"
+              className="flex items-center space-x-2"
+            >
               <Building2 className="h-4 w-4" />
               <span>Arquivados</span>
             </TabsTrigger>
@@ -453,7 +486,7 @@ export function Publications() {
                       {filteredPublications.map((publication) => {
                         const statusConfig = getStatusBadge(publication.status);
                         return (
-                          <TableRow 
+                          <TableRow
                             key={publication.id}
                             className="cursor-pointer hover:bg-muted/50"
                             onClick={() => handleViewPublication(publication)}
@@ -461,7 +494,11 @@ export function Publications() {
                             <TableCell className="font-medium">
                               <div className="flex items-center space-x-2">
                                 <Calendar className="h-4 w-4 text-muted-foreground" />
-                                <span>{publication.dataPublicacao.toLocaleDateString('pt-BR')}</span>
+                                <span>
+                                  {publication.dataPublicacao.toLocaleDateString(
+                                    "pt-BR",
+                                  )}
+                                </span>
                               </div>
                             </TableCell>
                             <TableCell className="font-mono text-sm">
@@ -471,19 +508,25 @@ export function Publications() {
                             <TableCell>
                               <div className="flex items-center space-x-2">
                                 <Building2 className="h-4 w-4 text-muted-foreground" />
-                                <span className="text-sm">{publication.varaComarca}</span>
+                                <span className="text-sm">
+                                  {publication.varaComarca}
+                                </span>
                               </div>
                             </TableCell>
                             <TableCell className="font-medium">
                               {publication.nomePesquisado}
                             </TableCell>
                             <TableCell>
-                              <Badge className={`${statusConfig.color} px-2 py-1 text-xs font-medium`}>
+                              <Badge
+                                className={`${statusConfig.color} px-2 py-1 text-xs font-medium`}
+                              >
                                 {statusConfig.label}
                               </Badge>
                             </TableCell>
                             <TableCell>
-                              <span className={`text-xs font-medium ${getUrgencyColor(publication.urgencia)}`}>
+                              <span
+                                className={`text-xs font-medium ${getUrgencyColor(publication.urgencia)}`}
+                              >
                                 {publication.urgencia?.toUpperCase()}
                               </span>
                             </TableCell>
@@ -518,7 +561,8 @@ export function Publications() {
                   <span>Consultar Cliente/Projetos</span>
                 </CardTitle>
                 <p className="text-sm text-muted-foreground">
-                  Digite o número da OAB do advogado para consultar os projetos atribuídos
+                  Digite o número da OAB do advogado para consultar os projetos
+                  atribuídos
                 </p>
               </CardHeader>
               <CardContent className="space-y-6">
@@ -526,7 +570,9 @@ export function Publications() {
                 <div className="space-y-4">
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <div className="space-y-2">
-                      <label className="text-sm font-medium">Número da OAB</label>
+                      <label className="text-sm font-medium">
+                        Número da OAB
+                      </label>
                       <Input
                         placeholder="Ex: 123456/SP"
                         value={oabNumber}
@@ -547,24 +593,38 @@ export function Publications() {
                           <SelectItem value="AM">Amazonas (AM)</SelectItem>
                           <SelectItem value="BA">Bahia (BA)</SelectItem>
                           <SelectItem value="CE">Ceará (CE)</SelectItem>
-                          <SelectItem value="DF">Distrito Federal (DF)</SelectItem>
-                          <SelectItem value="ES">Espírito Santo (ES)</SelectItem>
+                          <SelectItem value="DF">
+                            Distrito Federal (DF)
+                          </SelectItem>
+                          <SelectItem value="ES">
+                            Espírito Santo (ES)
+                          </SelectItem>
                           <SelectItem value="GO">Goiás (GO)</SelectItem>
                           <SelectItem value="MA">Maranhão (MA)</SelectItem>
                           <SelectItem value="MT">Mato Grosso (MT)</SelectItem>
-                          <SelectItem value="MS">Mato Grosso do Sul (MS)</SelectItem>
+                          <SelectItem value="MS">
+                            Mato Grosso do Sul (MS)
+                          </SelectItem>
                           <SelectItem value="MG">Minas Gerais (MG)</SelectItem>
                           <SelectItem value="PA">Pará (PA)</SelectItem>
                           <SelectItem value="PB">Paraíba (PB)</SelectItem>
                           <SelectItem value="PR">Paraná (PR)</SelectItem>
                           <SelectItem value="PE">Pernambuco (PE)</SelectItem>
                           <SelectItem value="PI">Piauí (PI)</SelectItem>
-                          <SelectItem value="RJ">Rio de Janeiro (RJ)</SelectItem>
-                          <SelectItem value="RN">Rio Grande do Norte (RN)</SelectItem>
-                          <SelectItem value="RS">Rio Grande do Sul (RS)</SelectItem>
+                          <SelectItem value="RJ">
+                            Rio de Janeiro (RJ)
+                          </SelectItem>
+                          <SelectItem value="RN">
+                            Rio Grande do Norte (RN)
+                          </SelectItem>
+                          <SelectItem value="RS">
+                            Rio Grande do Sul (RS)
+                          </SelectItem>
                           <SelectItem value="RO">Rondônia (RO)</SelectItem>
                           <SelectItem value="RR">Roraima (RR)</SelectItem>
-                          <SelectItem value="SC">Santa Catarina (SC)</SelectItem>
+                          <SelectItem value="SC">
+                            Santa Catarina (SC)
+                          </SelectItem>
                           <SelectItem value="SP">São Paulo (SP)</SelectItem>
                           <SelectItem value="SE">Sergipe (SE)</SelectItem>
                           <SelectItem value="TO">Tocantins (TO)</SelectItem>
@@ -588,12 +648,24 @@ export function Publications() {
                     <div className="flex items-start space-x-3">
                       <Scale className="h-5 w-5 text-blue-600 dark:text-blue-400 mt-0.5 flex-shrink-0" />
                       <div className="text-sm text-blue-800 dark:text-blue-200">
-                        <p className="font-medium mb-1">Como funciona a consulta:</p>
+                        <p className="font-medium mb-1">
+                          Como funciona a consulta:
+                        </p>
                         <ul className="space-y-1 text-xs">
-                          <li>• Digite o número da OAB e o estado do advogado</li>
-                          <li>• O sistema buscará todos os projetos onde este advogado está atuando</li>
-                          <li>• Serão exibidos apenas projetos com status ativo</li>
-                          <li>• Clique em qualquer projeto para ver os detalhes completos</li>
+                          <li>
+                            • Digite o número da OAB e o estado do advogado
+                          </li>
+                          <li>
+                            • O sistema buscará todos os projetos onde este
+                            advogado está atuando
+                          </li>
+                          <li>
+                            • Serão exibidos apenas projetos com status ativo
+                          </li>
+                          <li>
+                            • Clique em qualquer projeto para ver os detalhes
+                            completos
+                          </li>
                         </ul>
                       </div>
                     </div>
@@ -605,7 +677,9 @@ export function Publications() {
                   <div className="flex items-center justify-center py-8">
                     <div className="text-center space-y-2">
                       <div className="animate-spin h-8 w-8 border-4 border-primary border-t-transparent rounded-full mx-auto"></div>
-                      <p className="text-sm text-muted-foreground">Consultando projetos...</p>
+                      <p className="text-sm text-muted-foreground">
+                        Consultando projetos...
+                      </p>
                     </div>
                   </div>
                 )}
@@ -616,7 +690,10 @@ export function Publications() {
                       <h3 className="text-lg font-semibold">
                         Projetos Encontrados ({searchResults.length})
                       </h3>
-                      <Badge variant="outline" className="text-green-600 border-green-600">
+                      <Badge
+                        variant="outline"
+                        className="text-green-600 border-green-600"
+                      >
                         Consulta realizada com sucesso
                       </Badge>
                     </div>
@@ -630,7 +707,9 @@ export function Publications() {
                         >
                           {/* Header do Card */}
                           <div className="flex items-center justify-between mb-3">
-                            <span className="text-xs text-muted-foreground font-medium">DATA DO PROJETO</span>
+                            <span className="text-xs text-muted-foreground font-medium">
+                              DATA DO PROJETO
+                            </span>
                             <div className="flex space-x-1">
                               <Button
                                 variant="ghost"
@@ -646,14 +725,20 @@ export function Publications() {
 
                           {/* Data */}
                           <div className="text-lg font-semibold mb-2">
-                            {project.dataUltimaMovimentacao?.toLocaleDateString('pt-BR') || '21/08/2025'}
+                            {project.dataUltimaMovimentacao?.toLocaleDateString(
+                              "pt-BR",
+                            ) || "21/08/2025"}
                           </div>
 
                           {/* Cliente */}
                           <div className="mb-3">
-                            <span className="text-xs text-muted-foreground font-medium">CLIENTE</span>
+                            <span className="text-xs text-muted-foreground font-medium">
+                              CLIENTE
+                            </span>
                             <div className="font-medium text-sm mt-1">
-                              <span className="text-blue-600">{project.cliente}</span>
+                              <span className="text-blue-600">
+                                {project.cliente}
+                              </span>
                             </div>
                             <div className="text-xs text-green-600 font-medium mt-1">
                               VISUALIZAR PROJETO
@@ -667,7 +752,9 @@ export function Publications() {
                             </div>
                             <div className="text-xs text-muted-foreground">
                               <strong>Status:</strong>
-                              <Badge className={`ml-1 ${getProcessStatusColor(project.status)} text-xs`}>
+                              <Badge
+                                className={`ml-1 ${getProcessStatusColor(project.status)} text-xs`}
+                              >
                                 {project.status}
                               </Badge>
                             </div>
@@ -680,7 +767,9 @@ export function Publications() {
                               <Button
                                 size="sm"
                                 className="w-full bg-blue-600 hover:bg-blue-700 text-white"
-                                onClick={() => handleViewProcessDetails(project)}
+                                onClick={() =>
+                                  handleViewProcessDetails(project)
+                                }
                               >
                                 Abrir Projeto
                               </Button>
@@ -698,10 +787,12 @@ export function Publications() {
                       <FileSearch className="h-12 w-12 mx-auto opacity-50" />
                       <p className="font-medium">Nenhum projeto encontrado</p>
                       <p className="text-sm">
-                        Não foram encontrados projetos para a OAB {oabNumber}/{oabState}
+                        Não foram encontrados projetos para a OAB {oabNumber}/
+                        {oabState}
                       </p>
                       <p className="text-xs">
-                        Verifique se o número da OAB está correto e tente novamente
+                        Verifique se o número da OAB está correto e tente
+                        novamente
                       </p>
                     </div>
                   </div>
@@ -729,7 +820,10 @@ export function Publications() {
                       <h3 className="text-lg font-semibold">
                         Projetos Arquivados ({archivedProjects.length})
                       </h3>
-                      <Badge variant="outline" className="text-gray-600 border-gray-600">
+                      <Badge
+                        variant="outline"
+                        className="text-gray-600 border-gray-600"
+                      >
                         📁 Arquivados
                       </Badge>
                     </div>
@@ -743,7 +837,9 @@ export function Publications() {
                         >
                           {/* Header do Card */}
                           <div className="flex items-center justify-between mb-3">
-                            <span className="text-xs text-muted-foreground font-medium">DATA DO PROJETO</span>
+                            <span className="text-xs text-muted-foreground font-medium">
+                              DATA DO PROJETO
+                            </span>
                             <div className="flex space-x-1">
                               <Button
                                 variant="ghost"
@@ -759,14 +855,20 @@ export function Publications() {
 
                           {/* Data */}
                           <div className="text-lg font-semibold mb-2">
-                            {project.dataUltimaMovimentacao?.toLocaleDateString('pt-BR') || '21/08/2025'}
+                            {project.dataUltimaMovimentacao?.toLocaleDateString(
+                              "pt-BR",
+                            ) || "21/08/2025"}
                           </div>
 
                           {/* Cliente */}
                           <div className="mb-3">
-                            <span className="text-xs text-muted-foreground font-medium">CLIENTE</span>
+                            <span className="text-xs text-muted-foreground font-medium">
+                              CLIENTE
+                            </span>
                             <div className="font-medium text-sm mt-1">
-                              <span className="text-blue-600">{project.cliente}</span>
+                              <span className="text-blue-600">
+                                {project.cliente}
+                              </span>
                             </div>
                             <div className="text-xs text-green-600 font-medium mt-1">
                               VISUALIZAR PROJETO
@@ -793,7 +895,10 @@ export function Publications() {
                             </div>
                             {project.dataArquivamento && (
                               <div className="text-xs text-muted-foreground">
-                                <strong>Arquivado em:</strong> {project.dataArquivamento.toLocaleDateString('pt-BR')}
+                                <strong>Arquivado em:</strong>{" "}
+                                {project.dataArquivamento.toLocaleDateString(
+                                  "pt-BR",
+                                )}
                               </div>
                             )}
 
@@ -803,7 +908,9 @@ export function Publications() {
                                 size="sm"
                                 variant="outline"
                                 className="w-full"
-                                onClick={() => handleViewProcessDetails(project)}
+                                onClick={() =>
+                                  handleViewProcessDetails(project)
+                                }
                               >
                                 Visualizar Projeto
                               </Button>
@@ -830,7 +937,6 @@ export function Publications() {
               </CardContent>
             </Card>
           </TabsContent>
-
         </Tabs>
 
         {/* Modal de Visualização de Processo */}
@@ -839,7 +945,6 @@ export function Publications() {
           open={showProcessDialog}
           onOpenChange={setShowProcessDialog}
         />
-
       </div>
     </DashboardLayout>
   );

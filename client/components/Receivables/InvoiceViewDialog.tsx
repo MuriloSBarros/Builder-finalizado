@@ -60,48 +60,57 @@ interface InvoiceViewDialogProps {
 
 const getStatusConfig = (status: InvoiceStatus) => {
   const configs = {
-    nova: { 
-      label: "Nova", 
-      className: "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200",
-      icon: FileText
+    nova: {
+      label: "Nova",
+      className:
+        "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200",
+      icon: FileText,
     },
-    pendente: { 
-      label: "Pendente", 
-      className: "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200",
-      icon: Clock
+    pendente: {
+      label: "Pendente",
+      className:
+        "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200",
+      icon: Clock,
     },
-    atribuida: { 
-      label: "Atribuída", 
-      className: "bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200",
-      icon: User
+    atribuida: {
+      label: "Atribuída",
+      className:
+        "bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200",
+      icon: User,
     },
-    paga: { 
-      label: "Paga", 
-      className: "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200",
-      icon: CheckCircle
+    paga: {
+      label: "Paga",
+      className:
+        "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200",
+      icon: CheckCircle,
     },
-    vencida: { 
-      label: "Vencida", 
+    vencida: {
+      label: "Vencida",
       className: "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200",
-      icon: AlertTriangle
+      icon: AlertTriangle,
     },
-    cancelada: { 
-      label: "Cancelada", 
-      className: "bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200",
-      icon: FileText
+    cancelada: {
+      label: "Cancelada",
+      className:
+        "bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200",
+      icon: FileText,
     },
-    processando: { 
-      label: "Processando", 
-      className: "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200",
-      icon: CreditCard
+    processando: {
+      label: "Processando",
+      className:
+        "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200",
+      icon: CreditCard,
     },
   };
-  
-  return configs[status] || {
-    label: status,
-    className: "bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200",
-    icon: FileText
-  };
+
+  return (
+    configs[status] || {
+      label: status,
+      className:
+        "bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200",
+      icon: FileText,
+    }
+  );
 };
 
 const calcularDiasVencimento = (dataVencimento: Date): number => {
@@ -111,9 +120,9 @@ const calcularDiasVencimento = (dataVencimento: Date): number => {
 };
 
 const formatCurrency = (value: number) => {
-  return new Intl.NumberFormat('pt-BR', {
-    style: 'currency',
-    currency: 'BRL'
+  return new Intl.NumberFormat("pt-BR", {
+    style: "currency",
+    currency: "BRL",
   }).format(value);
 };
 
@@ -126,10 +135,12 @@ export function InvoiceViewDialog({
   onNotify,
   onUpdateStatus,
   onSendNotification,
-  onSaveInvoice
+  onSaveInvoice,
 }: InvoiceViewDialogProps) {
   const [isEditing, setIsEditing] = useState(false);
-  const [selectedStatus, setSelectedStatus] = useState<InvoiceStatus>(invoice?.status || 'nova');
+  const [selectedStatus, setSelectedStatus] = useState<InvoiceStatus>(
+    invoice?.status || "nova",
+  );
   const [showNotificationModal, setShowNotificationModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
 
@@ -187,11 +198,11 @@ export function InvoiceViewDialog({
   };
 
   const statusOptions = [
-    { value: 'nova', label: 'Nova' },
-    { value: 'pendente', label: 'Pendente' },
-    { value: 'processando', label: 'Processando' },
-    { value: 'paga', label: 'Paga' },
-    { value: 'cancelada', label: 'Cancelada' },
+    { value: "nova", label: "Nova" },
+    { value: "pendente", label: "Pendente" },
+    { value: "processando", label: "Processando" },
+    { value: "paga", label: "Paga" },
+    { value: "cancelada", label: "Cancelada" },
   ];
 
   return (
@@ -211,12 +222,15 @@ export function InvoiceViewDialog({
               <div className="flex items-center space-x-4">
                 {isEditing ? (
                   <div className="flex items-center space-x-2">
-                    <Select value={selectedStatus} onValueChange={handleStatusChange}>
+                    <Select
+                      value={selectedStatus}
+                      onValueChange={handleStatusChange}
+                    >
                       <SelectTrigger className="w-40">
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
-                        {statusOptions.map(option => (
+                        {statusOptions.map((option) => (
                           <SelectItem key={option.value} value={option.value}>
                             {option.label}
                           </SelectItem>
@@ -233,7 +247,9 @@ export function InvoiceViewDialog({
                   </div>
                 ) : (
                   <div className="flex items-center space-x-2">
-                    <Badge className={`${statusConfig.className} px-3 py-1 flex items-center space-x-1`}>
+                    <Badge
+                      className={`${statusConfig.className} px-3 py-1 flex items-center space-x-1`}
+                    >
                       <StatusIcon className="h-3 w-3" />
                       <span>{statusConfig.label}</span>
                     </Badge>
@@ -252,20 +268,27 @@ export function InvoiceViewDialog({
                     🔄 Recorrente
                   </Badge>
                 )}
-                {(invoice.status === 'pendente' || invoice.status === 'nova') && (
+                {(invoice.status === "pendente" ||
+                  invoice.status === "nova") && (
                   <div className="flex items-center space-x-1 text-sm">
                     {diasVencimento < 0 ? (
                       <div className="flex items-center space-x-1 text-red-600">
                         <AlertTriangle className="h-4 w-4" />
-                        <span className="font-semibold">{Math.abs(diasVencimento)} dias em atraso</span>
+                        <span className="font-semibold">
+                          {Math.abs(diasVencimento)} dias em atraso
+                        </span>
                       </div>
                     ) : diasVencimento <= 3 ? (
                       <div className="flex items-center space-x-1 text-orange-600">
                         <Clock className="h-4 w-4" />
-                        <span className="font-semibold">Vence em {diasVencimento} dias</span>
+                        <span className="font-semibold">
+                          Vence em {diasVencimento} dias
+                        </span>
                       </div>
                     ) : (
-                      <span className="text-muted-foreground">Vence em {diasVencimento} dias</span>
+                      <span className="text-muted-foreground">
+                        Vence em {diasVencimento} dias
+                      </span>
                     )}
                   </div>
                 )}
@@ -275,22 +298,35 @@ export function InvoiceViewDialog({
                   <Edit className="h-4 w-4 mr-2" />
                   Editar
                 </Button>
-                {(invoice.status === 'pendente' || invoice.status === 'nova') && (
-                  <Button variant="outline" size="sm" onClick={handleOpenNotification}>
+                {(invoice.status === "pendente" ||
+                  invoice.status === "nova") && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={handleOpenNotification}
+                  >
                     <MessageSquare className="h-4 w-4 mr-2" />
                     Notificar
                   </Button>
                 )}
                 {invoice.linkPagamento && (
                   <Button variant="outline" size="sm" asChild>
-                    <a href={invoice.linkPagamento} target="_blank" rel="noopener noreferrer">
+                    <a
+                      href={invoice.linkPagamento}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
                       <ExternalLink className="h-4 w-4 mr-2" />
                       Abrir Pagamento
                     </a>
                   </Button>
                 )}
                 {onDelete && (
-                  <Button variant="destructive" size="sm" onClick={handleDelete}>
+                  <Button
+                    variant="destructive"
+                    size="sm"
+                    onClick={handleDelete}
+                  >
                     <Trash2 className="h-4 w-4 mr-2" />
                     Excluir
                   </Button>
@@ -359,11 +395,11 @@ export function InvoiceViewDialog({
                       <div>
                         <p className="text-sm font-medium">Data de Emissão</p>
                         <p className="text-sm text-muted-foreground">
-                          {invoice.dataEmissao.toLocaleDateString('pt-BR', {
-                            weekday: 'long',
-                            year: 'numeric',
-                            month: 'long',
-                            day: 'numeric'
+                          {invoice.dataEmissao.toLocaleDateString("pt-BR", {
+                            weekday: "long",
+                            year: "numeric",
+                            month: "long",
+                            day: "numeric",
                           })}
                         </p>
                       </div>
@@ -371,13 +407,15 @@ export function InvoiceViewDialog({
                     <div className="flex items-center space-x-3">
                       <Calendar className="h-4 w-4 text-muted-foreground" />
                       <div>
-                        <p className="text-sm font-medium">Data de Vencimento</p>
+                        <p className="text-sm font-medium">
+                          Data de Vencimento
+                        </p>
                         <p className="text-sm text-muted-foreground">
-                          {invoice.dataVencimento.toLocaleDateString('pt-BR', {
-                            weekday: 'long',
-                            year: 'numeric',
-                            month: 'long',
-                            day: 'numeric'
+                          {invoice.dataVencimento.toLocaleDateString("pt-BR", {
+                            weekday: "long",
+                            year: "numeric",
+                            month: "long",
+                            day: "numeric",
                           })}
                         </p>
                       </div>
@@ -386,13 +424,15 @@ export function InvoiceViewDialog({
                       <div className="flex items-center space-x-3">
                         <CheckCircle className="h-4 w-4 text-green-600" />
                         <div>
-                          <p className="text-sm font-medium">Data de Pagamento</p>
+                          <p className="text-sm font-medium">
+                            Data de Pagamento
+                          </p>
                           <p className="text-sm text-green-600">
-                            {invoice.dataPagamento.toLocaleDateString('pt-BR', {
-                              weekday: 'long',
-                              year: 'numeric',
-                              month: 'long',
-                              day: 'numeric'
+                            {invoice.dataPagamento.toLocaleDateString("pt-BR", {
+                              weekday: "long",
+                              year: "numeric",
+                              month: "long",
+                              day: "numeric",
                             })}
                           </p>
                         </div>
@@ -402,10 +442,15 @@ export function InvoiceViewDialog({
                       <div className="flex items-center space-x-3">
                         <Clock className="h-4 w-4 text-blue-600" />
                         <div>
-                          <p className="text-sm font-medium">Próxima Cobrança</p>
+                          <p className="text-sm font-medium">
+                            Próxima Cobrança
+                          </p>
                           <p className="text-sm text-blue-600">
-                            {invoice.proximaFaturaData.toLocaleDateString('pt-BR')} 
-                            {invoice.intervaloDias && ` (a cada ${invoice.intervaloDias} dias)`}
+                            {invoice.proximaFaturaData.toLocaleDateString(
+                              "pt-BR",
+                            )}
+                            {invoice.intervaloDias &&
+                              ` (a cada ${invoice.intervaloDias} dias)`}
                           </p>
                         </div>
                       </div>
@@ -492,19 +537,23 @@ export function InvoiceViewDialog({
                 <div className="bg-muted/30 p-4 rounded-lg space-y-2">
                   <div className="flex items-center justify-between text-sm">
                     <span>Tentativas de cobrança:</span>
-                    <span className="font-semibold">{invoice.tentativasCobranca}</span>
+                    <span className="font-semibold">
+                      {invoice.tentativasCobranca}
+                    </span>
                   </div>
                   {invoice.ultimaNotificacao && (
                     <div className="flex items-center justify-between text-sm">
                       <span>Última notificação:</span>
-                      <span>{invoice.ultimaNotificacao.toLocaleDateString('pt-BR')}</span>
+                      <span>
+                        {invoice.ultimaNotificacao.toLocaleDateString("pt-BR")}
+                      </span>
                     </div>
                   )}
                   {invoice.proximaNotificacao && (
                     <div className="flex items-center justify-between text-sm">
                       <span>Próxima notificação:</span>
                       <span className="text-orange-600">
-                        {invoice.proximaNotificacao.toLocaleDateString('pt-BR')}
+                        {invoice.proximaNotificacao.toLocaleDateString("pt-BR")}
                       </span>
                     </div>
                   )}
@@ -521,11 +570,11 @@ export function InvoiceViewDialog({
               </div>
               <div>
                 <p className="font-medium">Criado em</p>
-                <p>{invoice.criadoEm.toLocaleString('pt-BR')}</p>
+                <p>{invoice.criadoEm.toLocaleString("pt-BR")}</p>
               </div>
               <div>
                 <p className="font-medium">Última atualização</p>
-                <p>{invoice.atualizadoEm.toLocaleString('pt-BR')}</p>
+                <p>{invoice.atualizadoEm.toLocaleString("pt-BR")}</p>
               </div>
             </div>
           </div>
