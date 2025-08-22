@@ -128,18 +128,19 @@ export function InvoiceViewDialog({
   onSendNotification,
   onSaveInvoice
 }: InvoiceViewDialogProps) {
-
-  if (!invoice) return null;
-
   const [isEditing, setIsEditing] = useState(false);
-  const [selectedStatus, setSelectedStatus] = useState<InvoiceStatus>(invoice.status);
+  const [selectedStatus, setSelectedStatus] = useState<InvoiceStatus>(invoice?.status || 'nova');
   const [showNotificationModal, setShowNotificationModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
 
   // Sincronizar selectedStatus com o status da fatura quando ela mudar
   useEffect(() => {
-    setSelectedStatus(invoice.status);
-  }, [invoice.status]);
+    if (invoice?.status) {
+      setSelectedStatus(invoice.status);
+    }
+  }, [invoice?.status]);
+
+  if (!invoice) return null;
 
   const statusConfig = getStatusConfig(invoice.status);
   const StatusIcon = statusConfig.icon;
