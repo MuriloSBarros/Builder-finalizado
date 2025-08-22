@@ -6,7 +6,7 @@
  * Inclui todas as informações da fatura de forma organizada e funcional.
  */
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Dialog,
   DialogContent,
