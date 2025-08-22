@@ -1290,115 +1290,332 @@ export function Settings() {
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    {[
-                      { name: "Contrato de Honorários", status: "ativo" },
-                      { name: "Procuração Judicial", status: "ativo" },
-                      { name: "Acordo de Mediação", status: "ativo" },
-                      { name: "Termo de Confidencialidade", status: "ativo" },
-                      { name: "Contrato de Consultoria", status: "ativo" },
-                      { name: "Distrato", status: "arquivado" },
-                    ].map((template) => (
-                      <div
-                        key={template.name}
-                        className={`p-4 border rounded-lg space-y-2 ${template.status === 'arquivado' ? 'bg-muted/50 opacity-60' : ''}`}
+                    <div>
+                      <Label>Contrato de Honorários</Label>
+                      <Button
+                        variant="outline"
+                        className="w-full mt-2"
+                        onClick={() => {
+                          setCurrentTemplate("contrato_honorarios");
+                          setTemplateContent(`<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Contrato de Honorários - [NUMERO_CONTRATO]</title>
+    <style>
+        body { font-family: 'Times New Roman', serif; line-height: 1.6; color: #333; max-width: 800px; margin: 0 auto; padding: 40px; }
+        .header { text-align: center; margin-bottom: 40px; border-bottom: 2px solid #000; padding-bottom: 20px; }
+        .content { margin: 30px 0; text-align: justify; }
+        .signature-section { margin-top: 60px; }
+        .signature-line { border-bottom: 1px solid #000; width: 300px; margin: 40px auto; text-align: center; padding-top: 60px; }
+        .clause { margin: 20px 0; }
+        .clause-title { font-weight: bold; margin-bottom: 10px; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>📜 CONTRATO DE PRESTAÇÃO DE SERVIÇOS ADVOCATÍCIOS</h1>
+        <p><strong>Contrato Nº:</strong> [NUMERO_CONTRATO]</p>
+    </div>
+
+    <div class="content">
+        <p><strong>CONTRATANTE:</strong> [NOME_CLIENTE], portador do CPF/CNPJ [DOCUMENTO_CLIENTE], residente e domiciliado em [ENDERECO_CLIENTE].</p>
+
+        <p><strong>CONTRATADO:</strong> [NOME_EMPRESA], inscrito na OAB/[ESTADO_OAB] sob nº [NUMERO_OAB], com escritório localizado em [ENDERECO_ESCRITORIO].</p>
+
+        <div class="clause">
+            <div class="clause-title">CLÁUSULA 1ª - DO OBJETO</div>
+            <p>O presente contrato tem por objeto a prestação de serviços advocatícios pelo CONTRATADO ao CONTRATANTE, consistindo em: [DESCRICAO_SERVICOS].</p>
+        </div>
+
+        <div class="clause">
+            <div class="clause-title">CLÁUSULA 2ª - DOS HONORÁRIOS</div>
+            <p>Pelos serviços prestados, o CONTRATANTE pagará ao CONTRATADO o valor total de [VALOR_TOTAL], conforme as seguintes condições de pagamento: [CONDICOES_PAGAMENTO].</p>
+        </div>
+
+        <div class="clause">
+            <div class="clause-title">CLÁUSULA 3ª - DAS OBRIGAÇÕES</div>
+            <p>O CONTRATADO se obriga a prestar os serviços com zelo, diligência e conforme os ditames éticos da profissão, mantendo o CONTRATANTE informado sobre o andamento dos trabalhos.</p>
+        </div>
+
+        <div class="clause">
+            <div class="clause-title">CLÁUSULA 4ª - DO PRAZO</div>
+            <p>O presente contrato terá vigência de [DATA_INICIO] até [DATA_TERMINO], podendo ser prorrogado mediante acordo entre as partes.</p>
+        </div>
+
+        <p>E, por estarem assim justos e contratados, assinam o presente instrumento em duas vias de igual teor.</p>
+
+        <p style="text-align: center; margin-top: 40px;">[CIDADE], [DATA]</p>
+    </div>
+
+    <div class="signature-section">
+        <div class="signature-line">
+            <strong>[NOME_CLIENTE]</strong><br>
+            CONTRATANTE
+        </div>
+
+        <div class="signature-line">
+            <strong>[ASSINATURA_ADVOGADO]</strong><br>
+            OAB/[ESTADO_OAB] [NUMERO_OAB]<br>
+            CONTRATADO
+        </div>
+    </div>
+</body>
+</html>`);
+                          setShowTemplateModal(true);
+                        }}
                       >
-                        <div className="flex items-center justify-between">
-                          <div className="flex items-center space-x-2">
-                            <h4 className="font-medium">{template.name}</h4>
-                            {template.status === 'arquivado' && (
-                              <Badge variant="outline" className="text-xs">
-                                Arquivado
-                              </Badge>
-                            )}
-                          </div>
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => {
-                              alert(`Editando template: ${template.name}\n\nEm uma implementação real, abriria um editor de texto para modificar o template.`);
-                            }}
-                            disabled={template.status === 'arquivado'}
-                          >
-                            <Edit className="h-4 w-4 mr-2" />
-                            Editar
-                          </Button>
-                        </div>
-                        <p className="text-sm text-muted-foreground">
-                          Template padrão para {template.name.toLowerCase()}
-                        </p>
-                        <div className="flex justify-between">
-                          <div className="flex space-x-2">
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => {
-                                // Simular download do template
-                                const element = document.createElement('a');
-                                const file = new Blob([`Template: ${template.name}\n\nConteúdo do template...`], {type: 'text/plain'});
-                                element.href = URL.createObjectURL(file);
-                                element.download = `${template.name.replace(/\s+/g, '_')}.docx`;
-                                document.body.appendChild(element);
-                                element.click();
-                                document.body.removeChild(element);
-                                alert(`✅ Download do template "${template.name}" iniciado!`);
-                              }}
-                              disabled={template.status === 'arquivado'}
-                            >
-                              <Download className="h-4 w-4 mr-2" />
-                              Baixar
-                            </Button>
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => {
-                                const input = document.createElement('input');
-                                input.type = 'file';
-                                input.accept = '.docx,.pdf,.txt';
-                                input.onchange = (e) => {
-                                  const file = (e.target as HTMLInputElement).files?.[0];
-                                  if (file) {
-                                    alert(`✅ Template "${template.name}" atualizado com o arquivo: ${file.name}`);
-                                  }
-                                };
-                                input.click();
-                              }}
-                              disabled={template.status === 'arquivado'}
-                            >
-                              <Upload className="h-4 w-4 mr-2" />
-                              Atualizar
-                            </Button>
-                          </div>
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => {
-                              if (template.status === 'arquivado') {
-                                if (confirm(`Deseja desarquivar o template "${template.name}"?`)) {
-                                  alert(`✅ Template "${template.name}" desarquivado!`);
-                                }
-                              } else {
-                                if (confirm(`Deseja arquivar o template "${template.name}"? O template ficará inativo.`)) {
-                                  alert(`✅ Template "${template.name}" arquivado!`);
-                                }
-                              }
-                            }}
-                            className={template.status === 'arquivado' ? 'text-green-600 hover:text-green-700' : 'text-orange-600 hover:text-orange-700'}
-                          >
-                            {template.status === 'arquivado' ? (
-                              <>
-                                <Upload className="h-4 w-4 mr-2" />
-                                Desarquivar
-                              </>
-                            ) : (
-                              <>
-                                <SettingsIcon className="h-4 w-4 mr-2" />
-                                Arquivar
-                              </>
-                            )}
-                          </Button>
-                        </div>
-                      </div>
-                    ))}
+                        <Edit className="h-4 w-4 mr-2" />
+                        Editar Template
+                      </Button>
+                    </div>
+
+                    <div>
+                      <Label>Procuração Judicial</Label>
+                      <Button
+                        variant="outline"
+                        className="w-full mt-2"
+                        onClick={() => {
+                          setCurrentTemplate("procuracao_judicial");
+                          setTemplateContent(`<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Procuração Judicial - [NUMERO_PROCURACAO]</title>
+    <style>
+        body { font-family: 'Times New Roman', serif; line-height: 1.8; color: #333; max-width: 800px; margin: 0 auto; padding: 40px; }
+        .header { text-align: center; margin-bottom: 40px; border-bottom: 2px solid #000; padding-bottom: 20px; }
+        .content { margin: 30px 0; text-align: justify; }
+        .signature-section { margin-top: 60px; }
+        .signature-line { border-bottom: 1px solid #000; width: 300px; margin: 40px auto; text-align: center; padding-top: 60px; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>⚖️ PROCURAÇÃO JUDICIAL</h1>
+        <p><strong>Procuração Nº:</strong> [NUMERO_PROCURACAO]</p>
+    </div>
+
+    <div class="content">
+        <p><strong>OUTORGANTE:</strong> [NOME_CLIENTE], [ESTADO_CIVIL], [PROFISSAO], portador do CPF [DOCUMENTO_CLIENTE], residente e domiciliado em [ENDERECO_CLIENTE].</p>
+
+        <p><strong>OUTORGADO:</strong> [NOME_ADVOGADO], advogado inscrito na OAB/[ESTADO_OAB] sob nº [NUMERO_OAB], com escritório localizado em [ENDERECO_ESCRITORIO].</p>
+
+        <p>Pelo presente instrumento particular de mandato, o OUTORGANTE nomeia e constitui seu bastante procurador o OUTORGADO, conferindo-lhe os mais amplos poderes para representá-lo perante:</p>
+
+        <ul>
+            <li>Juízos e Tribunais de qualquer instância;</li>
+            <li>Repartições Públicas em geral;</li>
+            <li>Cartórios e Tabelionatos;</li>
+            <li>Órgãos da Administração Pública;</li>
+        </ul>
+
+        <p>Podendo especificamente: [PODERES_ESPECIFICOS]</p>
+
+        <p>promover todas as ações e medidas judiciais que se fizerem necessárias à defesa dos direitos e interesses do OUTORGANTE, substabelecendo esta procuração, no todo ou em parte, com ou sem reservas de iguais poderes.</p>
+
+        <p style="text-align: center; margin-top: 40px;">[CIDADE], [DATA]</p>
+    </div>
+
+    <div class="signature-section">
+        <div class="signature-line">
+            <strong>[NOME_CLIENTE]</strong><br>
+            OUTORGANTE
+        </div>
+
+        <div style="text-align: center; margin-top: 30px;">
+            <p><strong>Testemunhas:</strong></p>
+            <div style="display: flex; justify-content: space-around; margin-top: 40px;">
+                <div class="signature-line" style="width: 200px;">
+                    Nome: ________________<br>
+                    CPF: _________________
+                </div>
+                <div class="signature-line" style="width: 200px;">
+                    Nome: ________________<br>
+                    CPF: _________________
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>`);
+                          setShowTemplateModal(true);
+                        }}
+                      >
+                        <Edit className="h-4 w-4 mr-2" />
+                        Editar Template
+                      </Button>
+                    </div>
+
+                    <div>
+                      <Label>Acordo de Mediação</Label>
+                      <Button
+                        variant="outline"
+                        className="w-full mt-2"
+                        onClick={() => {
+                          setCurrentTemplate("acordo_mediacao");
+                          setTemplateContent(`<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Acordo de Mediação - [NUMERO_ACORDO]</title>
+    <style>
+        body { font-family: 'Times New Roman', serif; line-height: 1.6; color: #333; max-width: 800px; margin: 0 auto; padding: 40px; }
+        .header { text-align: center; margin-bottom: 40px; border-bottom: 2px solid #000; padding-bottom: 20px; }
+        .content { margin: 30px 0; text-align: justify; }
+        .signature-section { margin-top: 60px; }
+        .signature-line { border-bottom: 1px solid #000; width: 300px; margin: 40px auto; text-align: center; padding-top: 60px; }
+        .clause { margin: 20px 0; }
+        .clause-title { font-weight: bold; margin-bottom: 10px; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🤝 TERMO DE ACORDO DE MEDIAÇÃO</h1>
+        <p><strong>Acordo Nº:</strong> [NUMERO_ACORDO]</p>
+    </div>
+
+    <div class="content">
+        <p><strong>PRIMEIRA PARTE:</strong> [NOME_PARTE1], [QUALIFICACAO_PARTE1].</p>
+
+        <p><strong>SEGUNDA PARTE:</strong> [NOME_PARTE2], [QUALIFICACAO_PARTE2].</p>
+
+        <p><strong>MEDIADOR:</strong> [NOME_MEDIADOR], [QUALIFICACAO_MEDIADOR].</p>
+
+        <div class="clause">
+            <div class="clause-title">CLÁUSULA 1ª - DO OBJETO</div>
+            <p>As partes, em litígio referente a [OBJETO_LITIGIO], concordam em resolver a questão através de mediação, conforme os termos estabelecidos neste acordo.</p>
+        </div>
+
+        <div class="clause">
+            <div class="clause-title">CLÁUSULA 2ª - DAS OBRIGAÇÕES</div>
+            <p>[OBRIGACOES_PARTE1]</p>
+            <p>[OBRIGACOES_PARTE2]</p>
+        </div>
+
+        <div class="clause">
+            <div class="clause-title">CLÁUSULA 3ª - DOS PRAZOS</div>
+            <p>O cumprimento das obrigações estabelecidas neste acordo deverá ocorrer até [DATA_CUMPRIMENTO].</p>
+        </div>
+
+        <div class="clause">
+            <div class="clause-title">CLÁUSULA 4ª - DAS PENALIDADES</div>
+            <p>O descumprimento das cláusulas estabelecidas acarretará em [PENALIDADES].</p>
+        </div>
+
+        <p>E, por estarem assim justos e acordados, assinam o presente termo em duas vias de igual teor.</p>
+
+        <p style="text-align: center; margin-top: 40px;">[CIDADE], [DATA]</p>
+    </div>
+
+    <div class="signature-section">
+        <div class="signature-line">
+            <strong>[NOME_PARTE1]</strong><br>
+            PRIMEIRA PARTE
+        </div>
+
+        <div class="signature-line">
+            <strong>[NOME_PARTE2]</strong><br>
+            SEGUNDA PARTE
+        </div>
+
+        <div class="signature-line">
+            <strong>[NOME_MEDIADOR]</strong><br>
+            MEDIADOR
+        </div>
+    </div>
+</body>
+</html>`);
+                          setShowTemplateModal(true);
+                        }}
+                      >
+                        <Edit className="h-4 w-4 mr-2" />
+                        Editar Template
+                      </Button>
+                    </div>
+
+                    <div>
+                      <Label>Termo de Confidencialidade</Label>
+                      <Button
+                        variant="outline"
+                        className="w-full mt-2"
+                        onClick={() => {
+                          setCurrentTemplate("termo_confidencialidade");
+                          setTemplateContent(`<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Termo de Confidencialidade - [NUMERO_TERMO]</title>
+    <style>
+        body { font-family: 'Times New Roman', serif; line-height: 1.6; color: #333; max-width: 800px; margin: 0 auto; padding: 40px; }
+        .header { text-align: center; margin-bottom: 40px; border-bottom: 2px solid #000; padding-bottom: 20px; }
+        .content { margin: 30px 0; text-align: justify; }
+        .signature-section { margin-top: 60px; }
+        .signature-line { border-bottom: 1px solid #000; width: 300px; margin: 40px auto; text-align: center; padding-top: 60px; }
+        .clause { margin: 20px 0; }
+        .clause-title { font-weight: bold; margin-bottom: 10px; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🔒 TERMO DE CONFIDENCIALIDADE</h1>
+        <p><strong>Termo Nº:</strong> [NUMERO_TERMO]</p>
+    </div>
+
+    <div class="content">
+        <p><strong>PARTE REVELADORA:</strong> [NOME_REVELADORA], [QUALIFICACAO_REVELADORA].</p>
+
+        <p><strong>PARTE RECEPTORA:</strong> [NOME_RECEPTORA], [QUALIFICACAO_RECEPTORA].</p>
+
+        <div class="clause">
+            <div class="clause-title">CLÁUSULA 1ª - DAS INFORMAÇÕES CONFIDENCIAIS</div>
+            <p>Para os fins deste termo, consideram-se informações confidenciais: [DEFINICAO_INFORMACOES].</p>
+        </div>
+
+        <div class="clause">
+            <div class="clause-title">CLÁUSULA 2ª - DAS OBRIGAÇÕES</div>
+            <p>A PARTE RECEPTORA compromete-se a manter absoluto sigilo sobre as informações confidenciais recebidas, não podendo divulgá-las a terceiros sem autorização expressa e por escrito da PARTE REVELADORA.</p>
+        </div>
+
+        <div class="clause">
+            <div class="clause-title">CLÁUSULA 3ª - DO PRAZO</div>
+            <p>O presente termo de confidencialidade terá vigência de [PRAZO_VIGENCIA], contados a partir da data de sua assinatura.</p>
+        </div>
+
+        <div class="clause">
+            <div class="clause-title">CLÁUSULA 4ª - DAS PENALIDADES</div>
+            <p>O descumprimento do presente termo acarretará o pagamento de multa no valor de [VALOR_MULTA], sem prejuízo das demais sanções legais aplicáveis.</p>
+        </div>
+
+        <p>E, por estarem assim justos e acordados, assinam o presente termo em duas vias de igual teor.</p>
+
+        <p style="text-align: center; margin-top: 40px;">[CIDADE], [DATA]</p>
+    </div>
+
+    <div class="signature-section">
+        <div class="signature-line">
+            <strong>[NOME_REVELADORA]</strong><br>
+            PARTE REVELADORA
+        </div>
+
+        <div class="signature-line">
+            <strong>[NOME_RECEPTORA]</strong><br>
+            PARTE RECEPTORA
+        </div>
+    </div>
+</body>
+</html>`);
+                          setShowTemplateModal(true);
+                        }}
+                      >
+                        <Edit className="h-4 w-4 mr-2" />
+                        Editar Template
+                      </Button>
+                    </div>
                   </div>
 
                 </CardContent>
