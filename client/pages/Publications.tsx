@@ -160,11 +160,12 @@ export function Publications() {
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
 
-  // Estados para consulta de processos
+  // Estados para consulta de projetos
   const [oabNumber, setOabNumber] = useState("");
   const [oabState, setOabState] = useState("");
   const [isSearching, setIsSearching] = useState(false);
   const [searchResults, setSearchResults] = useState<any[]>([]);
+  const [archivedProjects, setArchivedProjects] = useState<any[]>([]);
   const [hasSearched, setHasSearched] = useState(false);
   const [showProcessDialog, setShowProcessDialog] = useState(false);
   const [viewingProcess, setViewingProcess] = useState<any>(null);
@@ -205,37 +206,61 @@ export function Publications() {
     pub.varaComarca.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  // Dados mock de processos para consulta
-  const mockProcessResults = [
+  // Dados mock de projetos para consulta
+  const mockProjectResults = [
     {
       id: "1",
-      numero: "0001234-56.2024.8.26.0100",
-      cliente: "João Silva Santos",
+      numero: "PROJ-2025-001",
+      cliente: "LUAN SANTOS MELO",
       vara: "1ª Vara Cível - São Paulo/SP",
       status: "Em Andamento",
-      ultimaMovimentacao: "Despacho ordenando citação",
-      dataUltimaMovimentacao: new Date("2024-01-15"),
-      advogado: "123456/SP"
+      ultimaMovimentacao: "Análise documental em progresso",
+      dataUltimaMovimentacao: new Date("2025-01-21"),
+      advogado: "123456/SP",
+      tipo: "Ação Trabalhista",
+      valor: "R$ 45.000,00"
     },
     {
       id: "2",
-      numero: "0002345-67.2024.8.26.0200",
-      cliente: "Maria Oliveira Costa",
-      vara: "2ª Vara Criminal - Rio de Janeiro/RJ",
-      status: "Aguardando Julgamento",
-      ultimaMovimentacao: "Conclusão ao juiz para sentença",
-      dataUltimaMovimentacao: new Date("2024-01-10"),
-      advogado: "123456/SP"
+      numero: "PROJ-2025-002",
+      cliente: "LUIZ ANSELMO",
+      vara: "2ª Vara Trabalhista - São Paulo/SP",
+      status: "Aguardando Documentos",
+      ultimaMovimentacao: "Solicitação de documentos complementares",
+      dataUltimaMovimentacao: new Date("2025-01-20"),
+      advogado: "123456/SP",
+      tipo: "Revisão Contratual",
+      valor: "R$ 28.500,00"
+    }
+  ];
+
+  // Dados mock de projetos arquivados
+  const mockArchivedProjects = [
+    {
+      id: "arch1",
+      numero: "PROJ-2024-089",
+      cliente: "EDSON DE ANDRADE CARVALHO",
+      vara: "3ª Vara Cível - Rio de Janeiro/RJ",
+      status: "Finalizado",
+      ultimaMovimentacao: "Projeto concluído com sucesso",
+      dataUltimaMovimentacao: new Date("2024-12-15"),
+      advogado: "123456/SP",
+      tipo: "Consultoria Empresarial",
+      valor: "R$ 65.000,00",
+      dataArquivamento: new Date("2024-12-20")
     },
     {
-      id: "3",
-      numero: "0003456-78.2024.8.26.0300",
-      cliente: "Carlos Eduardo Lima",
+      id: "arch2",
+      numero: "PROJ-2024-067",
+      cliente: "LIZIANO LEITE DE AZEVEDO",
       vara: "Vara de Família - Brasília/DF",
       status: "Finalizado",
-      ultimaMovimentacao: "Sentença proferida",
-      dataUltimaMovimentacao: new Date("2024-01-05"),
-      advogado: "123456/SP"
+      ultimaMovimentacao: "Acordo homologado",
+      dataUltimaMovimentacao: new Date("2024-11-28"),
+      advogado: "123456/SP",
+      tipo: "Mediação Familiar",
+      valor: "R$ 18.000,00",
+      dataArquivamento: new Date("2024-12-05")
     }
   ];
 
@@ -256,10 +281,10 @@ export function Publications() {
       // Simular tempo de consulta
       await new Promise(resolve => setTimeout(resolve, 2000));
 
-      // Filtrar processos mock baseado na OAB (simulação)
+      // Filtrar projetos mock baseado na OAB (simulação)
       const searchQuery = `${oabNumber}/${oabState}`;
-      const filteredResults = mockProcessResults.filter(process =>
-        process.advogado === searchQuery
+      const filteredResults = mockProjectResults.filter(project =>
+        project.advogado === searchQuery
       );
 
       setSearchResults(filteredResults);
@@ -285,28 +310,58 @@ export function Publications() {
     alert(`Abrindo processo ${process.numero} no sistema do tribunal`);
   };
 
-  const handleArchiveProcess = (process: any) => {
-    if (confirm(`Deseja arquivar o processo ${process.numero}?\n\nO processo será movido para a seção de processos arquivados.`)) {
-      // Aqui você implementaria a lógica para arquivar o processo
-      // BACKEND: POST /api/processos/{id}/arquivar
-      console.log("Arquivando processo:", process);
+  const handleArchiveProcess = (project: any) => {
+    if (confirm(`Deseja arquivar o projeto ${project.numero}?\n\nO projeto será movido para a seção de projetos arquivados.`)) {
+      // Aqui você implementaria a lógica para arquivar o projeto
+      // BACKEND: POST /api/projetos/{id}/arquivar
+      console.log("Arquivando projeto:", project);
 
-      // Atualizar a lista removendo o processo arquivado
-      setSearchResults(prev => prev.filter(p => p.id !== process.id));
+      // Adicionar à lista de arquivados
+      const archivedProject = {
+        ...project,
+        dataArquivamento: new Date(),
+        status: "Arquivado"
+      };
+      setArchivedProjects(prev => [archivedProject, ...prev]);
 
-      alert(`✅ Processo ${process.numero} arquivado com sucesso!\n\nO processo foi movido para a seção de arquivados.`);
+      // Remover da lista ativa
+      setSearchResults(prev => prev.filter(p => p.id !== project.id));
+
+      alert(`✅ Projeto ${project.numero} arquivado com sucesso!\n\nO projeto foi movido para a seção de arquivados.`);
+    }
+  };
+
+  const handleRestoreProject = (project: any) => {
+    if (confirm(`Deseja restaurar o projeto ${project.numero}?\n\nO projeto será movido de volta para a seção ativa.`)) {
+      // Restaurar projeto
+      const restoredProject = {
+        ...project,
+        status: "Em Andamento"
+      };
+      delete restoredProject.dataArquivamento;
+
+      setSearchResults(prev => [restoredProject, ...prev]);
+      setArchivedProjects(prev => prev.filter(p => p.id !== project.id));
+
+      alert(`✅ Projeto ${project.numero} restaurado com sucesso!`);
     }
   };
 
   const getProcessStatusColor = (status: string) => {
     const colors: Record<string, string> = {
       "Em Andamento": "bg-blue-100 text-blue-800 border-blue-200",
-      "Aguardando Julgamento": "bg-yellow-100 text-yellow-800 border-yellow-200",
+      "Aguardando Documentos": "bg-yellow-100 text-yellow-800 border-yellow-200",
       "Finalizado": "bg-green-100 text-green-800 border-green-200",
+      "Arquivado": "bg-gray-100 text-gray-800 border-gray-200",
       "Suspenso": "bg-red-100 text-red-800 border-red-200",
     };
     return colors[status] || "bg-gray-100 text-gray-800 border-gray-200";
   };
+
+  // Carregar projetos arquivados na inicialização
+  React.useEffect(() => {
+    setArchivedProjects(mockArchivedProjects);
+  }, []);
 
   return (
     <DashboardLayout>
