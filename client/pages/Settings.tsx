@@ -1401,42 +1401,6 @@ export function Settings() {
                     ))}
                   </div>
 
-                  {/* Seção de Arquivar Processo */}
-                  <div className="border-t pt-6">
-                    <h3 className="text-lg font-medium mb-4">Arquivar Processo</h3>
-                    <div className="bg-muted/30 p-4 rounded-lg">
-                      <div className="space-y-3">
-                        <p className="text-sm text-muted-foreground">
-                          Use esta funcionalidade para arquivar processos finalizados ou inativos.
-                        </p>
-                        <div className="flex items-center space-x-4">
-                          <Input
-                            placeholder="Digite o número do processo..."
-                            className="flex-1"
-                            id="archive-process-input"
-                          />
-                          <Button
-                            onClick={() => {
-                              const input = document.getElementById('archive-process-input') as HTMLInputElement;
-                              const processNumber = input?.value;
-                              if (processNumber) {
-                                if (confirm(`Deseja arquivar o processo ${processNumber}?\n\nEsta ação moverá o processo para a seção de arquivados.`)) {
-                                  alert(`✅ Processo ${processNumber} arquivado com sucesso!\n\n📁 O processo foi movido para a seção de arquivados.`);
-                                  input.value = '';
-                                }
-                              } else {
-                                alert('Por favor, digite o número do processo.');
-                              }
-                            }}
-                            className="bg-orange-600 hover:bg-orange-700"
-                          >
-                            <SettingsIcon className="h-4 w-4 mr-2" />
-                            Arquivar Processo
-                          </Button>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
                 </CardContent>
               </Card>
 
