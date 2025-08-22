@@ -136,6 +136,11 @@ export function InvoiceViewDialog({
   const [showNotificationModal, setShowNotificationModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
 
+  // Sincronizar selectedStatus com o status da fatura quando ela mudar
+  useEffect(() => {
+    setSelectedStatus(invoice.status);
+  }, [invoice.status]);
+
   const statusConfig = getStatusConfig(invoice.status);
   const StatusIcon = statusConfig.icon;
   const diasVencimento = calcularDiasVencimento(invoice.dataVencimento);
