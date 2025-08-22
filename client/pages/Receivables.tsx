@@ -487,6 +487,22 @@ export function Receivables() {
           : inv
       )
     );
+
+    // Feedback visual para o usuário
+    const statusLabels = {
+      nova: "Nova",
+      pendente: "Pendente",
+      processando: "Processando",
+      paga: "Paga",
+      vencida: "Vencida",
+      cancelada: "Cancelada"
+    };
+
+    const statusLabel = statusLabels[newStatus as keyof typeof statusLabels] || newStatus;
+    console.log(`✅ Status da fatura ${invoice.numeroFatura} alterado para: ${statusLabel}`);
+
+    // Se em produção, você pode usar um toast aqui ao invés de alert
+    // toast.success(`Status alterado para: ${statusLabel}`);
   };
 
   // Gerar lista de clientes baseada nas faturas
