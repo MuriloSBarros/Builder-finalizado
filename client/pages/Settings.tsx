@@ -1291,7 +1291,7 @@ export function Settings() {
                 <CardContent className="space-y-4">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
-                      <Label>Contrato de Honorários</Label>
+                      <Label>Contrato de Honor��rios</Label>
                       <Button
                         variant="outline"
                         className="w-full mt-2"
@@ -2021,6 +2021,64 @@ export function Settings() {
                         <code className="bg-white px-1 rounded">
                           [FORMA_PAGAMENTO]
                         </code>
+                      </>
+                    )}
+                    {currentTemplate === "contrato_honorarios" && (
+                      <>
+                        <code className="bg-white px-1 rounded">[NUMERO_CONTRATO]</code>
+                        <code className="bg-white px-1 rounded">[ENDERECO_CLIENTE]</code>
+                        <code className="bg-white px-1 rounded">[NUMERO_OAB]</code>
+                        <code className="bg-white px-1 rounded">[ESTADO_OAB]</code>
+                        <code className="bg-white px-1 rounded">[ENDERECO_ESCRITORIO]</code>
+                        <code className="bg-white px-1 rounded">[CONDICOES_PAGAMENTO]</code>
+                        <code className="bg-white px-1 rounded">[DATA_INICIO]</code>
+                        <code className="bg-white px-1 rounded">[DATA_TERMINO]</code>
+                        <code className="bg-white px-1 rounded">[CIDADE]</code>
+                        <code className="bg-white px-1 rounded">[ASSINATURA_ADVOGADO]</code>
+                      </>
+                    )}
+                    {currentTemplate === "procuracao_judicial" && (
+                      <>
+                        <code className="bg-white px-1 rounded">[NUMERO_PROCURACAO]</code>
+                        <code className="bg-white px-1 rounded">[ESTADO_CIVIL]</code>
+                        <code className="bg-white px-1 rounded">[PROFISSAO]</code>
+                        <code className="bg-white px-1 rounded">[ENDERECO_CLIENTE]</code>
+                        <code className="bg-white px-1 rounded">[NOME_ADVOGADO]</code>
+                        <code className="bg-white px-1 rounded">[NUMERO_OAB]</code>
+                        <code className="bg-white px-1 rounded">[ESTADO_OAB]</code>
+                        <code className="bg-white px-1 rounded">[ENDERECO_ESCRITORIO]</code>
+                        <code className="bg-white px-1 rounded">[PODERES_ESPECIFICOS]</code>
+                        <code className="bg-white px-1 rounded">[CIDADE]</code>
+                      </>
+                    )}
+                    {currentTemplate === "acordo_mediacao" && (
+                      <>
+                        <code className="bg-white px-1 rounded">[NUMERO_ACORDO]</code>
+                        <code className="bg-white px-1 rounded">[NOME_PARTE1]</code>
+                        <code className="bg-white px-1 rounded">[QUALIFICACAO_PARTE1]</code>
+                        <code className="bg-white px-1 rounded">[NOME_PARTE2]</code>
+                        <code className="bg-white px-1 rounded">[QUALIFICACAO_PARTE2]</code>
+                        <code className="bg-white px-1 rounded">[NOME_MEDIADOR]</code>
+                        <code className="bg-white px-1 rounded">[QUALIFICACAO_MEDIADOR]</code>
+                        <code className="bg-white px-1 rounded">[OBJETO_LITIGIO]</code>
+                        <code className="bg-white px-1 rounded">[OBRIGACOES_PARTE1]</code>
+                        <code className="bg-white px-1 rounded">[OBRIGACOES_PARTE2]</code>
+                        <code className="bg-white px-1 rounded">[DATA_CUMPRIMENTO]</code>
+                        <code className="bg-white px-1 rounded">[PENALIDADES]</code>
+                        <code className="bg-white px-1 rounded">[CIDADE]</code>
+                      </>
+                    )}
+                    {currentTemplate === "termo_confidencialidade" && (
+                      <>
+                        <code className="bg-white px-1 rounded">[NUMERO_TERMO]</code>
+                        <code className="bg-white px-1 rounded">[NOME_REVELADORA]</code>
+                        <code className="bg-white px-1 rounded">[QUALIFICACAO_REVELADORA]</code>
+                        <code className="bg-white px-1 rounded">[NOME_RECEPTORA]</code>
+                        <code className="bg-white px-1 rounded">[QUALIFICACAO_RECEPTORA]</code>
+                        <code className="bg-white px-1 rounded">[DEFINICAO_INFORMACOES]</code>
+                        <code className="bg-white px-1 rounded">[PRAZO_VIGENCIA]</code>
+                        <code className="bg-white px-1 rounded">[VALOR_MULTA]</code>
+                        <code className="bg-white px-1 rounded">[CIDADE]</code>
                       </>
                     )}
                   </div>
