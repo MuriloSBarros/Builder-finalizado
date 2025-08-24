@@ -1,4 +1,5 @@
 import "./global.css";
+import "@/lib/global-error-suppression"; // Must be imported first
 
 import { Toaster } from "@/components/ui/toaster";
 import { createRoot } from "react-dom/client";
@@ -19,34 +20,53 @@ import { Settings } from "./pages/Settings";
 import { Notifications } from "./pages/Notifications";
 import { Login } from "./pages/Login";
 import NotFound from "./pages/NotFound";
+import { initializeResizeObserverFix } from "@/lib/resize-observer-fix";
+import {
+  UIErrorBoundary,
+  useResizeObserverErrorHandler,
+} from "@/lib/error-boundary";
+
+// Initialize ResizeObserver error suppression
+initializeResizeObserverFix();
 
 const queryClient = new QueryClient();
 
+const AppContent = () => {
+  // Handle ResizeObserver errors globally
+  useResizeObserverErrorHandler();
+
+  return (
+    <QueryClientProvider client={queryClient}>
+      <TooltipProvider>
+        <Toaster />
+        <Sonner />
+        <BrowserRouter>
+          <Routes>
+            <Route path="/" element={<Dashboard />} />
+            <Route path="/crm" element={<CRM />} />
+            <Route path="/projetos" element={<Projects />} />
+            <Route path="/tarefas" element={<Tasks />} />
+            <Route path="/cobranca" element={<Billing />} />
+            <Route path="/recebiveis" element={<Receivables />} />
+            <Route path="/fluxo-caixa" element={<CashFlow />} />
+            <Route path="/publicacoes" element={<Publications />} />
+            <Route path="/publicacoes/:id" element={<PublicationDetail />} />
+            <Route path="/configuracoes" element={<Settings />} />
+            <Route path="/notificacoes" element={<Notifications />} />
+            <Route path="/login" element={<Login />} />
+            {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+            <Route path="*" element={<NotFound />} />
+          </Routes>
+        </BrowserRouter>
+      </TooltipProvider>
+    </QueryClientProvider>
+  );
+};
+
 const App = () => (
-  <QueryClientProvider client={queryClient}>
-    <TooltipProvider>
-      <Toaster />
-      <Sonner />
-      <BrowserRouter>
-        <Routes>
-          <Route path="/" element={<Dashboard />} />
-          <Route path="/crm" element={<CRM />} />
-          <Route path="/projetos" element={<Projects />} />
-          <Route path="/tarefas" element={<Tasks />} />
-          <Route path="/cobranca" element={<Billing />} />
-          <Route path="/recebiveis" element={<Receivables />} />
-          <Route path="/fluxo-caixa" element={<CashFlow />} />
-          <Route path="/publicacoes" element={<Publications />} />
-          <Route path="/publicacoes/:id" element={<PublicationDetail />} />
-          <Route path="/configuracoes" element={<Settings />} />
-          <Route path="/notificacoes" element={<Notifications />} />
-          <Route path="/login" element={<Login />} />
-          {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-          <Route path="*" element={<NotFound />} />
-        </Routes>
-      </BrowserRouter>
-    </TooltipProvider>
-  </QueryClientProvider>
+  <UIErrorBoundary>
+    <AppContent />
+  </UIErrorBoundary>
 );
 
 createRoot(document.getElementById("root")!).render(<App />);

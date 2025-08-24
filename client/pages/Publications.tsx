@@ -22,16 +22,23 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { 
-  Newspaper, 
-  Search, 
-  Filter, 
-  Eye, 
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  Newspaper,
+  Search,
+  Filter,
+  Eye,
   Plus,
   FileSearch,
   Calendar,
   Building2,
-  Scale
+  Scale,
 } from "lucide-react";
 import { Publication, PublicationStatus } from "@/types/publications";
 import { ProcessViewDialog } from "@/components/Publications/ProcessViewDialog";
@@ -62,7 +69,7 @@ const mockPublications: Publication[] = [
     nomePesquisado: "João Silva Santos",
     status: "nova", // Status inicial de publicações da API
     conteudo: "Intimação para audiência de conciliação...",
-    urgencia: "alta"
+    urgencia: "alta",
   },
   {
     id: "2",
@@ -73,7 +80,7 @@ const mockPublications: Publication[] = [
     nomePesquisado: "Maria Oliveira Costa",
     status: "pendente", // Já foi visualizada
     conteudo: "Sentença publicada nos autos...",
-    urgencia: "media"
+    urgencia: "media",
   },
   {
     id: "3",
@@ -84,7 +91,7 @@ const mockPublications: Publication[] = [
     nomePesquisado: "Carlos Eduardo Lima",
     status: "descartada",
     conteudo: "Publicação não relacionada ao caso...",
-    urgencia: "baixa"
+    urgencia: "baixa",
   },
   {
     id: "4",
@@ -102,8 +109,8 @@ const mockPublications: Publication[] = [
       nome: "Dr. Silva",
       email: "silva@escritorio.com",
       cargo: "Gerente",
-      ativo: true
-    }
+      ativo: true,
+    },
   },
 ];
 
@@ -112,28 +119,31 @@ const getStatusBadge = (status: PublicationStatus) => {
     nova: {
       label: "Nova",
       variant: "default" as const,
-      color: "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200"
+      color: "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200",
     },
     pendente: {
       label: "Pendente",
       variant: "secondary" as const,
-      color: "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200"
+      color:
+        "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200",
     },
     atribuida: {
       label: "Atribuída",
       variant: "outline" as const,
-      color: "bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200"
+      color:
+        "bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200",
     },
     finalizada: {
       label: "Finalizada",
       variant: "outline" as const,
-      color: "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200"
+      color:
+        "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200",
     },
     descartada: {
       label: "Descartada",
       variant: "destructive" as const,
-      color: "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200"
-    }
+      color: "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200",
+    },
   };
 
   return statusConfig[status];
@@ -141,10 +151,14 @@ const getStatusBadge = (status: PublicationStatus) => {
 
 const getUrgencyColor = (urgencia?: string) => {
   switch (urgencia) {
-    case 'alta': return 'text-red-600';
-    case 'media': return 'text-yellow-600';
-    case 'baixa': return 'text-green-600';
-    default: return 'text-gray-600';
+    case "alta":
+      return "text-red-600";
+    case "media":
+      return "text-yellow-600";
+    case "baixa":
+      return "text-green-600";
+    default:
+      return "text-gray-600";
   }
 };
 
@@ -153,20 +167,23 @@ export function Publications() {
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
 
-  // Estados para consulta de processos
+  // Estados para consulta de projetos
   const [oabNumber, setOabNumber] = useState("");
   const [oabState, setOabState] = useState("");
   const [isSearching, setIsSearching] = useState(false);
   const [searchResults, setSearchResults] = useState<any[]>([]);
+  const [archivedProjects, setArchivedProjects] = useState<any[]>([]);
   const [hasSearched, setHasSearched] = useState(false);
   const [showProcessDialog, setShowProcessDialog] = useState(false);
   const [viewingProcess, setViewingProcess] = useState<any>(null);
 
   const handleViewPublication = (publication: Publication) => {
     // BACKEND: Implementar mudança automática de status NOVA -> PENDENTE
-    if (publication.status === 'nova') {
+    if (publication.status === "nova") {
       // Fazer PATCH /api/publicacoes/{id}/status para mudar para 'pendente'
-      console.log(`Mudando status da publicação ${publication.id} de NOVA para PENDENTE`);
+      console.log(
+        `Mudando status da publicação ${publication.id} de NOVA para PENDENTE`,
+      );
     }
     navigate(`/publicacoes/${publication.id}`);
   };
@@ -178,58 +195,83 @@ export function Publications() {
       // const response = await fetch('/api/publicacoes/carregar');
       // const newPublications = await response.json();
 
-      console.log('Carregando novas publicações da API...');
+      console.log("Carregando novas publicações da API...");
 
       // Simular carregamento
-      await new Promise(resolve => setTimeout(resolve, 2000));
+      await new Promise((resolve) => setTimeout(resolve, 2000));
 
       // TODO: Atualizar estado com novas publicações
-      console.log('Publicações carregadas com sucesso!');
+      console.log("Publicações carregadas com sucesso!");
     } catch (error) {
-      console.error('Erro ao carregar publicações:', error);
+      console.error("Erro ao carregar publicações:", error);
     } finally {
       setIsLoading(false);
     }
   };
 
-  const filteredPublications = mockPublications.filter(pub =>
-    pub.processo.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    pub.nomePesquisado.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    pub.varaComarca.toLowerCase().includes(searchTerm.toLowerCase())
+  const filteredPublications = mockPublications.filter(
+    (pub) =>
+      pub.processo.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      pub.nomePesquisado.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      pub.varaComarca.toLowerCase().includes(searchTerm.toLowerCase()),
   );
 
-  // Dados mock de processos para consulta
-  const mockProcessResults = [
+  // Dados mock de projetos para consulta
+  const mockProjectResults = [
     {
       id: "1",
-      numero: "0001234-56.2024.8.26.0100",
-      cliente: "João Silva Santos",
+      numero: "PROJ-2025-001",
+      cliente: "LUAN SANTOS MELO",
       vara: "1ª Vara Cível - São Paulo/SP",
       status: "Em Andamento",
-      ultimaMovimentacao: "Despacho ordenando citação",
-      dataUltimaMovimentacao: new Date("2024-01-15"),
-      advogado: "123456/SP"
+      ultimaMovimentacao: "Análise documental em progresso",
+      dataUltimaMovimentacao: new Date("2025-01-21"),
+      advogado: "123456/SP",
+      tipo: "Ação Trabalhista",
+      valor: "R$ 45.000,00",
     },
     {
       id: "2",
-      numero: "0002345-67.2024.8.26.0200",
-      cliente: "Maria Oliveira Costa",
-      vara: "2ª Vara Criminal - Rio de Janeiro/RJ",
-      status: "Aguardando Julgamento",
-      ultimaMovimentacao: "Conclusão ao juiz para sentença",
-      dataUltimaMovimentacao: new Date("2024-01-10"),
-      advogado: "123456/SP"
+      numero: "PROJ-2025-002",
+      cliente: "LUIZ ANSELMO",
+      vara: "2ª Vara Trabalhista - São Paulo/SP",
+      status: "Aguardando Documentos",
+      ultimaMovimentacao: "Solicitação de documentos complementares",
+      dataUltimaMovimentacao: new Date("2025-01-20"),
+      advogado: "123456/SP",
+      tipo: "Revisão Contratual",
+      valor: "R$ 28.500,00",
+    },
+  ];
+
+  // Dados mock de projetos arquivados
+  const mockArchivedProjects = [
+    {
+      id: "arch1",
+      numero: "PROJ-2024-089",
+      cliente: "EDSON DE ANDRADE CARVALHO",
+      vara: "3ª Vara Cível - Rio de Janeiro/RJ",
+      status: "Finalizado",
+      ultimaMovimentacao: "Projeto concluído com sucesso",
+      dataUltimaMovimentacao: new Date("2024-12-15"),
+      advogado: "123456/SP",
+      tipo: "Consultoria Empresarial",
+      valor: "R$ 65.000,00",
+      dataArquivamento: new Date("2024-12-20"),
     },
     {
-      id: "3",
-      numero: "0003456-78.2024.8.26.0300",
-      cliente: "Carlos Eduardo Lima",
+      id: "arch2",
+      numero: "PROJ-2024-067",
+      cliente: "LIZIANO LEITE DE AZEVEDO",
       vara: "Vara de Família - Brasília/DF",
       status: "Finalizado",
-      ultimaMovimentacao: "Sentença proferida",
-      dataUltimaMovimentacao: new Date("2024-01-05"),
-      advogado: "123456/SP"
-    }
+      ultimaMovimentacao: "Acordo homologado",
+      dataUltimaMovimentacao: new Date("2024-11-28"),
+      advogado: "123456/SP",
+      tipo: "Mediação Familiar",
+      valor: "R$ 18.000,00",
+      dataArquivamento: new Date("2024-12-05"),
+    },
   ];
 
   const handleSearchProcesses = async () => {
@@ -247,18 +289,21 @@ export function Publications() {
       // const processes = await response.json();
 
       // Simular tempo de consulta
-      await new Promise(resolve => setTimeout(resolve, 2000));
+      await new Promise((resolve) => setTimeout(resolve, 2000));
 
-      // Filtrar processos mock baseado na OAB (simulação)
+      // Filtrar projetos mock baseado na OAB (simulação)
       const searchQuery = `${oabNumber}/${oabState}`;
-      const filteredResults = mockProcessResults.filter(process =>
-        process.advogado === searchQuery
+      const filteredResults = mockProjectResults.filter(
+        (project) => project.advogado === searchQuery,
       );
 
       setSearchResults(filteredResults);
       setHasSearched(true);
 
-      console.log(`Consulta realizada para OAB: ${searchQuery}`, filteredResults);
+      console.log(
+        `Consulta realizada para OAB: ${searchQuery}`,
+        filteredResults,
+      );
     } catch (error) {
       console.error("Erro ao consultar processos:", error);
       alert("Erro ao consultar processos. Tente novamente.");
@@ -278,15 +323,69 @@ export function Publications() {
     alert(`Abrindo processo ${process.numero} no sistema do tribunal`);
   };
 
+  const handleArchiveProcess = (project: any) => {
+    if (
+      confirm(
+        `Deseja arquivar o projeto ${project.numero}?\n\nO projeto será movido para a seção de projetos arquivados.`,
+      )
+    ) {
+      // Aqui você implementaria a lógica para arquivar o projeto
+      // BACKEND: POST /api/projetos/{id}/arquivar
+      console.log("Arquivando projeto:", project);
+
+      // Adicionar à lista de arquivados
+      const archivedProject = {
+        ...project,
+        dataArquivamento: new Date(),
+        status: "Arquivado",
+      };
+      setArchivedProjects((prev) => [archivedProject, ...prev]);
+
+      // Remover da lista ativa
+      setSearchResults((prev) => prev.filter((p) => p.id !== project.id));
+
+      alert(
+        `✅ Projeto ${project.numero} arquivado com sucesso!\n\nO projeto foi movido para a seção de arquivados.`,
+      );
+    }
+  };
+
+  const handleRestoreProject = (project: any) => {
+    if (
+      confirm(
+        `Deseja restaurar o projeto ${project.numero}?\n\nO projeto será movido de volta para a seção ativa.`,
+      )
+    ) {
+      // Restaurar projeto
+      const restoredProject = {
+        ...project,
+        status: "Em Andamento",
+      };
+      delete restoredProject.dataArquivamento;
+
+      setSearchResults((prev) => [restoredProject, ...prev]);
+      setArchivedProjects((prev) => prev.filter((p) => p.id !== project.id));
+
+      alert(`✅ Projeto ${project.numero} restaurado com sucesso!`);
+    }
+  };
+
   const getProcessStatusColor = (status: string) => {
     const colors: Record<string, string> = {
       "Em Andamento": "bg-blue-100 text-blue-800 border-blue-200",
-      "Aguardando Julgamento": "bg-yellow-100 text-yellow-800 border-yellow-200",
-      "Finalizado": "bg-green-100 text-green-800 border-green-200",
-      "Suspenso": "bg-red-100 text-red-800 border-red-200",
+      "Aguardando Documentos":
+        "bg-yellow-100 text-yellow-800 border-yellow-200",
+      Finalizado: "bg-green-100 text-green-800 border-green-200",
+      Arquivado: "bg-gray-100 text-gray-800 border-gray-200",
+      Suspenso: "bg-red-100 text-red-800 border-red-200",
     };
     return colors[status] || "bg-gray-100 text-gray-800 border-gray-200";
   };
+
+  // Carregar projetos arquivados na inicialização
+  React.useEffect(() => {
+    setArchivedProjects(mockArchivedProjects);
+  }, []);
 
   return (
     <DashboardLayout>
@@ -299,14 +398,27 @@ export function Publications() {
         </div>
 
         <Tabs defaultValue="publicacoes" className="space-y-4">
-          <TabsList className="grid w-full grid-cols-2">
-            <TabsTrigger value="publicacoes" className="flex items-center space-x-2">
+          <TabsList className="grid w-full grid-cols-3">
+            <TabsTrigger
+              value="publicacoes"
+              className="flex items-center space-x-2"
+            >
               <Newspaper className="h-4 w-4" />
               <span>Publicações</span>
             </TabsTrigger>
-            <TabsTrigger value="consultar" className="flex items-center space-x-2">
+            <TabsTrigger
+              value="consultar"
+              className="flex items-center space-x-2"
+            >
               <FileSearch className="h-4 w-4" />
-              <span>Consultar Cliente/Processos</span>
+              <span>Consultar Cliente/Projetos</span>
+            </TabsTrigger>
+            <TabsTrigger
+              value="arquivados"
+              className="flex items-center space-x-2"
+            >
+              <Building2 className="h-4 w-4" />
+              <span>Arquivados</span>
             </TabsTrigger>
           </TabsList>
 
@@ -374,7 +486,7 @@ export function Publications() {
                       {filteredPublications.map((publication) => {
                         const statusConfig = getStatusBadge(publication.status);
                         return (
-                          <TableRow 
+                          <TableRow
                             key={publication.id}
                             className="cursor-pointer hover:bg-muted/50"
                             onClick={() => handleViewPublication(publication)}
@@ -382,7 +494,11 @@ export function Publications() {
                             <TableCell className="font-medium">
                               <div className="flex items-center space-x-2">
                                 <Calendar className="h-4 w-4 text-muted-foreground" />
-                                <span>{publication.dataPublicacao.toLocaleDateString('pt-BR')}</span>
+                                <span>
+                                  {publication.dataPublicacao.toLocaleDateString(
+                                    "pt-BR",
+                                  )}
+                                </span>
                               </div>
                             </TableCell>
                             <TableCell className="font-mono text-sm">
@@ -392,19 +508,25 @@ export function Publications() {
                             <TableCell>
                               <div className="flex items-center space-x-2">
                                 <Building2 className="h-4 w-4 text-muted-foreground" />
-                                <span className="text-sm">{publication.varaComarca}</span>
+                                <span className="text-sm">
+                                  {publication.varaComarca}
+                                </span>
                               </div>
                             </TableCell>
                             <TableCell className="font-medium">
                               {publication.nomePesquisado}
                             </TableCell>
                             <TableCell>
-                              <Badge className={`${statusConfig.color} px-2 py-1 text-xs font-medium`}>
+                              <Badge
+                                className={`${statusConfig.color} px-2 py-1 text-xs font-medium`}
+                              >
                                 {statusConfig.label}
                               </Badge>
                             </TableCell>
                             <TableCell>
-                              <span className={`text-xs font-medium ${getUrgencyColor(publication.urgencia)}`}>
+                              <span
+                                className={`text-xs font-medium ${getUrgencyColor(publication.urgencia)}`}
+                              >
                                 {publication.urgencia?.toUpperCase()}
                               </span>
                             </TableCell>
@@ -430,16 +552,17 @@ export function Publications() {
             </Card>
           </TabsContent>
 
-          {/* ABA CONSULTAR CLIENTE/PROCESSOS */}
+          {/* ABA CONSULTAR CLIENTE/PROJETOS */}
           <TabsContent value="consultar" className="space-y-4">
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center space-x-2">
                   <FileSearch className="h-5 w-5" />
-                  <span>Consultar Cliente/Processos</span>
+                  <span>Consultar Cliente/Projetos</span>
                 </CardTitle>
                 <p className="text-sm text-muted-foreground">
-                  Digite o número da OAB do advogado para consultar os processos atribuídos
+                  Digite o número da OAB do advogado para consultar os projetos
+                  atribuídos
                 </p>
               </CardHeader>
               <CardContent className="space-y-6">
@@ -447,7 +570,9 @@ export function Publications() {
                 <div className="space-y-4">
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <div className="space-y-2">
-                      <label className="text-sm font-medium">Número da OAB</label>
+                      <label className="text-sm font-medium">
+                        Número da OAB
+                      </label>
                       <Input
                         placeholder="Ex: 123456/SP"
                         value={oabNumber}
@@ -468,24 +593,38 @@ export function Publications() {
                           <SelectItem value="AM">Amazonas (AM)</SelectItem>
                           <SelectItem value="BA">Bahia (BA)</SelectItem>
                           <SelectItem value="CE">Ceará (CE)</SelectItem>
-                          <SelectItem value="DF">Distrito Federal (DF)</SelectItem>
-                          <SelectItem value="ES">Espírito Santo (ES)</SelectItem>
+                          <SelectItem value="DF">
+                            Distrito Federal (DF)
+                          </SelectItem>
+                          <SelectItem value="ES">
+                            Espírito Santo (ES)
+                          </SelectItem>
                           <SelectItem value="GO">Goiás (GO)</SelectItem>
                           <SelectItem value="MA">Maranhão (MA)</SelectItem>
                           <SelectItem value="MT">Mato Grosso (MT)</SelectItem>
-                          <SelectItem value="MS">Mato Grosso do Sul (MS)</SelectItem>
+                          <SelectItem value="MS">
+                            Mato Grosso do Sul (MS)
+                          </SelectItem>
                           <SelectItem value="MG">Minas Gerais (MG)</SelectItem>
                           <SelectItem value="PA">Pará (PA)</SelectItem>
                           <SelectItem value="PB">Paraíba (PB)</SelectItem>
                           <SelectItem value="PR">Paraná (PR)</SelectItem>
                           <SelectItem value="PE">Pernambuco (PE)</SelectItem>
                           <SelectItem value="PI">Piauí (PI)</SelectItem>
-                          <SelectItem value="RJ">Rio de Janeiro (RJ)</SelectItem>
-                          <SelectItem value="RN">Rio Grande do Norte (RN)</SelectItem>
-                          <SelectItem value="RS">Rio Grande do Sul (RS)</SelectItem>
+                          <SelectItem value="RJ">
+                            Rio de Janeiro (RJ)
+                          </SelectItem>
+                          <SelectItem value="RN">
+                            Rio Grande do Norte (RN)
+                          </SelectItem>
+                          <SelectItem value="RS">
+                            Rio Grande do Sul (RS)
+                          </SelectItem>
                           <SelectItem value="RO">Rondônia (RO)</SelectItem>
                           <SelectItem value="RR">Roraima (RR)</SelectItem>
-                          <SelectItem value="SC">Santa Catarina (SC)</SelectItem>
+                          <SelectItem value="SC">
+                            Santa Catarina (SC)
+                          </SelectItem>
                           <SelectItem value="SP">São Paulo (SP)</SelectItem>
                           <SelectItem value="SE">Sergipe (SE)</SelectItem>
                           <SelectItem value="TO">Tocantins (TO)</SelectItem>
@@ -499,7 +638,7 @@ export function Publications() {
                         className="w-full"
                       >
                         <Search className="h-4 w-4 mr-2" />
-                        Consultar Processos
+                        Consultar Projetos
                       </Button>
                     </div>
                   </div>
@@ -509,12 +648,24 @@ export function Publications() {
                     <div className="flex items-start space-x-3">
                       <Scale className="h-5 w-5 text-blue-600 dark:text-blue-400 mt-0.5 flex-shrink-0" />
                       <div className="text-sm text-blue-800 dark:text-blue-200">
-                        <p className="font-medium mb-1">Como funciona a consulta:</p>
+                        <p className="font-medium mb-1">
+                          Como funciona a consulta:
+                        </p>
                         <ul className="space-y-1 text-xs">
-                          <li>• Digite o número da OAB e o estado do advogado</li>
-                          <li>• O sistema buscará todos os processos onde este advogado está atuando</li>
-                          <li>• Serão exibidos apenas processos com status ativo</li>
-                          <li>• Clique em qualquer processo para ver os detalhes completos</li>
+                          <li>
+                            • Digite o número da OAB e o estado do advogado
+                          </li>
+                          <li>
+                            • O sistema buscará todos os projetos onde este
+                            advogado está atuando
+                          </li>
+                          <li>
+                            • Serão exibidos apenas projetos com status ativo
+                          </li>
+                          <li>
+                            • Clique em qualquer projeto para ver os detalhes
+                            completos
+                          </li>
                         </ul>
                       </div>
                     </div>
@@ -526,7 +677,9 @@ export function Publications() {
                   <div className="flex items-center justify-center py-8">
                     <div className="text-center space-y-2">
                       <div className="animate-spin h-8 w-8 border-4 border-primary border-t-transparent rounded-full mx-auto"></div>
-                      <p className="text-sm text-muted-foreground">Consultando processos...</p>
+                      <p className="text-sm text-muted-foreground">
+                        Consultando projetos...
+                      </p>
                     </div>
                   </div>
                 )}
@@ -535,92 +688,91 @@ export function Publications() {
                   <div className="space-y-4">
                     <div className="flex items-center justify-between">
                       <h3 className="text-lg font-semibold">
-                        Processos Encontrados ({searchResults.length})
+                        Projetos Encontrados ({searchResults.length})
                       </h3>
-                      <Badge variant="outline" className="text-green-600 border-green-600">
+                      <Badge
+                        variant="outline"
+                        className="text-green-600 border-green-600"
+                      >
                         Consulta realizada com sucesso
                       </Badge>
                     </div>
 
                     {/* Layout de Cards lado a lado */}
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                      {searchResults.map((process) => (
+                      {searchResults.map((project) => (
                         <div
-                          key={process.id}
-                          className="border rounded-lg p-4 cursor-pointer hover:shadow-md transition-shadow bg-white"
-                          onClick={() => handleViewProcessDetails(process)}
+                          key={project.id}
+                          className="border rounded-lg p-4 hover:shadow-md transition-shadow bg-white dark:bg-card"
                         >
                           {/* Header do Card */}
                           <div className="flex items-center justify-between mb-3">
-                            <span className="text-xs text-muted-foreground">DATA DO PROCESSO</span>
+                            <span className="text-xs text-muted-foreground font-medium">
+                              DATA DO PROJETO
+                            </span>
                             <div className="flex space-x-1">
                               <Button
                                 variant="ghost"
                                 size="sm"
-                                className="h-6 w-6 p-0"
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  handleViewProcessDetails(process);
-                                }}
+                                className="h-6 w-6 p-0 text-gray-500 hover:text-gray-700"
+                                onClick={() => handleArchiveProcess(project)}
+                                title="Arquivar"
                               >
-                                📋
-                              </Button>
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                className="h-6 w-6 p-0"
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  alert("Arquivar processo");
-                                }}
-                              >
-                                🗂️
+                                📁
                               </Button>
                             </div>
                           </div>
 
                           {/* Data */}
-                          <div className="text-lg font-semibold mb-1">
-                            {process.dataUltimaMovimentacao?.toLocaleDateString('pt-BR') || '21/08/2025'}
+                          <div className="text-lg font-semibold mb-2">
+                            {project.dataUltimaMovimentacao?.toLocaleDateString(
+                              "pt-BR",
+                            ) || "21/08/2025"}
                           </div>
 
                           {/* Cliente */}
-                          <div className="mb-2">
-                            <span className="text-xs text-muted-foreground">CLIENTE</span>
-                            <div className="font-medium text-sm">
-                              <span className="text-green-600">{process.cliente}</span>
+                          <div className="mb-3">
+                            <span className="text-xs text-muted-foreground font-medium">
+                              CLIENTE
+                            </span>
+                            <div className="font-medium text-sm mt-1">
+                              <span className="text-blue-600">
+                                {project.cliente}
+                              </span>
                             </div>
-                          </div>
-
-                          {/* Badges de Status */}
-                          <div className="space-y-1">
-                            <div className="flex items-center space-x-1 text-xs">
-                              <span className="w-2 h-2 bg-blue-500 rounded-full"></span>
-                              <span>RESUMO DO PROCESSO</span>
-                            </div>
-                            <div className="flex items-center space-x-1 text-xs">
-                              <span className="w-2 h-2 bg-green-500 rounded-full"></span>
-                              <span>PROCESSO DETALHADO</span>
-                            </div>
-                            <div className="flex items-center space-x-1 text-xs">
-                              <span className="w-2 h-2 bg-orange-500 rounded-full"></span>
-                              <span>PARECER TÉCNICO</span>
+                            <div className="text-xs text-green-600 font-medium mt-1">
+                              VISUALIZAR PROJETO
                             </div>
                           </div>
 
                           {/* Informações Adicionais */}
-                          <div className="mt-3 pt-3 border-t">
-                            <div className="text-xs text-muted-foreground mb-1">
-                              <strong>Número:</strong> {process.numero}
+                          <div className="mt-3 pt-3 border-t space-y-2">
+                            <div className="text-xs text-muted-foreground">
+                              <strong>Número:</strong> {project.numero}
                             </div>
-                            <div className="text-xs text-muted-foreground mb-1">
+                            <div className="text-xs text-muted-foreground">
                               <strong>Status:</strong>
-                              <Badge className={`ml-1 ${getProcessStatusColor(process.status)} text-xs`}>
-                                {process.status}
+                              <Badge
+                                className={`ml-1 ${getProcessStatusColor(project.status)} text-xs`}
+                              >
+                                {project.status}
                               </Badge>
                             </div>
                             <div className="text-xs text-muted-foreground">
-                              <strong>Vara:</strong> {process.vara}
+                              <strong>Vara:</strong> {project.vara}
+                            </div>
+
+                            {/* Botão Abrir Projeto */}
+                            <div className="mt-3 pt-2">
+                              <Button
+                                size="sm"
+                                className="w-full bg-blue-600 hover:bg-blue-700 text-white"
+                                onClick={() =>
+                                  handleViewProcessDetails(project)
+                                }
+                              >
+                                Abrir Projeto
+                              </Button>
                             </div>
                           </div>
                         </div>
@@ -633,12 +785,151 @@ export function Publications() {
                   <div className="text-center py-8 text-muted-foreground">
                     <div className="space-y-2">
                       <FileSearch className="h-12 w-12 mx-auto opacity-50" />
-                      <p className="font-medium">Nenhum processo encontrado</p>
+                      <p className="font-medium">Nenhum projeto encontrado</p>
                       <p className="text-sm">
-                        Não foram encontrados processos para a OAB {oabNumber}/{oabState}
+                        Não foram encontrados projetos para a OAB {oabNumber}/
+                        {oabState}
                       </p>
                       <p className="text-xs">
-                        Verifique se o número da OAB está correto e tente novamente
+                        Verifique se o número da OAB está correto e tente
+                        novamente
+                      </p>
+                    </div>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          {/* ABA PROJETOS ARQUIVADOS */}
+          <TabsContent value="arquivados" className="space-y-4">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center space-x-2">
+                  <Building2 className="h-5 w-5" />
+                  <span>Projetos Arquivados</span>
+                </CardTitle>
+                <p className="text-sm text-muted-foreground">
+                  Projetos que foram finalizados e arquivados
+                </p>
+              </CardHeader>
+              <CardContent>
+                {archivedProjects.length > 0 ? (
+                  <div className="space-y-4">
+                    <div className="flex items-center justify-between">
+                      <h3 className="text-lg font-semibold">
+                        Projetos Arquivados ({archivedProjects.length})
+                      </h3>
+                      <Badge
+                        variant="outline"
+                        className="text-gray-600 border-gray-600"
+                      >
+                        📁 Arquivados
+                      </Badge>
+                    </div>
+
+                    {/* Layout de Cards lado a lado */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                      {archivedProjects.map((project) => (
+                        <div
+                          key={project.id}
+                          className="border rounded-lg p-4 hover:shadow-md transition-shadow bg-gray-50 dark:bg-gray-800"
+                        >
+                          {/* Header do Card */}
+                          <div className="flex items-center justify-between mb-3">
+                            <span className="text-xs text-muted-foreground font-medium">
+                              DATA DO PROJETO
+                            </span>
+                            <div className="flex space-x-1">
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                className="h-6 w-6 p-0 text-green-600 hover:text-green-700"
+                                onClick={() => handleRestoreProject(project)}
+                                title="Restaurar Projeto"
+                              >
+                                ↩️
+                              </Button>
+                            </div>
+                          </div>
+
+                          {/* Data */}
+                          <div className="text-lg font-semibold mb-2">
+                            {project.dataUltimaMovimentacao?.toLocaleDateString(
+                              "pt-BR",
+                            ) || "21/08/2025"}
+                          </div>
+
+                          {/* Cliente */}
+                          <div className="mb-3">
+                            <span className="text-xs text-muted-foreground font-medium">
+                              CLIENTE
+                            </span>
+                            <div className="font-medium text-sm mt-1">
+                              <span className="text-blue-600">
+                                {project.cliente}
+                              </span>
+                            </div>
+                            <div className="text-xs text-green-600 font-medium mt-1">
+                              VISUALIZAR PROJETO
+                            </div>
+                          </div>
+
+                          {/* Status de Arquivado */}
+                          <div className="mb-3">
+                            <Badge className="bg-gray-100 text-gray-800 border-gray-200 text-xs">
+                              📁 Arquivado
+                            </Badge>
+                          </div>
+
+                          {/* Informações Adicionais */}
+                          <div className="mt-3 pt-3 border-t space-y-2">
+                            <div className="text-xs text-muted-foreground">
+                              <strong>Número:</strong> {project.numero}
+                            </div>
+                            <div className="text-xs text-muted-foreground">
+                              <strong>Tipo:</strong> {project.tipo}
+                            </div>
+                            <div className="text-xs text-muted-foreground">
+                              <strong>Valor:</strong> {project.valor}
+                            </div>
+                            {project.dataArquivamento && (
+                              <div className="text-xs text-muted-foreground">
+                                <strong>Arquivado em:</strong>{" "}
+                                {project.dataArquivamento.toLocaleDateString(
+                                  "pt-BR",
+                                )}
+                              </div>
+                            )}
+
+                            {/* Botão Abrir Projeto */}
+                            <div className="mt-3 pt-2">
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                className="w-full"
+                                onClick={() =>
+                                  handleViewProcessDetails(project)
+                                }
+                              >
+                                Visualizar Projeto
+                              </Button>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                ) : (
+                  <div className="text-center py-8 text-muted-foreground">
+                    <div className="space-y-2">
+                      <Building2 className="h-12 w-12 mx-auto opacity-50" />
+                      <p className="font-medium">Nenhum projeto arquivado</p>
+                      <p className="text-sm">
+                        Os projetos arquivados aparecerão aqui
+                      </p>
+                      <p className="text-xs">
+                        Arquive projetos finalizados para manter a organização
                       </p>
                     </div>
                   </div>
@@ -654,7 +945,6 @@ export function Publications() {
           open={showProcessDialog}
           onOpenChange={setShowProcessDialog}
         />
-
       </div>
     </DashboardLayout>
   );

@@ -156,6 +156,7 @@ interface PipelineListViewProps {
   onEditDeal: (deal: Deal) => void;
   onDeleteDeal: (dealId: string) => void;
   onMoveDeal: (dealId: string, newStage: DealStage) => void;
+  onViewDeal: (deal: Deal) => void;
 }
 
 function PipelineListView({
@@ -164,6 +165,7 @@ function PipelineListView({
   onEditDeal,
   onDeleteDeal,
   onMoveDeal,
+  onViewDeal,
 }: PipelineListViewProps) {
   const getStageInfo = (stageId: string) => {
     const stage = stages.find((s) => s.id === stageId);
@@ -243,6 +245,10 @@ function PipelineListView({
                       </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end">
+                      <DropdownMenuItem onClick={() => onViewDeal(deal)}>
+                        <Eye className="h-4 w-4 mr-2" />
+                        Visualizar
+                      </DropdownMenuItem>
                       <DropdownMenuItem onClick={() => onEditDeal(deal)}>
                         <Edit className="h-4 w-4 mr-2" />
                         Editar
@@ -290,6 +296,7 @@ export function CRM() {
   const [deals, setDeals] = useState<Deal[]>(mockDeals);
   const [selectedClients, setSelectedClients] = useState<string[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
+  const [dealSearchTerm, setDealSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [advancedFilters, setAdvancedFilters] = useState<any>(null);
   const [pipelineViewMode, setPipelineViewMode] = useState<"kanban" | "list">(
@@ -359,6 +366,17 @@ export function CRM() {
     });
   }, [clients, searchTerm, statusFilter, advancedFilters]);
 
+  // Filter deals based on search term
+  const filteredDeals = useMemo(() => {
+    return deals.filter((deal) => {
+      const matchesSearch =
+        deal.title.toLowerCase().includes(dealSearchTerm.toLowerCase()) ||
+        deal.contactName.toLowerCase().includes(dealSearchTerm.toLowerCase()) ||
+        deal.organization?.toLowerCase().includes(dealSearchTerm.toLowerCase());
+      return matchesSearch;
+    });
+  }, [deals, dealSearchTerm]);
+
   // Initial pipeline stages configuration
   // PIPELINE SIMPLIFICADO: Apenas 4 estágios conforme solicitado
   const [pipelineStagesConfig, setPipelineStagesConfig] = useState([
@@ -374,7 +392,7 @@ export function CRM() {
   // Pipeline stages with deals
   const pipelineStages: PipelineStage[] = pipelineStagesConfig.map((stage) => ({
     ...stage,
-    deals: deals.filter((deal) => deal.stage === stage.id),
+    deals: filteredDeals.filter((deal) => deal.stage === stage.id),
   }));
 
   const handleSubmitClient = (data: any) => {
@@ -400,17 +418,17 @@ export function CRM() {
       // NOVIDADE: Enviar notificação quando novo cliente for cadastrado
       // Em produção, isso seria uma chamada para API de notificações
       console.log("📢 NOTIFICAÇÃO ENVIADA: Novo cliente cadastrado", {
-        type: 'info',
-        title: 'Novo Cliente Cadastrado',
+        type: "info",
+        title: "Novo Cliente Cadastrado",
         message: `${newClient.name} foi adicionado ao CRM`,
-        category: 'client',
-        createdBy: 'Usuário Atual', // Em produção: pegar do contexto de auth
+        category: "client",
+        createdBy: "Usuário Atual", // Em produção: pegar do contexto de auth
         clientData: {
           id: newClient.id,
           name: newClient.name,
           email: newClient.email,
-          tags: newClient.tags
-        }
+          tags: newClient.tags,
+        },
       });
 
       // FUTURO: Integração com sistema de notificações
@@ -528,19 +546,19 @@ export function CRM() {
       // NOVIDADE: Enviar notificação quando novo negócio for adicionado ao Pipeline
       // Em produção, isso seria uma chamada para API de notificações
       console.log("📢 NOTIFICAÇÃO ENVIADA: Novo negócio no pipeline", {
-        type: 'info',
-        title: 'Novo Negócio Adicionado',
+        type: "info",
+        title: "Novo Negócio Adicionado",
         message: `${newDeal.title} foi adicionado ao Pipeline de Vendas`,
-        category: 'pipeline',
-        createdBy: 'Usuário Atual', // Em produção: pegar do contexto de auth
+        category: "pipeline",
+        createdBy: "Usuário Atual", // Em produção: pegar do contexto de auth
         dealData: {
           id: newDeal.id,
           title: newDeal.title,
           contactName: newDeal.contactName,
           stage: newDeal.stage,
           budget: newDeal.budget,
-          tags: newDeal.tags
-        }
+          tags: newDeal.tags,
+        },
       });
 
       // FUTURO: Integração com sistema de notificações
@@ -807,6 +825,18 @@ export function CRM() {
                 </div>
               </CardHeader>
               <CardContent>
+                {/* Search filter for deals */}
+                <div className="mb-4">
+                  <div className="relative max-w-md">
+                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                    <Input
+                      placeholder="Procurar por título do negócio..."
+                      className="pl-10"
+                      value={dealSearchTerm}
+                      onChange={(e) => setDealSearchTerm(e.target.value)}
+                    />
+                  </div>
+                </div>
                 {pipelineViewMode === "kanban" ? (
                   <Pipeline
                     stages={pipelineStages}
@@ -818,11 +848,12 @@ export function CRM() {
                   />
                 ) : (
                   <PipelineListView
-                    deals={deals}
+                    deals={filteredDeals}
                     stages={pipelineStages}
                     onEditDeal={handleEditDeal}
                     onDeleteDeal={handleDeleteDeal}
                     onMoveDeal={handleMoveDeal}
+                    onViewDeal={handleViewDeal}
                   />
                 )}
               </CardContent>
@@ -840,9 +871,7 @@ export function CRM() {
           existingTags={
             /* Extrair todas as tags únicas dos clientes existentes */
             Array.from(
-              new Set(
-                clients.flatMap(client => client.tags || [])
-              )
+              new Set(clients.flatMap((client) => client.tags || [])),
             ).sort()
           }
         />
@@ -855,9 +884,7 @@ export function CRM() {
           existingTags={
             /* IMPLEMENTAÇÃO MELHORADA: Extrair todas as tags únicas dos clientes existentes */
             Array.from(
-              new Set(
-                clients.flatMap(client => client.tags || [])
-              )
+              new Set(clients.flatMap((client) => client.tags || [])),
             ).sort()
           }
         />

@@ -59,18 +59,18 @@ import {
   Building2,
   User,
 } from "lucide-react";
-import { 
-  Invoice, 
-  InvoiceStatus, 
-  ClienteCobranca, 
+import {
+  Invoice,
+  InvoiceStatus,
+  ClienteCobranca,
   DashboardRecebiveis,
-  NotificacaoAutomatica 
+  NotificacaoAutomatica,
 } from "@/types/receivables";
 
 /**
  * DADOS MOCK PARA DEMONSTRAÇÃO
  * ============================
- * 
+ *
  * BACKEND: Estes dados virão das seguintes APIs:
  * - GET /api/recebiveis/dashboard - Estatísticas gerais
  * - GET /api/recebiveis/faturas - Lista de faturas com filtros
@@ -95,7 +95,7 @@ const mockDashboard: DashboardRecebiveis = {
   faturasVencidas: [],
   faturamentoMensal: 142800,
   crescimentoMensal: 22.4,
-  clientesAtivos: 84
+  clientesAtivos: 84,
 };
 
 const mockInvoices: Invoice[] = [
@@ -235,7 +235,7 @@ const mockClientes: ClienteCobranca[] = [
       numero: "1000",
       bairro: "Bela Vista",
       cidade: "São Paulo",
-      estado: "SP"
+      estado: "SP",
     },
     stripeCustomerId: "cus_stripe123",
     receberWhatsApp: true,
@@ -260,7 +260,7 @@ const mockClientes: ClienteCobranca[] = [
       numero: "500",
       bairro: "Vila Mariana",
       cidade: "São Paulo",
-      estado: "SP"
+      estado: "SP",
     },
     receberWhatsApp: true,
     receberEmail: false,
@@ -276,35 +276,43 @@ const getStatusBadge = (status: InvoiceStatus) => {
   const configs = {
     nova: {
       label: "Nova",
-      className: "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200"
+      className:
+        "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200",
     },
     pendente: {
       label: "Pendente",
-      className: "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200"
+      className: "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200",
     },
     atribuida: {
       label: "Atribuída",
-      className: "bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200"
+      className:
+        "bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200",
     },
     paga: {
       label: "Paga",
-      className: "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200"
+      className:
+        "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200",
     },
     cancelada: {
       label: "Cancelada",
-      className: "bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200"
+      className:
+        "bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200",
     },
     processando: {
       label: "Processando",
-      className: "bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200"
+      className:
+        "bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200",
     },
   };
 
   // Fallback para status não reconhecidos
-  return configs[status as keyof typeof configs] || {
-    label: status || "Desconhecido",
-    className: "bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200"
-  };
+  return (
+    configs[status as keyof typeof configs] || {
+      label: status || "Desconhecido",
+      className:
+        "bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200",
+    }
+  );
 };
 
 const calcularDiasVencimento = (dataVencimento: Date): number => {
@@ -314,9 +322,9 @@ const calcularDiasVencimento = (dataVencimento: Date): number => {
 };
 
 const formatCurrency = (value: number) => {
-  return new Intl.NumberFormat('pt-BR', {
-    style: 'currency',
-    currency: 'BRL'
+  return new Intl.NumberFormat("pt-BR", {
+    style: "currency",
+    currency: "BRL",
   }).format(value);
 };
 
@@ -336,46 +344,46 @@ export function Receivables() {
   /**
    * FUNÇÃO PARA DETECÇÃO DE VENCIMENTOS (3 DIAS)
    * ============================================
-   * 
+   *
    * BACKEND: Esta lógica deve ser implementada como CRON JOB
    * que executa diariamente às 09:00 da manhã:
-   * 
-   * 1. Query no banco: SELECT * FROM faturas WHERE 
+   *
+   * 1. Query no banco: SELECT * FROM faturas WHERE
    *    data_vencimento = CURRENT_DATE + INTERVAL '3 days'
    *    AND status = 'pendente'
-   * 
+   *
    * 2. Para cada fatura encontrada:
    *    - Criar notificação automática
    *    - Dispara webhook para n8n
    *    - n8n envia WhatsApp com link de pagamento
-   * 
+   *
    * 3. Implementar retry mechanism para falhas
    * 4. Log de todas as notificações enviadas
    */
   const handleNotificarCliente = async (invoice: Invoice) => {
     console.log("Enviando notificação para fatura:", invoice.numeroFatura);
-    
+
     // BACKEND: POST /api/recebiveis/notificar
     // Payload: { faturaId, tipo: 'manual', canal: 'whatsapp' }
-    
+
     // Webhook para n8n
     const webhookPayload = {
-      evento: 'lembrete_pagamento',
+      evento: "lembrete_pagamento",
       fatura: {
         id: invoice.id,
         numero: invoice.numeroFatura,
         valor: invoice.valor,
         vencimento: invoice.dataVencimento.toISOString(),
-        linkPagamento: invoice.linkPagamento || ''
+        linkPagamento: invoice.linkPagamento || "",
       },
       cliente: {
         // Buscar dados do cliente
         id: invoice.clienteId,
         nome: "Cliente Exemplo",
-        whatsapp: "5511999999999"
-      }
+        whatsapp: "5511999999999",
+      },
     };
-    
+
     console.log("Payload para n8n:", webhookPayload);
   };
 
@@ -385,12 +393,13 @@ export function Receivables() {
   };
 
   const filteredInvoices = invoices
-    .filter(invoice => {
+    .filter((invoice) => {
       const matchesSearch =
         invoice.numeroFatura.toLowerCase().includes(searchTerm.toLowerCase()) ||
         invoice.descricao.toLowerCase().includes(searchTerm.toLowerCase());
 
-      const matchesStatus = statusFilter === "all" || invoice.status === statusFilter;
+      const matchesStatus =
+        statusFilter === "all" || invoice.status === statusFilter;
 
       return matchesSearch && matchesStatus;
     })
@@ -402,53 +411,64 @@ export function Receivables() {
       // 4. Paga (final da lista)
 
       const statusPriority = {
-        pendente: 1,    // Topo (vermelho) - prioridade máxima
-        nova: 2,        // Abaixo de pendente
+        pendente: 1, // Topo (vermelho) - prioridade máxima
+        nova: 2, // Abaixo de pendente
         processando: 3, // Meio
-        atribuida: 4,   // Meio (caso ainda exista)
-        paga: 5,        // Final da lista
-        cancelada: 6    // Final
+        atribuida: 4, // Meio (caso ainda exista)
+        paga: 5, // Final da lista
+        cancelada: 6, // Final
       };
 
-      const priorityA = statusPriority[a.status as keyof typeof statusPriority] || 7;
-      const priorityB = statusPriority[b.status as keyof typeof statusPriority] || 7;
+      const priorityA =
+        statusPriority[a.status as keyof typeof statusPriority] || 7;
+      const priorityB =
+        statusPriority[b.status as keyof typeof statusPriority] || 7;
 
       if (priorityA !== priorityB) {
         return priorityA - priorityB;
       }
 
       // Se o status for igual, ordenar por data de vencimento (mais próximo primeiro)
-      return new Date(a.dataVencimento).getTime() - new Date(b.dataVencimento).getTime();
+      return (
+        new Date(a.dataVencimento).getTime() -
+        new Date(b.dataVencimento).getTime()
+      );
     });
 
   const handleImportBilling = (importedInvoices: any[]) => {
     // Adicionar faturas importadas ao estado
-    const newInvoices = importedInvoices.map(imported => ({
+    const newInvoices = importedInvoices.map((imported) => ({
       ...imported,
       id: `imported_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
     }));
 
-    setInvoices(prev => [...prev, ...newInvoices]);
+    setInvoices((prev) => [...prev, ...newInvoices]);
 
     // Notificação de sucesso
-    console.log(`✅ ${importedInvoices.length} fatura(s) importada(s) com sucesso!`);
+    console.log(
+      `✅ ${importedInvoices.length} fatura(s) importada(s) com sucesso!`,
+    );
   };
 
   const handleCreateInvoice = (newInvoices: any[]) => {
     // Adicionar novas faturas ao estado
-    const invoicesWithIds = newInvoices.map(invoice => ({
+    const invoicesWithIds = newInvoices.map((invoice) => ({
       ...invoice,
       id: `new_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
     }));
 
-    setInvoices(prev => [...invoicesWithIds, ...prev]);
+    setInvoices((prev) => [...invoicesWithIds, ...prev]);
 
     // Notificação de sucesso
-    console.log(`��� ${newInvoices.length} nova(s) fatura(s) criada(s) com sucesso!`);
+    console.log(
+      `��� ${newInvoices.length} nova(s) fatura(s) criada(s) com sucesso!`,
+    );
 
     // Se for recorrente, mostrar mensagem específica
     if (newInvoices.length > 1) {
-      console.log(`🔄 Fatura recorrente criada com ${newInvoices.length} parcelas`);
+      console.log(
+        `🔄 Fatura recorrente criada com ${newInvoices.length} parcelas`,
+      );
     }
   };
 
@@ -459,13 +479,15 @@ export function Receivables() {
 
   const handleEditInvoice = (invoice: Invoice) => {
     console.log("Editando fatura:", invoice.numeroFatura);
-    // Implementar modal de edição
+    // Abrir modal de visualização que contém o botão de edição
+    setViewingInvoice(invoice);
+    setShowViewDialog(true);
   };
 
   const handleDeleteInvoice = (invoice: Invoice) => {
     if (confirm(`Deseja realmente excluir a fatura ${invoice.numeroFatura}?`)) {
-      setInvoices(prev => prev.filter(inv => inv.id !== invoice.id));
-      setSelectedInvoices(prev => prev.filter(id => id !== invoice.id));
+      setInvoices((prev) => prev.filter((inv) => inv.id !== invoice.id));
+      setSelectedInvoices((prev) => prev.filter((id) => id !== invoice.id));
 
       // Fechar dialog automaticamente se estiver aberto
       if (showViewDialog && viewingInvoice?.id === invoice.id) {
@@ -478,24 +500,52 @@ export function Receivables() {
   };
 
   const handleUpdateInvoiceStatus = (invoice: Invoice, newStatus: any) => {
-    setInvoices(prev =>
-      prev.map(inv =>
+    setInvoices((prev) =>
+      prev.map((inv) =>
         inv.id === invoice.id
           ? { ...inv, status: newStatus, atualizadoEm: new Date() }
-          : inv
-      )
+          : inv,
+      ),
     );
+
+    // Feedback visual para o usuário
+    const statusLabels = {
+      nova: "Nova",
+      pendente: "Pendente",
+      processando: "Processando",
+      paga: "Paga",
+      vencida: "Vencida",
+      cancelada: "Cancelada",
+    };
+
+    const statusLabel =
+      statusLabels[newStatus as keyof typeof statusLabels] || newStatus;
+    console.log(
+      `✅ Status da fatura ${invoice.numeroFatura} alterado para: ${statusLabel}`,
+    );
+
+    // Se em produção, você pode usar um toast aqui ao invés de alert
+    // toast.success(`Status alterado para: ${statusLabel}`);
   };
 
   // Gerar lista de clientes baseada nas faturas
   const getClientsFromInvoices = () => {
     const clientsMap = new Map();
 
-    invoices.forEach(invoice => {
+    invoices.forEach((invoice) => {
       const clientId = invoice.clienteId;
-      const clientName = invoice.clienteNome || mockClientes.find(c => c.id === clientId)?.nome || "Cliente Desconhecido";
-      const clientEmail = invoice.clienteEmail || mockClientes.find(c => c.id === clientId)?.email || "";
-      const clientPhone = invoice.clienteTelefone || mockClientes.find(c => c.id === clientId)?.telefone || "";
+      const clientName =
+        invoice.clienteNome ||
+        mockClientes.find((c) => c.id === clientId)?.nome ||
+        "Cliente Desconhecido";
+      const clientEmail =
+        invoice.clienteEmail ||
+        mockClientes.find((c) => c.id === clientId)?.email ||
+        "";
+      const clientPhone =
+        invoice.clienteTelefone ||
+        mockClientes.find((c) => c.id === clientId)?.telefone ||
+        "";
 
       if (!clientsMap.has(clientId)) {
         clientsMap.set(clientId, {
@@ -503,12 +553,12 @@ export function Receivables() {
           nome: clientName,
           email: clientEmail,
           telefone: clientPhone,
-          whatsapp: mockClientes.find(c => c.id === clientId)?.whatsapp,
+          whatsapp: mockClientes.find((c) => c.id === clientId)?.whatsapp,
           totalFaturado: 0,
           totalPago: 0,
           faturasPendentes: 0,
           ultimoPagamento: null,
-          faturas: []
+          faturas: [],
         });
       }
 
@@ -516,12 +566,16 @@ export function Receivables() {
       client.faturas.push(invoice);
       client.totalFaturado += invoice.valor;
 
-      if (invoice.status === 'paga') {
+      if (invoice.status === "paga") {
         client.totalPago += invoice.valor;
-        if (invoice.dataPagamento && (!client.ultimoPagamento || invoice.dataPagamento > client.ultimoPagamento)) {
+        if (
+          invoice.dataPagamento &&
+          (!client.ultimoPagamento ||
+            invoice.dataPagamento > client.ultimoPagamento)
+        ) {
           client.ultimoPagamento = invoice.dataPagamento;
         }
-      } else if (invoice.status === 'pendente' || invoice.status === 'nova') {
+      } else if (invoice.status === "pendente" || invoice.status === "nova") {
         client.faturasPendentes += 1;
       }
     });
@@ -541,18 +595,18 @@ export function Receivables() {
       ...notificationData,
     };
 
-    setNotifications(prev => [newNotification, ...prev]);
+    setNotifications((prev) => [newNotification, ...prev]);
 
     console.log("✅ Notificação criada:", newNotification);
-    alert(`✅ Notificação ${notificationData.isScheduled ? 'agendada' : 'enviada'} com sucesso!`);
+    alert(
+      `✅ Notificação ${notificationData.isScheduled ? "agendada" : "enviada"} com sucesso!`,
+    );
   };
 
   const handleSaveInvoice = (invoiceData: any) => {
     // Atualizar fatura na lista
-    setInvoices(prev =>
-      prev.map(inv =>
-        inv.id === invoiceData.id ? invoiceData : inv
-      )
+    setInvoices((prev) =>
+      prev.map((inv) => (inv.id === invoiceData.id ? invoiceData : inv)),
     );
 
     console.log("✅ Fatura atualizada:", invoiceData);
@@ -566,14 +620,14 @@ export function Receivables() {
 
   const handleDeleteNotification = (notificationId: string) => {
     if (confirm("Deseja realmente excluir esta notificação?")) {
-      setNotifications(prev => prev.filter(n => n.id !== notificationId));
+      setNotifications((prev) => prev.filter((n) => n.id !== notificationId));
       alert("✅ Notificação excluída com sucesso!");
     }
   };
 
-  const invoicesProximoVencimento = invoices.filter(invoice => {
+  const invoicesProximoVencimento = invoices.filter((invoice) => {
     const dias = calcularDiasVencimento(invoice.dataVencimento);
-    return dias <= 3 && dias >= 0 && invoice.status === 'pendente';
+    return dias <= 3 && dias >= 0 && invoice.status === "pendente";
   });
 
   return (
@@ -594,10 +648,7 @@ export function Receivables() {
               <Import className="h-4 w-4 mr-2" />
               Importar Cobranças
             </Button>
-            <Button
-              size="sm"
-              onClick={() => setShowNewInvoiceModal(true)}
-            >
+            <Button size="sm" onClick={() => setShowNewInvoiceModal(true)}>
               <Plus className="h-4 w-4 mr-2" />
               Nova Fatura
             </Button>
@@ -608,7 +659,9 @@ export function Receivables() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Faturas Pagas</CardTitle>
+              <CardTitle className="text-sm font-medium">
+                Faturas Pagas
+              </CardTitle>
               <CheckCircle className="h-4 w-4 text-green-600" />
             </CardHeader>
             <CardContent>
@@ -638,16 +691,16 @@ export function Receivables() {
 
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Próximo Vencimento</CardTitle>
+              <CardTitle className="text-sm font-medium">
+                Próximo Vencimento
+              </CardTitle>
               <AlertTriangle className="h-4 w-4 text-orange-600" />
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold text-orange-600">
                 {mockDashboard.faturasProximoVencimento}
               </div>
-              <p className="text-xs text-muted-foreground">
-                3 dias ou menos
-              </p>
+              <p className="text-xs text-muted-foreground">3 dias ou menos</p>
             </CardContent>
           </Card>
 
@@ -672,7 +725,9 @@ export function Receivables() {
           <TabsList>
             <TabsTrigger value="faturas">Faturas</TabsTrigger>
             <TabsTrigger value="clientes">Clientes</TabsTrigger>
-            <TabsTrigger value="notificacoes">Notificações Automáticas</TabsTrigger>
+            <TabsTrigger value="notificacoes">
+              Notificações Automáticas
+            </TabsTrigger>
           </TabsList>
 
           {/* ABA FATURAS */}
@@ -729,7 +784,9 @@ export function Receivables() {
                             className="rounded border-gray-300"
                             onChange={(e) => {
                               if (e.target.checked) {
-                                setSelectedInvoices(filteredInvoices.map(inv => inv.id));
+                                setSelectedInvoices(
+                                  filteredInvoices.map((inv) => inv.id),
+                                );
                               } else {
                                 setSelectedInvoices([]);
                               }
@@ -752,44 +809,69 @@ export function Receivables() {
                             <div className="text-muted-foreground">
                               <CreditCard className="h-12 w-12 mx-auto mb-2 opacity-50" />
                               <p>Nenhuma fatura encontrada</p>
-                              <p className="text-sm">Tente ajustar os filtros ou criar uma nova fatura</p>
+                              <p className="text-sm">
+                                Tente ajustar os filtros ou criar uma nova
+                                fatura
+                              </p>
                             </div>
                           </TableCell>
                         </TableRow>
                       ) : (
                         filteredInvoices.map((invoice) => {
                           const statusConfig = getStatusBadge(invoice.status);
-                          const diasVencimento = calcularDiasVencimento(invoice.dataVencimento);
-                          const cliente = mockClientes.find(c => c.id === invoice.clienteId);
+                          const diasVencimento = calcularDiasVencimento(
+                            invoice.dataVencimento,
+                          );
+                          const cliente = mockClientes.find(
+                            (c) => c.id === invoice.clienteId,
+                          );
 
                           return (
-                            <TableRow key={invoice.id} className="hover:bg-muted/30">
+                            <TableRow
+                              key={invoice.id}
+                              className="hover:bg-muted/30"
+                            >
                               <TableCell>
                                 <input
                                   type="checkbox"
                                   className="rounded border-gray-300"
-                                  checked={selectedInvoices.includes(invoice.id)}
+                                  checked={selectedInvoices.includes(
+                                    invoice.id,
+                                  )}
                                   onChange={(e) => {
                                     if (e.target.checked) {
-                                      setSelectedInvoices([...selectedInvoices, invoice.id]);
+                                      setSelectedInvoices([
+                                        ...selectedInvoices,
+                                        invoice.id,
+                                      ]);
                                     } else {
-                                      setSelectedInvoices(selectedInvoices.filter(id => id !== invoice.id));
+                                      setSelectedInvoices(
+                                        selectedInvoices.filter(
+                                          (id) => id !== invoice.id,
+                                        ),
+                                      );
                                     }
                                   }}
                                 />
                               </TableCell>
                               <TableCell className="font-mono text-sm">
                                 <div className="space-y-1">
-                                  <span className="font-semibold">{invoice.numeroFatura}</span>
+                                  <span className="font-semibold">
+                                    {invoice.numeroFatura}
+                                  </span>
                                   {invoice.recorrente && (
-                                    <div className="text-xs text-blue-600">🔄 Recorrente</div>
+                                    <div className="text-xs text-blue-600">
+                                      🔄 Recorrente
+                                    </div>
                                   )}
                                 </div>
                               </TableCell>
                               <TableCell>
                                 <div className="space-y-1">
                                   <span className="font-medium">
-                                    {cliente?.nome || invoice.clienteNome || "Cliente não identificado"}
+                                    {cliente?.nome ||
+                                      invoice.clienteNome ||
+                                      "Cliente não identificado"}
                                   </span>
                                   <div className="text-xs text-muted-foreground">
                                     {invoice.servicoPrestado}
@@ -801,10 +883,17 @@ export function Receivables() {
                               </TableCell>
                               <TableCell>
                                 <div className="space-y-1">
-                                  <span>{invoice.dataVencimento.toLocaleDateString('pt-BR')}</span>
+                                  <span>
+                                    {invoice.dataVencimento.toLocaleDateString(
+                                      "pt-BR",
+                                    )}
+                                  </span>
                                   {invoice.dataPagamento && (
                                     <div className="text-xs text-green-600">
-                                      Pago: {invoice.dataPagamento.toLocaleDateString('pt-BR')}
+                                      Pago:{" "}
+                                      {invoice.dataPagamento.toLocaleDateString(
+                                        "pt-BR",
+                                      )}
                                     </div>
                                   )}
                                 </div>
@@ -815,16 +904,24 @@ export function Receivables() {
                                 </Badge>
                               </TableCell>
                               <TableCell>
-                                {(invoice.status === 'pendente' || invoice.status === 'nova') && (
-                                  <span className={
-                                    diasVencimento < 0 ? "text-red-600 font-semibold" :
-                                    diasVencimento <= 3 ? "text-orange-600 font-semibold" :
-                                    "text-muted-foreground"
-                                  }>
+                                {(invoice.status === "pendente" ||
+                                  invoice.status === "nova") && (
+                                  <span
+                                    className={
+                                      diasVencimento < 0
+                                        ? "text-red-600 font-semibold"
+                                        : diasVencimento <= 3
+                                          ? "text-orange-600 font-semibold"
+                                          : "text-muted-foreground"
+                                    }
+                                  >
                                     {diasVencimento < 0 ? (
                                       <div className="flex items-center space-x-1">
                                         <AlertTriangle className="h-3 w-3" />
-                                        <span>{Math.abs(diasVencimento)} dias em atraso</span>
+                                        <span>
+                                          {Math.abs(diasVencimento)} dias em
+                                          atraso
+                                        </span>
                                       </div>
                                     ) : diasVencimento === 0 ? (
                                       <div className="flex items-center space-x-1 text-red-600">
@@ -836,7 +933,7 @@ export function Receivables() {
                                     )}
                                   </span>
                                 )}
-                                {invoice.status === 'paga' && (
+                                {invoice.status === "paga" && (
                                   <span className="text-green-600 text-sm">
                                     ✅ Paga
                                   </span>
@@ -860,19 +957,31 @@ export function Receivables() {
                                   >
                                     <Edit className="h-4 w-4" />
                                   </Button>
-                                  {(invoice.status === 'pendente' || invoice.status === 'nova') && (
+                                  {(invoice.status === "pendente" ||
+                                    invoice.status === "nova") && (
                                     <Button
                                       variant="ghost"
                                       size="sm"
-                                      onClick={() => handleNotificarCliente(invoice)}
+                                      onClick={() =>
+                                        handleNotificarCliente(invoice)
+                                      }
                                       title="Enviar Notificação"
                                     >
                                       <MessageSquare className="h-4 w-4" />
                                     </Button>
                                   )}
                                   {invoice.linkPagamento && (
-                                    <Button variant="ghost" size="sm" asChild title="Abrir Link de Pagamento">
-                                      <a href={invoice.linkPagamento} target="_blank" rel="noopener noreferrer">
+                                    <Button
+                                      variant="ghost"
+                                      size="sm"
+                                      asChild
+                                      title="Abrir Link de Pagamento"
+                                    >
+                                      <a
+                                        href={invoice.linkPagamento}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                      >
                                         <ExternalLink className="h-4 w-4" />
                                       </a>
                                     </Button>
@@ -913,8 +1022,7 @@ export function Receivables() {
                   {getClientsFromInvoices().map((cliente) => (
                     <div
                       key={cliente.id}
-                      className="border rounded-lg p-4 cursor-pointer hover:bg-muted/30 transition-colors"
-                      onClick={() => handleViewClient(cliente)}
+                      className="border rounded-lg p-4 hover:bg-muted/30 transition-colors"
                     >
                       <div className="flex items-center justify-between">
                         <div className="flex items-center space-x-4">
@@ -929,13 +1037,19 @@ export function Receivables() {
                           </div>
                           <div className="flex items-center space-x-2">
                             {cliente.whatsapp && (
-                              <Badge variant="outline" className="text-green-600">
+                              <Badge
+                                variant="outline"
+                                className="text-green-600"
+                              >
                                 <Smartphone className="h-3 w-3 mr-1" />
                                 WhatsApp
                               </Badge>
                             )}
                             {cliente.email && (
-                              <Badge variant="outline" className="text-blue-600">
+                              <Badge
+                                variant="outline"
+                                className="text-blue-600"
+                              >
                                 <Mail className="h-3 w-3 mr-1" />
                                 Email
                               </Badge>
@@ -958,10 +1072,7 @@ export function Receivables() {
                             variant="ghost"
                             size="sm"
                             className="mt-2"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleViewClient(cliente);
-                            }}
+                            onClick={() => handleViewClient(cliente)}
                           >
                             <Eye className="h-4 w-4 mr-2" />
                             Visualizar
@@ -973,8 +1084,12 @@ export function Receivables() {
                   {getClientsFromInvoices().length === 0 && (
                     <div className="text-center py-8">
                       <User className="h-12 w-12 mx-auto text-muted-foreground mb-2 opacity-50" />
-                      <p className="text-muted-foreground">Nenhum cliente encontrado</p>
-                      <p className="text-sm text-muted-foreground">Clientes aparecerão automaticamente ao criar faturas</p>
+                      <p className="text-muted-foreground">
+                        Nenhum cliente encontrado
+                      </p>
+                      <p className="text-sm text-muted-foreground">
+                        Clientes aparecerão automaticamente ao criar faturas
+                      </p>
                     </div>
                   )}
                 </div>
@@ -995,40 +1110,67 @@ export function Receivables() {
                 {notifications.length > 0 ? (
                   <div className="space-y-4">
                     {notifications.map((notification) => (
-                      <div key={notification.id} className="border rounded-lg p-4">
+                      <div
+                        key={notification.id}
+                        className="border rounded-lg p-4"
+                      >
                         <div className="flex items-start justify-between">
                           <div className="space-y-2 flex-1">
                             <div className="flex items-center space-x-3">
                               <Badge
                                 className={
-                                  notification.status === 'agendada'
-                                    ? 'bg-blue-100 text-blue-800'
-                                    : notification.status === 'enviada'
-                                    ? 'bg-green-100 text-green-800'
-                                    : 'bg-yellow-100 text-yellow-800'
+                                  notification.status === "agendada"
+                                    ? "bg-blue-100 text-blue-800"
+                                    : notification.status === "enviada"
+                                      ? "bg-green-100 text-green-800"
+                                      : "bg-yellow-100 text-yellow-800"
                                 }
                               >
-                                {notification.status === 'agendada' ? '📅 Agendada' :
-                                 notification.status === 'enviada' ? '✅ Enviada' : '⏳ Pendente'}
+                                {notification.status === "agendada"
+                                  ? "📅 Agendada"
+                                  : notification.status === "enviada"
+                                    ? "✅ Enviada"
+                                    : "⏳ Pendente"}
                               </Badge>
-                              <span className="font-medium">{notification.clientName}</span>
+                              <span className="font-medium">
+                                {notification.clientName}
+                              </span>
                               <span className="text-sm text-muted-foreground">
-                                via {notification.type === 'whatsapp' ? '📱 WhatsApp' :
-                                     notification.type === 'email' ? '📧 Email' : '💬 SMS'}
+                                via{" "}
+                                {notification.type === "whatsapp"
+                                  ? "📱 WhatsApp"
+                                  : notification.type === "email"
+                                    ? "📧 Email"
+                                    : "💬 SMS"}
                               </span>
                             </div>
 
                             <div className="text-sm text-muted-foreground">
-                              <p><strong>Fatura:</strong> {notification.invoiceId}</p>
-                              {notification.isScheduled && notification.scheduledDate && (
-                                <p><strong>Agendado para:</strong> {new Date(notification.scheduledDate).toLocaleDateString('pt-BR')} às {notification.scheduledTime}</p>
-                              )}
-                              <p><strong>Criado em:</strong> {notification.createdAt.toLocaleString('pt-BR')}</p>
+                              <p>
+                                <strong>Fatura:</strong>{" "}
+                                {notification.invoiceId}
+                              </p>
+                              {notification.isScheduled &&
+                                notification.scheduledDate && (
+                                  <p>
+                                    <strong>Agendado para:</strong>{" "}
+                                    {new Date(
+                                      notification.scheduledDate,
+                                    ).toLocaleDateString("pt-BR")}{" "}
+                                    às {notification.scheduledTime}
+                                  </p>
+                                )}
+                              <p>
+                                <strong>Criado em:</strong>{" "}
+                                {notification.createdAt.toLocaleString("pt-BR")}
+                              </p>
                             </div>
 
                             <div className="bg-muted/30 p-3 rounded text-sm">
                               <p className="font-medium mb-1">Mensagem:</p>
-                              <p className="whitespace-pre-wrap line-clamp-3">{notification.message.substring(0, 200)}...</p>
+                              <p className="whitespace-pre-wrap line-clamp-3">
+                                {notification.message.substring(0, 200)}...
+                              </p>
                             </div>
                           </div>
 
@@ -1036,7 +1178,9 @@ export function Receivables() {
                             <Button
                               variant="outline"
                               size="sm"
-                              onClick={() => handleEditNotification(notification)}
+                              onClick={() =>
+                                handleEditNotification(notification)
+                              }
                             >
                               <Edit className="h-4 w-4 mr-1" />
                               Editar
@@ -1046,7 +1190,9 @@ export function Receivables() {
                               size="sm"
                               onClick={() => {
                                 // Expandir/colapsar mensagem
-                                alert(`Mensagem completa:\n\n${notification.message}`);
+                                alert(
+                                  `Mensagem completa:\n\n${notification.message}`,
+                                );
                               }}
                             >
                               <Eye className="h-4 w-4 mr-1" />
@@ -1055,7 +1201,9 @@ export function Receivables() {
                             <Button
                               variant="destructive"
                               size="sm"
-                              onClick={() => handleDeleteNotification(notification.id)}
+                              onClick={() =>
+                                handleDeleteNotification(notification.id)
+                              }
                             >
                               <Trash2 className="h-4 w-4" />
                             </Button>
@@ -1098,7 +1246,6 @@ export function Receivables() {
               </CardContent>
             </Card>
           </TabsContent>
-
         </Tabs>
 
         {/* Modal de Importação de Cobranças */}

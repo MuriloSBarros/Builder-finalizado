@@ -53,6 +53,7 @@ export function EmailSendModal({
     replyTo: "contato@silva.adv.br",
     attachPdf: true,
     customMessage: "",
+    attachedFiles: [],
   });
 
   const [sending, setSending] = useState(false);
@@ -180,15 +181,16 @@ export function EmailSendModal({
           ? getTemplateContent(firstDoc)
           : "<p>No document content available</p>",
         reply_to: emailData.replyTo,
-        // NOVIDADE: Anexar documentos reais ao invés de PDF
-        // Em produção, isso seria integrado com sistema de armazenamento
+        // Anexar arquivos reais enviados pelo usuário
         attachments:
-          emailData.attachPdf && documents.length > 0
-            ? documents.map(doc => ({
-                filename: `${doc.type || "document"}_${doc.number || "unknown"}.json`,
-                content: JSON.stringify(doc, null, 2), // Em produção: conteúdo real do arquivo
-                contentType: "application/json", // Em produção: tipo correto do arquivo
-              }))
+          emailData.attachedFiles && emailData.attachedFiles.length > 0
+            ? await Promise.all(
+                emailData.attachedFiles.map(async (file) => ({
+                  filename: file.name,
+                  content: await file.arrayBuffer(),
+                  contentType: file.type,
+                })),
+              )
             : undefined,
         // COMENTÁRIO PARA BACKEND: Implementar integração com Resend API
         // - Configurar API key do Resend no backend
@@ -394,20 +396,75 @@ export function EmailSendModal({
                 />
               </div>
 
-              {/* NOVIDADE: Anexar documentos ao invés de PDF */}
-              <div className="flex items-center space-x-2">
-                <Switch
-                  id="attach-docs"
-                  checked={emailData.attachPdf} // Mantido nome para compatibilidade
-                  onCheckedChange={(checked) =>
-                    setEmailData((prev) => ({ ...prev, attachPdf: checked }))
-                  }
-                />
-                <Label htmlFor="attach-docs">Anexar documentos selecionados</Label>
+              {/* File upload area */}
+              <div className="space-y-3">
+                <Label htmlFor="file-upload">Adicionar Arquivos</Label>
+                <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-gray-400 transition-colors">
+                  <input
+                    type="file"
+                    id="file-upload"
+                    multiple
+                    accept=".pdf,.doc,.docx,.png,.jpeg,.jpg"
+                    className="hidden"
+                    onChange={(e) => {
+                      const files = Array.from(e.target.files || []);
+                      setEmailData((prev) => ({
+                        ...prev,
+                        attachedFiles: files,
+                      }));
+                    }}
+                  />
+                  <label htmlFor="file-upload" className="cursor-pointer">
+                    <div className="space-y-2">
+                      <div className="text-gray-500">
+                        <svg
+                          className="mx-auto h-12 w-12"
+                          stroke="currentColor"
+                          fill="none"
+                          viewBox="0 0 48 48"
+                        >
+                          <path
+                            d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02"
+                            strokeWidth="2"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                          />
+                        </svg>
+                      </div>
+                      <div className="text-sm text-gray-600">
+                        <span className="font-medium text-blue-600 hover:text-blue-500">
+                          Clique para fazer upload
+                        </span>
+                        <span> ou arraste e solte</span>
+                      </div>
+                      <p className="text-xs text-gray-500">
+                        PDF, DOC, DOCX, PNG, JPEG até 10MB cada
+                      </p>
+                    </div>
+                  </label>
+                </div>
+                {emailData.attachedFiles &&
+                  emailData.attachedFiles.length > 0 && (
+                    <div className="space-y-2">
+                      <Label className="text-sm font-medium">
+                        Arquivos Selecionados:
+                      </Label>
+                      <div className="space-y-1">
+                        {emailData.attachedFiles.map((file, index) => (
+                          <div
+                            key={index}
+                            className="flex items-center justify-between p-2 bg-gray-50 rounded text-sm"
+                          >
+                            <span className="truncate">{file.name}</span>
+                            <span className="text-gray-500 ml-2">
+                              {(file.size / 1024 / 1024).toFixed(1)}MB
+                            </span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
               </div>
-              <p className="text-xs text-muted-foreground mt-1">
-                Os documentos selecionados serão enviados como anexo no email
-              </p>
             </div>
 
             {/* Preview */}
@@ -455,10 +512,7 @@ export function EmailSendModal({
         </div>
 
         <DialogFooter className="flex justify-between">
-          <div className="flex items-center space-x-2 text-sm text-muted-foreground">
-            <CheckCircle className="h-4 w-4 text-green-600" />
-            <span>API Resend configurada</span>
-          </div>
+          <div></div>
 
           <div className="flex space-x-2">
             <Button
