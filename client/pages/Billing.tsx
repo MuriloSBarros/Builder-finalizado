@@ -164,6 +164,7 @@ const mockInvoices: Invoice[] = [
     emailSentAt: '2024-01-20T10:00:00Z',
     remindersSent: 1,
     lastReminderAt: '2024-02-10T09:00:00Z',
+    tags: ['Fatura', 'Serviços Jurídicos', 'Janeiro'],
     attachments: [],
     createdAt: '2024-01-20T09:00:00Z',
     updatedAt: '2024-02-10T09:00:00Z',
