@@ -825,6 +825,18 @@ export function CRM() {
                 </div>
               </CardHeader>
               <CardContent>
+                {/* Search filter for deals */}
+                <div className="mb-4">
+                  <div className="relative max-w-md">
+                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                    <Input
+                      placeholder="Procurar por título do negócio..."
+                      className="pl-10"
+                      value={dealSearchTerm}
+                      onChange={(e) => setDealSearchTerm(e.target.value)}
+                    />
+                  </div>
+                </div>
                 {pipelineViewMode === "kanban" ? (
                   <Pipeline
                     stages={pipelineStages}
