@@ -162,6 +162,7 @@ export function DocumentsTable({
             <TableHead>Data/Vencimento</TableHead>
             <TableHead>Valor</TableHead>
             <TableHead>Status</TableHead>
+            <TableHead>Tags</TableHead>
             <TableHead>Tipo</TableHead>
             <TableHead className="w-12">Ações</TableHead>
           </TableRow>
