@@ -124,6 +124,7 @@ const mockEstimates: Estimate[] = [
     currency: 'BRL',
     status: 'SENT',
     convertedToInvoice: false,
+    tags: ['Consultoria', 'Contrato', 'Prioritário'],
     attachments: [],
     createdAt: '2024-01-15T09:00:00Z',
     updatedAt: '2024-01-15T09:00:00Z',
