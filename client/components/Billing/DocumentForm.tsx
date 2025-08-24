@@ -47,7 +47,7 @@ const documentSchema = z.object({
   date: z.string().min(1, "Data é obrigatória"),
   dueDate: z.string().min(1, "Data de vencimento é obrigatória"),
   senderId: z.string().min(1, "Remetente é obrigatório"),
-  receiverId: z.string().min(1, "Destinatário é obrigatório"),
+  receiverId: z.string().min(1, "Destinatário é obrigat��rio"),
   title: z.string().min(1, "Título é obrigatório"),
   description: z.string().optional(),
   currency: z.enum(["BRL", "USD", "EUR"]),
@@ -57,6 +57,8 @@ const documentSchema = z.object({
   feeType: z.enum(["percentage", "fixed"]),
   tax: z.number().min(0, "Imposto deve ser positivo"),
   taxType: z.enum(["percentage", "fixed"]),
+  status: z.enum(["DRAFT", "SENT", "VIEWED", "APPROVED", "REJECTED", "Pendente", "PAID", "OVERDUE", "CANCELLED"]),
+  tags: z.array(z.string()).optional(),
   notes: z.string().optional(),
 }).refine((data) => true, {
   message: "Pelo menos um item deve ser adicionado",
