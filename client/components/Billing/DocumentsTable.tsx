@@ -241,6 +241,24 @@ export function DocumentsTable({
                   )}
                 </TableCell>
                 <TableCell>
+                  <div className="flex flex-wrap gap-1">
+                    {document.tags && document.tags.length > 0 ? (
+                      document.tags.slice(0, 2).map((tag, index) => (
+                        <Badge key={index} variant="outline" className="text-xs">
+                          {tag}
+                        </Badge>
+                      ))
+                    ) : (
+                      <span className="text-xs text-muted-foreground">-</span>
+                    )}
+                    {document.tags && document.tags.length > 2 && (
+                      <Badge variant="outline" className="text-xs">
+                        +{document.tags.length - 2}
+                      </Badge>
+                    )}
+                  </div>
+                </TableCell>
+                <TableCell>
                   <div className="space-y-1">
                     {getDocumentTypeBadge(document.type)}
                     {getPriorityBadge(document)}
