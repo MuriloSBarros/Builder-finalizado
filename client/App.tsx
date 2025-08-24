@@ -19,6 +19,10 @@ import { Settings } from "./pages/Settings";
 import { Notifications } from "./pages/Notifications";
 import { Login } from "./pages/Login";
 import NotFound from "./pages/NotFound";
+import { initializeResizeObserverFix } from "@/lib/resize-observer-fix";
+
+// Initialize ResizeObserver error suppression
+initializeResizeObserverFix();
 
 const queryClient = new QueryClient();
 
