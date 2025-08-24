@@ -6,7 +6,7 @@
  * that commonly occurs with Radix UI components and dynamic layouts.
  */
 
-import { useEffect, useRef, useCallback } from 'react';
+import React, { useEffect, useRef, useCallback } from 'react';
 
 /**
  * Suppress ResizeObserver errors globally
@@ -144,7 +144,7 @@ export const initializeResizeObserverFix = () => {
 export const withResizeObserverErrorBoundary = <T extends React.ComponentType<any>>(
   Component: T
 ): T => {
-  const WrappedComponent = (props: any) => {
+  const WrappedComponent = (props: React.ComponentProps<T>) => {
     useEffect(() => {
       const handleError = (error: ErrorEvent) => {
         if (error.message?.includes('ResizeObserver')) {
@@ -157,7 +157,7 @@ export const withResizeObserverErrorBoundary = <T extends React.ComponentType<an
       return () => window.removeEventListener('error', handleError);
     }, []);
     
-    return <Component {...props} />;
+    return React.createElement(Component, props);
   };
   
   WrappedComponent.displayName = `withResizeObserverErrorBoundary(${Component.displayName || Component.name})`;
