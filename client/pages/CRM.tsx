@@ -824,11 +824,12 @@ export function CRM() {
                   />
                 ) : (
                   <PipelineListView
-                    deals={deals}
+                    deals={filteredDeals}
                     stages={pipelineStages}
                     onEditDeal={handleEditDeal}
                     onDeleteDeal={handleDeleteDeal}
                     onMoveDeal={handleMoveDeal}
+                    onViewDeal={handleViewDeal}
                   />
                 )}
               </CardContent>
