@@ -91,12 +91,11 @@ const expensesByCategory = [
   { name: 'Outros', value: 5, amount: 1600, color: '#6B7280' },
 ];
 
-const casesByStatus = [
-  { status: 'Em Andamento', count: 15, color: '#10B981' },
-  { status: 'Em Análise', count: 8, color: '#F59E0B' },
-  { status: 'Aguardando', count: 5, color: '#F97316' },
-  { status: 'Revisão', count: 3, color: '#8B5CF6' },
-  { status: 'Concluído', count: 12, color: '#059669' },
+const clientsByStatus = [
+  { status: 'Em Contato', count: 18, color: '#3B82F6' },
+  { status: 'Com Proposta', count: 12, color: '#F59E0B' },
+  { status: 'Cliente Bem Sucedido', count: 25, color: '#10B981' },
+  { status: 'Cliente Perdido', count: 8, color: '#EF4444' },
 ];
 
 const clientsGrowth = [
@@ -300,14 +299,14 @@ export function DashboardCharts({ className }: ChartsProps) {
         </CardContent>
       </Card>
 
-      {/* Cases by Status */}
+      {/* Clients by Status */}
       <Card>
         <CardHeader>
-          <CardTitle>Casos por Status</CardTitle>
+          <CardTitle>Clientes Por Status</CardTitle>
         </CardHeader>
         <CardContent>
           <ResponsiveContainer width="100%" height={300}>
-            <BarChart data={casesByStatus}>
+            <BarChart data={clientsByStatus}>
               <CartesianGrid strokeDasharray="3 3" stroke="#E5E7EB" />
               <CustomXAxis
                 dataKey="status"
@@ -317,8 +316,8 @@ export function DashboardCharts({ className }: ChartsProps) {
               />
               <CustomYAxis />
               <Tooltip content={<CustomTooltip />} />
-              <Bar dataKey="count" name="Casos" radius={[4, 4, 0, 0]}>
-                {casesByStatus.map((entry, index) => (
+              <Bar dataKey="count" name="Clientes" radius={[4, 4, 0, 0]}>
+                {clientsByStatus.map((entry, index) => (
                   <Cell key={`cell-${index}`} fill={entry.color} />
                 ))}
               </Bar>
