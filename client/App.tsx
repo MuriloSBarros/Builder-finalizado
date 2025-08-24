@@ -20,6 +20,7 @@ import { Notifications } from "./pages/Notifications";
 import { Login } from "./pages/Login";
 import NotFound from "./pages/NotFound";
 import { initializeResizeObserverFix } from "@/lib/resize-observer-fix";
+import { UIErrorBoundary, useResizeObserverErrorHandler } from "@/lib/error-boundary";
 
 // Initialize ResizeObserver error suppression
 initializeResizeObserverFix();
