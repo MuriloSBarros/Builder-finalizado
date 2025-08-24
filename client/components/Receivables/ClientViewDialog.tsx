@@ -70,15 +70,15 @@ export function ClientViewDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-4xl max-h-[90vh]">
-        <DialogHeader>
+      <DialogContent className="max-w-4xl h-[90vh] flex flex-col">
+        <DialogHeader className="flex-shrink-0">
           <DialogTitle className="flex items-center space-x-2">
             <User className="h-5 w-5 text-primary" />
             <span>Detalhes do Cliente - {client.nome}</span>
           </DialogTitle>
         </DialogHeader>
 
-        <ScrollArea className="max-h-[70vh] pr-4">
+        <div className="flex-1 overflow-y-auto pr-4 min-h-0">
           <div className="space-y-6">
             {/* Informações Principais do Cliente */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -249,9 +249,9 @@ export function ClientViewDialog({
               </div>
             </div>
           </div>
-        </ScrollArea>
+        </div>
 
-        <div className="flex justify-end">
+        <div className="flex justify-end flex-shrink-0 pt-4">
           <Button variant="outline" onClick={() => onOpenChange(false)}>
             Fechar
           </Button>
