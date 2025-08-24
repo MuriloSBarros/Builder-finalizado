@@ -156,6 +156,7 @@ interface PipelineListViewProps {
   onEditDeal: (deal: Deal) => void;
   onDeleteDeal: (dealId: string) => void;
   onMoveDeal: (dealId: string, newStage: DealStage) => void;
+  onViewDeal: (deal: Deal) => void;
 }
 
 function PipelineListView({
@@ -164,6 +165,7 @@ function PipelineListView({
   onEditDeal,
   onDeleteDeal,
   onMoveDeal,
+  onViewDeal,
 }: PipelineListViewProps) {
   const getStageInfo = (stageId: string) => {
     const stage = stages.find((s) => s.id === stageId);
@@ -243,6 +245,10 @@ function PipelineListView({
                       </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end">
+                      <DropdownMenuItem onClick={() => onViewDeal(deal)}>
+                        <Eye className="h-4 w-4 mr-2" />
+                        Visualizar
+                      </DropdownMenuItem>
                       <DropdownMenuItem onClick={() => onEditDeal(deal)}>
                         <Edit className="h-4 w-4 mr-2" />
                         Editar
