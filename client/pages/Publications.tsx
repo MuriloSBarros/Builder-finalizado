@@ -210,12 +210,16 @@ export function Publications() {
     }
   };
 
-  const filteredPublications = mockPublications.filter(
-    (pub) =>
+  const filteredPublications = mockPublications.filter((pub) => {
+    const matchesSearch =
       pub.processo.toLowerCase().includes(searchTerm.toLowerCase()) ||
       pub.nomePesquisado.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      pub.varaComarca.toLowerCase().includes(searchTerm.toLowerCase()),
-  );
+      pub.varaComarca.toLowerCase().includes(searchTerm.toLowerCase());
+
+    const matchesStatus = statusFilter === "all" || pub.status === statusFilter;
+
+    return matchesSearch && matchesStatus;
+  });
 
   // Dados mock de projetos para consulta
   const mockProjectResults = [
