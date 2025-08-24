@@ -130,7 +130,7 @@ export function DashboardCharts({ className }: ChartsProps) {
             <p key={index} style={{ color: entry.color }} className="text-sm">
               {entry.name}: {entry.name.includes('Receitas') || entry.name.includes('Despesas') || entry.name.includes('Saldo')
                 ? formatCurrency(entry.value)
-                : `${entry.value} ${entry.name === 'Casos' ? 'casos' : ''}`}
+                : `${entry.value} ${entry.name === 'Clientes' ? 'clientes' : entry.name === 'Casos' ? 'casos' : ''}`}
             </p>
           ))}
         </div>
