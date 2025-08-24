@@ -1,4 +1,5 @@
 import "./global.css";
+import "@/lib/global-error-suppression"; // Must be imported first
 
 import { Toaster } from "@/components/ui/toaster";
 import { createRoot } from "react-dom/client";
