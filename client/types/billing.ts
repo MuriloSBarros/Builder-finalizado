@@ -34,6 +34,7 @@ export interface BaseDocument {
   status: DocumentStatus;
   templateId?: string;
   notes?: string;
+  tags: string[];
   attachments: DocumentAttachment[];
   createdAt: string;
   updatedAt: string;
