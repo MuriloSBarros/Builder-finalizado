@@ -62,19 +62,19 @@ export interface Invoice extends BaseDocument {
   lastReminderAt?: string;
 }
 
-export type DocumentStatus = 
+export type DocumentStatus =
   | 'DRAFT'
   | 'SENT'
   | 'VIEWED'
   | 'APPROVED'
   | 'REJECTED'
-  | 'PENDING'
+  | 'Pendente'
   | 'PAID'
   | 'OVERDUE'
   | 'CANCELLED';
 
-export type PaymentStatus = 
-  | 'PENDING'
+export type PaymentStatus =
+  | 'Pendente'
   | 'PAID'
   | 'PARTIAL'
   | 'OVERDUE'
