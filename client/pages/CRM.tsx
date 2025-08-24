@@ -392,7 +392,7 @@ export function CRM() {
   // Pipeline stages with deals
   const pipelineStages: PipelineStage[] = pipelineStagesConfig.map((stage) => ({
     ...stage,
-    deals: deals.filter((deal) => deal.stage === stage.id),
+    deals: filteredDeals.filter((deal) => deal.stage === stage.id),
   }));
 
   const handleSubmitClient = (data: any) => {
