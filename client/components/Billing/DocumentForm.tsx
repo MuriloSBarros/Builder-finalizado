@@ -165,6 +165,8 @@ export function DocumentForm({
       feeType: doc?.feeType || "fixed",
       tax: doc?.tax || 0,
       taxType: doc?.taxType || "percentage",
+      status: doc?.status || "DRAFT",
+      tags: doc?.tags || [],
       notes: doc?.notes || "",
     },
   });
