@@ -1139,9 +1139,7 @@ export function Receivables() {
                                 via{" "}
                                 {notification.type === "whatsapp"
                                   ? "📱 WhatsApp"
-                                  : notification.type === "email"
-                                    ? "📧 Email"
-                                    : "💬 SMS"}
+                                  : "📧 Email"}
                               </span>
                             </div>
 
