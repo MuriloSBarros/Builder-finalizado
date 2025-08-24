@@ -50,23 +50,23 @@ interface ClientViewDialogProps {
 }
 
 const formatCurrency = (value: number) => {
-  return new Intl.NumberFormat('pt-BR', {
-    style: 'currency',
-    currency: 'BRL'
+  return new Intl.NumberFormat("pt-BR", {
+    style: "currency",
+    currency: "BRL",
   }).format(value);
 };
 
-export function ClientViewDialog({ 
-  client, 
-  open, 
-  onOpenChange
+export function ClientViewDialog({
+  client,
+  open,
+  onOpenChange,
 }: ClientViewDialogProps) {
-  
   if (!client) return null;
 
-  const percentualPago = client.totalFaturado > 0 
-    ? (client.totalPago / client.totalFaturado) * 100 
-    : 0;
+  const percentualPago =
+    client.totalFaturado > 0
+      ? (client.totalPago / client.totalFaturado) * 100
+      : 0;
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -92,21 +92,27 @@ export function ClientViewDialog({
                       <User className="h-4 w-4 text-muted-foreground" />
                       <div>
                         <p className="text-sm font-medium">Nome</p>
-                        <p className="text-sm text-muted-foreground">{client.nome}</p>
+                        <p className="text-sm text-muted-foreground">
+                          {client.nome}
+                        </p>
                       </div>
                     </div>
                     <div className="flex items-center space-x-3">
                       <Mail className="h-4 w-4 text-muted-foreground" />
                       <div>
                         <p className="text-sm font-medium">Email</p>
-                        <p className="text-sm text-muted-foreground">{client.email}</p>
+                        <p className="text-sm text-muted-foreground">
+                          {client.email}
+                        </p>
                       </div>
                     </div>
                     <div className="flex items-center space-x-3">
                       <Phone className="h-4 w-4 text-muted-foreground" />
                       <div>
                         <p className="text-sm font-medium">Telefone</p>
-                        <p className="text-sm text-muted-foreground">{client.telefone}</p>
+                        <p className="text-sm text-muted-foreground">
+                          {client.telefone}
+                        </p>
                       </div>
                     </div>
                     {client.whatsapp && (
@@ -114,7 +120,9 @@ export function ClientViewDialog({
                         <Smartphone className="h-4 w-4 text-green-600" />
                         <div>
                           <p className="text-sm font-medium">WhatsApp</p>
-                          <p className="text-sm text-green-600">{client.whatsapp}</p>
+                          <p className="text-sm text-green-600">
+                            {client.whatsapp}
+                          </p>
                         </div>
                       </div>
                     )}
@@ -159,9 +167,11 @@ export function ClientViewDialog({
                       <div className="flex items-center space-x-3">
                         <Calendar className="h-4 w-4 text-muted-foreground" />
                         <div>
-                          <p className="text-sm font-medium">Último Pagamento</p>
+                          <p className="text-sm font-medium">
+                            Último Pagamento
+                          </p>
                           <p className="text-sm text-muted-foreground">
-                            {client.ultimoPagamento.toLocaleDateString('pt-BR')}
+                            {client.ultimoPagamento.toLocaleDateString("pt-BR")}
                           </p>
                         </div>
                       </div>
@@ -177,19 +187,24 @@ export function ClientViewDialog({
               <div className="space-y-3">
                 <div className="flex items-center justify-between">
                   <span className="text-sm">Taxa de Pagamento:</span>
-                  <span className={`font-bold ${percentualPago >= 80 ? 'text-green-600' : percentualPago >= 50 ? 'text-yellow-600' : 'text-red-600'}`}>
+                  <span
+                    className={`font-bold ${percentualPago >= 80 ? "text-green-600" : percentualPago >= 50 ? "text-yellow-600" : "text-red-600"}`}
+                  >
                     {percentualPago.toFixed(1)}%
                   </span>
                 </div>
                 <div className="w-full bg-gray-200 rounded-full h-2">
-                  <div 
-                    className={`h-2 rounded-full ${percentualPago >= 80 ? 'bg-green-600' : percentualPago >= 50 ? 'bg-yellow-600' : 'bg-red-600'}`}
+                  <div
+                    className={`h-2 rounded-full ${percentualPago >= 80 ? "bg-green-600" : percentualPago >= 50 ? "bg-yellow-600" : "bg-red-600"}`}
                     style={{ width: `${percentualPago}%` }}
                   ></div>
                 </div>
                 <div className="text-xs text-muted-foreground">
-                  {percentualPago >= 80 && "🟢 Cliente excelente - pagamentos em dia"}
-                  {percentualPago >= 50 && percentualPago < 80 && "🟡 Cliente regular - acompanhar"}
+                  {percentualPago >= 80 &&
+                    "🟢 Cliente excelente - pagamentos em dia"}
+                  {percentualPago >= 50 &&
+                    percentualPago < 80 &&
+                    "🟡 Cliente regular - acompanhar"}
                   {percentualPago < 50 && "🔴 Cliente requer atenção especial"}
                 </div>
               </div>
@@ -205,21 +220,32 @@ export function ClientViewDialog({
               <div className="space-y-2 max-h-60 overflow-y-auto">
                 {client.faturas.length > 0 ? (
                   client.faturas.map((fatura, index) => (
-                    <div key={index} className="flex items-center justify-between p-3 border rounded-lg">
+                    <div
+                      key={index}
+                      className="flex items-center justify-between p-3 border rounded-lg"
+                    >
                       <div className="flex items-center space-x-3">
                         <FileText className="h-4 w-4 text-muted-foreground" />
                         <div>
-                          <p className="text-sm font-medium">{fatura.numeroFatura}</p>
-                          <p className="text-xs text-muted-foreground">{fatura.descricao}</p>
+                          <p className="text-sm font-medium">
+                            {fatura.numeroFatura}
+                          </p>
+                          <p className="text-xs text-muted-foreground">
+                            {fatura.descricao}
+                          </p>
                         </div>
                       </div>
                       <div className="text-right">
-                        <p className="text-sm font-bold">{formatCurrency(fatura.valor)}</p>
-                        <Badge 
+                        <p className="text-sm font-bold">
+                          {formatCurrency(fatura.valor)}
+                        </p>
+                        <Badge
                           className={
-                            fatura.status === 'paga' ? 'bg-green-100 text-green-800' :
-                            fatura.status === 'pendente' ? 'bg-red-100 text-red-800' :
-                            'bg-blue-100 text-blue-800'
+                            fatura.status === "paga"
+                              ? "bg-green-100 text-green-800"
+                              : fatura.status === "pendente"
+                                ? "bg-red-100 text-red-800"
+                                : "bg-blue-100 text-blue-800"
                           }
                         >
                           {fatura.status}

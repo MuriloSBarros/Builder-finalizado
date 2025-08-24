@@ -41,59 +41,62 @@ interface PublicationViewDialogProps {
 
 const getStatusBadge = (status: PublicationStatus) => {
   const statusConfig = {
-    descartada: { 
-      label: "Descartada", 
-      variant: "secondary" as const, 
-      color: "bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300" 
+    descartada: {
+      label: "Descartada",
+      variant: "secondary" as const,
+      color: "bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300",
     },
-    atribuida: { 
-      label: "Atribuída", 
-      variant: "default" as const, 
-      color: "bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300" 
+    atribuida: {
+      label: "Atribuída",
+      variant: "default" as const,
+      color: "bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300",
     },
-    finalizada: { 
-      label: "Finalizada", 
-      variant: "outline" as const, 
-      color: "bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300" 
-    }
+    finalizada: {
+      label: "Finalizada",
+      variant: "outline" as const,
+      color:
+        "bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300",
+    },
   };
-  
+
   return statusConfig[status];
 };
 
 const getUrgencyConfig = (urgencia?: string) => {
   switch (urgencia) {
-    case 'alta': 
-      return { 
-        label: 'ALTA', 
-        color: 'bg-red-100 text-red-700 dark:bg-red-900 dark:text-red-300',
-        icon: AlertTriangle
+    case "alta":
+      return {
+        label: "ALTA",
+        color: "bg-red-100 text-red-700 dark:bg-red-900 dark:text-red-300",
+        icon: AlertTriangle,
       };
-    case 'media': 
-      return { 
-        label: 'MÉDIA', 
-        color: 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900 dark:text-yellow-300',
-        icon: Clock
+    case "media":
+      return {
+        label: "MÉDIA",
+        color:
+          "bg-yellow-100 text-yellow-700 dark:bg-yellow-900 dark:text-yellow-300",
+        icon: Clock,
       };
-    case 'baixa': 
-      return { 
-        label: 'BAIXA', 
-        color: 'bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300',
-        icon: Clock
+    case "baixa":
+      return {
+        label: "BAIXA",
+        color:
+          "bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300",
+        icon: Clock,
       };
-    default: 
-      return { 
-        label: 'NÃO DEFINIDA', 
-        color: 'bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300',
-        icon: Clock
+    default:
+      return {
+        label: "NÃO DEFINIDA",
+        color: "bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300",
+        icon: Clock,
       };
   }
 };
 
-export function PublicationViewDialog({ 
-  publication, 
-  open, 
-  onOpenChange 
+export function PublicationViewDialog({
+  publication,
+  open,
+  onOpenChange,
 }: PublicationViewDialogProps) {
   const statusConfig = getStatusBadge(publication.status);
   const urgencyConfig = getUrgencyConfig(publication.urgencia);
@@ -114,7 +117,10 @@ export function PublicationViewDialog({
             {/* Cabeçalho com Status e Ações */}
             <div className="flex items-center justify-between p-4 bg-muted/30 rounded-lg">
               <div className="flex items-center space-x-4">
-                <Badge variant={statusConfig.variant} className={`${statusConfig.color} px-3 py-1`}>
+                <Badge
+                  variant={statusConfig.variant}
+                  className={`${statusConfig.color} px-3 py-1`}
+                >
                   {statusConfig.label}
                 </Badge>
                 <div className="flex items-center space-x-2">
@@ -151,7 +157,9 @@ export function PublicationViewDialog({
                     <div className="flex items-center space-x-3">
                       <Scale className="h-4 w-4 text-muted-foreground" />
                       <div>
-                        <p className="text-sm font-medium">Número do Processo</p>
+                        <p className="text-sm font-medium">
+                          Número do Processo
+                        </p>
                         <p className="font-mono text-sm text-muted-foreground">
                           {publication.processo}
                         </p>
@@ -188,14 +196,19 @@ export function PublicationViewDialog({
                     <div className="flex items-center space-x-3">
                       <Calendar className="h-4 w-4 text-muted-foreground" />
                       <div>
-                        <p className="text-sm font-medium">Data de Publicação</p>
+                        <p className="text-sm font-medium">
+                          Data de Publicação
+                        </p>
                         <p className="text-sm text-muted-foreground">
-                          {publication.dataPublicacao.toLocaleDateString('pt-BR', {
-                            weekday: 'long',
-                            year: 'numeric',
-                            month: 'long',
-                            day: 'numeric'
-                          })}
+                          {publication.dataPublicacao.toLocaleDateString(
+                            "pt-BR",
+                            {
+                              weekday: "long",
+                              year: "numeric",
+                              month: "long",
+                              day: "numeric",
+                            },
+                          )}
                         </p>
                       </div>
                     </div>
@@ -265,7 +278,7 @@ export function PublicationViewDialog({
               {publication.dataAtualizacao && (
                 <div>
                   <p className="font-medium">Última Atualização</p>
-                  <p>{publication.dataAtualizacao.toLocaleString('pt-BR')}</p>
+                  <p>{publication.dataAtualizacao.toLocaleString("pt-BR")}</p>
                 </div>
               )}
               {publication.cliente && (

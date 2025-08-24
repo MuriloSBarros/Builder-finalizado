@@ -418,17 +418,17 @@ export function CRM() {
       // NOVIDADE: Enviar notificação quando novo cliente for cadastrado
       // Em produção, isso seria uma chamada para API de notificações
       console.log("📢 NOTIFICAÇÃO ENVIADA: Novo cliente cadastrado", {
-        type: 'info',
-        title: 'Novo Cliente Cadastrado',
+        type: "info",
+        title: "Novo Cliente Cadastrado",
         message: `${newClient.name} foi adicionado ao CRM`,
-        category: 'client',
-        createdBy: 'Usuário Atual', // Em produção: pegar do contexto de auth
+        category: "client",
+        createdBy: "Usuário Atual", // Em produção: pegar do contexto de auth
         clientData: {
           id: newClient.id,
           name: newClient.name,
           email: newClient.email,
-          tags: newClient.tags
-        }
+          tags: newClient.tags,
+        },
       });
 
       // FUTURO: Integração com sistema de notificações
@@ -546,19 +546,19 @@ export function CRM() {
       // NOVIDADE: Enviar notificação quando novo negócio for adicionado ao Pipeline
       // Em produção, isso seria uma chamada para API de notificações
       console.log("📢 NOTIFICAÇÃO ENVIADA: Novo negócio no pipeline", {
-        type: 'info',
-        title: 'Novo Negócio Adicionado',
+        type: "info",
+        title: "Novo Negócio Adicionado",
         message: `${newDeal.title} foi adicionado ao Pipeline de Vendas`,
-        category: 'pipeline',
-        createdBy: 'Usuário Atual', // Em produção: pegar do contexto de auth
+        category: "pipeline",
+        createdBy: "Usuário Atual", // Em produção: pegar do contexto de auth
         dealData: {
           id: newDeal.id,
           title: newDeal.title,
           contactName: newDeal.contactName,
           stage: newDeal.stage,
           budget: newDeal.budget,
-          tags: newDeal.tags
-        }
+          tags: newDeal.tags,
+        },
       });
 
       // FUTURO: Integração com sistema de notificações
@@ -871,9 +871,7 @@ export function CRM() {
           existingTags={
             /* Extrair todas as tags únicas dos clientes existentes */
             Array.from(
-              new Set(
-                clients.flatMap(client => client.tags || [])
-              )
+              new Set(clients.flatMap((client) => client.tags || [])),
             ).sort()
           }
         />
@@ -886,9 +884,7 @@ export function CRM() {
           existingTags={
             /* IMPLEMENTAÇÃO MELHORADA: Extrair todas as tags únicas dos clientes existentes */
             Array.from(
-              new Set(
-                clients.flatMap(client => client.tags || [])
-              )
+              new Set(clients.flatMap((client) => client.tags || [])),
             ).sort()
           }
         />
