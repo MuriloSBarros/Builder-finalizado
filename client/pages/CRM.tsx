@@ -296,6 +296,7 @@ export function CRM() {
   const [deals, setDeals] = useState<Deal[]>(mockDeals);
   const [selectedClients, setSelectedClients] = useState<string[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
+  const [dealSearchTerm, setDealSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [advancedFilters, setAdvancedFilters] = useState<any>(null);
   const [pipelineViewMode, setPipelineViewMode] = useState<"kanban" | "list">(
@@ -364,6 +365,17 @@ export function CRM() {
       return matchesSearch && matchesStatus;
     });
   }, [clients, searchTerm, statusFilter, advancedFilters]);
+
+  // Filter deals based on search term
+  const filteredDeals = useMemo(() => {
+    return deals.filter((deal) => {
+      const matchesSearch =
+        deal.title.toLowerCase().includes(dealSearchTerm.toLowerCase()) ||
+        deal.contactName.toLowerCase().includes(dealSearchTerm.toLowerCase()) ||
+        deal.organization?.toLowerCase().includes(dealSearchTerm.toLowerCase());
+      return matchesSearch;
+    });
+  }, [deals, dealSearchTerm]);
 
   // Initial pipeline stages configuration
   // PIPELINE SIMPLIFICADO: Apenas 4 estágios conforme solicitado
