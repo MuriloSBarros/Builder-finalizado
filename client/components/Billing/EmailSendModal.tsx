@@ -260,8 +260,7 @@ export function EmailSendModal({
             {documents.length > 1 ? "s" : ""}
           </DialogTitle>
           <DialogDescription>
-            Configure e envie os documentos selecionados por email usando a API
-            Resend.
+            Configure e envie os documentos selecionados por email.
           </DialogDescription>
         </DialogHeader>
 
