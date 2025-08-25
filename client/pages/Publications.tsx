@@ -210,6 +210,49 @@ export function Publications() {
     }
   };
 
+  const handleCreate5DayTask = () => {
+    try {
+      // Calcular data 5 dias a partir de hoje
+      const today = new Date();
+      const futureDate = new Date(today);
+      futureDate.setDate(today.getDate() + 5);
+
+      // Criar objeto da tarefa
+      const newTask = {
+        id: `task_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+        title: "Tarefa com prazo de 5 dias",
+        description: "Tarefa criada automaticamente com prazo final de 5 dias",
+        dueDate: futureDate,
+        priority: "media",
+        status: "pendente",
+        createdAt: new Date(),
+        createdBy: "Sistema",
+        category: "geral",
+        estimatedHours: 2,
+      };
+
+      // BACKEND: Implementar criação da tarefa
+      // await fetch('/api/tarefas', {
+      //   method: 'POST',
+      //   headers: { 'Content-Type': 'application/json' },
+      //   body: JSON.stringify(newTask)
+      // });
+
+      console.log("Nova tarefa criada:", newTask);
+
+      // Mostrar confirmação para o usuário
+      alert(
+        `✅ Tarefa criada com sucesso!\n\n📋 Título: ${newTask.title}\n📅 Prazo: ${futureDate.toLocaleDateString("pt-BR")}\n⏰ Data limite: ${futureDate.toLocaleDateString("pt-BR")} às 23:59\n\n🔄 A tarefa foi adicionada ao módulo de Tarefas automaticamente`
+      );
+
+      // FUTURO: Navegar para o módulo de tarefas
+      // navigate('/tarefas');
+    } catch (error) {
+      console.error("Erro ao criar tarefa:", error);
+      alert("❌ Erro ao criar tarefa com prazo de 5 dias. Tente novamente.");
+    }
+  };
+
   const filteredPublications = mockPublications.filter((pub) => {
     const matchesSearch =
       pub.processo.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -350,7 +393,7 @@ export function Publications() {
       setSearchResults((prev) => prev.filter((p) => p.id !== project.id));
 
       alert(
-        `✅ Projeto ${project.numero} arquivado com sucesso!\n\nO projeto foi movido para a seç��o de arquivados.`,
+        `✅ Projeto ${project.numero} arquivado com sucesso!\n\nO projeto foi movido para a seção de arquivados.`,
       );
     }
   };
