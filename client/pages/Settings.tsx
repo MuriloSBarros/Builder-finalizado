@@ -604,10 +604,6 @@ export function Settings() {
               <Scale className="h-4 w-4 mr-1" />
               <span className="hidden sm:inline">Jurídico</span>
             </TabsTrigger>
-            <TabsTrigger value="security" className="flex items-center">
-              <Shield className="h-4 w-4 mr-1" />
-              <span className="hidden sm:inline">Segurança</span>
-            </TabsTrigger>
           </TabsList>
 
           {/* Company Settings */}
