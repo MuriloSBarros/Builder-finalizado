@@ -350,7 +350,7 @@ export function Publications() {
       setSearchResults((prev) => prev.filter((p) => p.id !== project.id));
 
       alert(
-        `✅ Projeto ${project.numero} arquivado com sucesso!\n\nO projeto foi movido para a seção de arquivados.`,
+        `✅ Projeto ${project.numero} arquivado com sucesso!\n\nO projeto foi movido para a seç��o de arquivados.`,
       );
     }
   };
@@ -457,6 +457,15 @@ export function Publications() {
                           Carregar
                         </>
                       )}
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={handleCreate5DayTask}
+                      className="bg-green-50 hover:bg-green-100 border-green-200"
+                    >
+                      <Calendar className="h-4 w-4 mr-2" />
+                      Prazo 5 Dias
                     </Button>
                   </div>
                 </div>
