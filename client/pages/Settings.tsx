@@ -225,7 +225,7 @@ export function Settings() {
         `✅ Configurações da empresa salvas com sucesso!${companyName !== savedCompanyName ? "\n🏢 Nome da empresa atualizado!" : ""}${logoFile ? "\n🖼️ Logo atualizado!" : ""}${faviconFile ? "\n🌐 Favicon atualizado!" : ""}`,
       );
 
-      // Resetar arquivos após o sucesso
+      // Resetar arquivos ap��s o sucesso
       setLogoFile(null);
       setFaviconFile(null);
     } catch (error) {
@@ -595,10 +595,6 @@ export function Settings() {
               <Users className="h-4 w-4 mr-1" />
               <span className="hidden sm:inline">Usuários</span>
             </TabsTrigger>
-            <TabsTrigger value="email" className="flex items-center">
-              <Mail className="h-4 w-4 mr-1" />
-              <span className="hidden sm:inline">Email</span>
-            </TabsTrigger>
 
             <TabsTrigger value="notifications" className="flex items-center">
               <Bell className="h-4 w-4 mr-1" />
@@ -706,7 +702,7 @@ export function Settings() {
                     />
                   </div>
                   <div>
-                    <Label htmlFor="company-description">Descri��ão</Label>
+                    <Label htmlFor="company-description">Descrição</Label>
                     <Textarea
                       id="company-description"
                       placeholder="Descrição do escritório..."
@@ -1337,7 +1333,7 @@ export function Settings() {
 </head>
 <body>
     <div class="header">
-        <h1>📜 CONTRATO DE PRESTAÇÃO DE SERVIÇOS ADVOCAT��CIOS</h1>
+        <h1>📜 CONTRATO DE PRESTAÇÃO DE SERVIÇOS ADVOCATÍCIOS</h1>
         <p><strong>Contrato Nº:</strong> [NUMERO_CONTRATO]</p>
     </div>
 
@@ -2373,7 +2369,7 @@ export function Settings() {
                       .replace(/\[VALOR_TOTAL\]/g, "R$ 2.500,00")
                       .replace(
                         /\[DESCRICAO_SERVICOS\]/g,
-                        "Consultoria jur��dica especializada em direito civil",
+                        "Consultoria jurídica especializada em direito civil",
                       )
                       .replace(
                         /\[ASSINATURA\]/g,
