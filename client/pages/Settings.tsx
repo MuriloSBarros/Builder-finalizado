@@ -578,7 +578,10 @@ export function Settings() {
                       </div>
                       <div>
                         <Label htmlFor="company-phone">Telefone</Label>
-                        <Input id="company-phone" defaultValue="(11) 3333-4444" />
+                        <Input
+                          id="company-phone"
+                          defaultValue="(11) 3333-4444"
+                        />
                       </div>
                     </div>
                     <div className="space-y-4">
@@ -602,7 +605,10 @@ export function Settings() {
                       <div className="grid grid-cols-2 gap-4">
                         <div>
                           <Label htmlFor="company-zipcode">CEP</Label>
-                          <Input id="company-zipcode" defaultValue="01310-100" />
+                          <Input
+                            id="company-zipcode"
+                            defaultValue="01310-100"
+                          />
                         </div>
                         <div>
                           <Label htmlFor="company-country">País</Label>
@@ -648,7 +654,10 @@ export function Settings() {
                             )}
                           </div>
                           <div className="flex flex-col space-y-2">
-                            <Button variant="outline" onClick={handleUploadLogo}>
+                            <Button
+                              variant="outline"
+                              onClick={handleUploadLogo}
+                            >
                               <Upload className="h-4 w-4 mr-2" />
                               {logoFile ? "Trocar Logo" : "Upload Logo"}
                             </Button>
@@ -691,7 +700,9 @@ export function Settings() {
                               onClick={handleUploadFavicon}
                             >
                               <Upload className="h-4 w-4 mr-2" />
-                              {faviconFile ? "Trocar Favicon" : "Upload Favicon"}
+                              {faviconFile
+                                ? "Trocar Favicon"
+                                : "Upload Favicon"}
                             </Button>
                             {faviconFile && (
                               <div className="text-xs text-muted-foreground">
