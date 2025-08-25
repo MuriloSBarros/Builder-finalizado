@@ -225,7 +225,7 @@ export function Settings() {
         `✅ Configurações da empresa salvas com sucesso!${companyName !== savedCompanyName ? "\n🏢 Nome da empresa atualizado!" : ""}${logoFile ? "\n🖼️ Logo atualizado!" : ""}${faviconFile ? "\n🌐 Favicon atualizado!" : ""}`,
       );
 
-      // Resetar arquivos ap��s o sucesso
+      // Resetar arquivos após o sucesso
       setLogoFile(null);
       setFaviconFile(null);
     } catch (error) {
@@ -603,10 +603,6 @@ export function Settings() {
             <TabsTrigger value="legal" className="flex items-center">
               <Scale className="h-4 w-4 mr-1" />
               <span className="hidden sm:inline">Jurídico</span>
-            </TabsTrigger>
-            <TabsTrigger value="financial" className="flex items-center">
-              <DollarSign className="h-4 w-4 mr-1" />
-              <span className="hidden sm:inline">Financeiro</span>
             </TabsTrigger>
             <TabsTrigger value="security" className="flex items-center">
               <Shield className="h-4 w-4 mr-1" />
