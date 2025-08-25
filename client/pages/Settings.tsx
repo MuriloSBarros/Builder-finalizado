@@ -586,7 +586,7 @@ export function Settings() {
         </div>
 
         <Tabs value={activeTab} onValueChange={setActiveTab}>
-          <TabsList className="grid w-full grid-cols-4 md:grid-cols-7">
+          <TabsList className="grid w-full grid-cols-2 md:grid-cols-4">
             <TabsTrigger value="company" className="flex items-center">
               <Building className="h-4 w-4 mr-1" />
               <span className="hidden sm:inline">Empresa</span>
@@ -706,7 +706,7 @@ export function Settings() {
                     />
                   </div>
                   <div>
-                    <Label htmlFor="company-description">Descrição</Label>
+                    <Label htmlFor="company-description">Descri��ão</Label>
                     <Textarea
                       id="company-description"
                       placeholder="Descrição do escritório..."
@@ -1337,7 +1337,7 @@ export function Settings() {
 </head>
 <body>
     <div class="header">
-        <h1>📜 CONTRATO DE PRESTAÇÃO DE SERVIÇOS ADVOCATÍCIOS</h1>
+        <h1>📜 CONTRATO DE PRESTAÇÃO DE SERVIÇOS ADVOCAT��CIOS</h1>
         <p><strong>Contrato Nº:</strong> [NUMERO_CONTRATO]</p>
     </div>
 
@@ -2373,7 +2373,7 @@ export function Settings() {
                       .replace(/\[VALOR_TOTAL\]/g, "R$ 2.500,00")
                       .replace(
                         /\[DESCRICAO_SERVICOS\]/g,
-                        "Consultoria jurídica especializada em direito civil",
+                        "Consultoria jur��dica especializada em direito civil",
                       )
                       .replace(
                         /\[ASSINATURA\]/g,
