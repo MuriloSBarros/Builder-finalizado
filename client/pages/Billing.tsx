@@ -124,6 +124,7 @@ const mockEstimates: Estimate[] = [
     currency: 'BRL',
     status: 'SENT',
     convertedToInvoice: false,
+    tags: ['Consultoria', 'Contrato', 'Prioritário'],
     attachments: [],
     createdAt: '2024-01-15T09:00:00Z',
     updatedAt: '2024-01-15T09:00:00Z',
@@ -157,12 +158,13 @@ const mockInvoices: Invoice[] = [
     taxType: 'fixed',
     total: 2750,
     currency: 'BRL',
-    status: 'PENDING',
-    paymentStatus: 'PENDING',
+    status: 'Pendente',
+    paymentStatus: 'Pendente',
     emailSent: true,
     emailSentAt: '2024-01-20T10:00:00Z',
     remindersSent: 1,
     lastReminderAt: '2024-02-10T09:00:00Z',
+    tags: ['Fatura', 'Serviços Jurídicos', 'Janeiro'],
     attachments: [],
     createdAt: '2024-01-20T09:00:00Z',
     updatedAt: '2024-02-10T09:00:00Z',
@@ -225,7 +227,7 @@ export function Billing() {
     const totalInvoices = invoices.length;
 
     const pendingAmount = allDocuments
-      .filter(doc => ['PENDING', 'SENT', 'VIEWED'].includes(doc.status))
+      .filter(doc => ['Pendente', 'SENT', 'VIEWED'].includes(doc.status))
       .reduce((sum, doc) => sum + doc.total, 0);
 
     const paidAmount = allDocuments
@@ -329,7 +331,7 @@ export function Billing() {
         ...baseDoc,
         type: 'invoice',
         number: isEditing ? editingDocument.number : `INV-${(invoices.length + 1).toString().padStart(3, '0')}`,
-        paymentStatus: isEditing ? editingDocument.paymentStatus : 'PENDING',
+        paymentStatus: isEditing ? editingDocument.paymentStatus : 'Pendente',
         emailSent: isEditing ? editingDocument.emailSent : false,
         remindersSent: isEditing ? editingDocument.remindersSent : 0,
       };
@@ -1028,7 +1030,7 @@ export function Billing() {
               <SelectItem value="all">Todos Status</SelectItem>
               <SelectItem value="DRAFT">Rascunho</SelectItem>
               <SelectItem value="SENT">Enviado</SelectItem>
-              <SelectItem value="PENDING">Pendente</SelectItem>
+              <SelectItem value="Pendente">Pendente</SelectItem>
               <SelectItem value="PAID">Pago</SelectItem>
               <SelectItem value="OVERDUE">Vencido</SelectItem>
               <SelectItem value="CANCELLED">Cancelado</SelectItem>

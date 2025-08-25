@@ -47,7 +47,7 @@ const documentSchema = z.object({
   date: z.string().min(1, "Data é obrigatória"),
   dueDate: z.string().min(1, "Data de vencimento é obrigatória"),
   senderId: z.string().min(1, "Remetente é obrigatório"),
-  receiverId: z.string().min(1, "Destinatário é obrigatório"),
+  receiverId: z.string().min(1, "Destinatário é obrigat��rio"),
   title: z.string().min(1, "Título é obrigatório"),
   description: z.string().optional(),
   currency: z.enum(["BRL", "USD", "EUR"]),
@@ -57,6 +57,8 @@ const documentSchema = z.object({
   feeType: z.enum(["percentage", "fixed"]),
   tax: z.number().min(0, "Imposto deve ser positivo"),
   taxType: z.enum(["percentage", "fixed"]),
+  status: z.enum(["DRAFT", "SENT", "VIEWED", "APPROVED", "REJECTED", "Pendente", "PAID", "OVERDUE", "CANCELLED"]),
+  tags: z.array(z.string()).optional(),
   notes: z.string().optional(),
 }).refine((data) => true, {
   message: "Pelo menos um item deve ser adicionado",
@@ -163,6 +165,8 @@ export function DocumentForm({
       feeType: doc?.feeType || "fixed",
       tax: doc?.tax || 0,
       taxType: doc?.taxType || "percentage",
+      status: doc?.status || "DRAFT",
+      tags: doc?.tags || [],
       notes: doc?.notes || "",
     },
   });
@@ -797,6 +801,69 @@ export function DocumentForm({
                   <span>{formatCurrency(calculations.total)}</span>
                 </div>
               </div>
+            </div>
+
+            {/* Status and Tags */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <FormField
+                control={form.control}
+                name="status"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Status</FormLabel>
+                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Selecione o status" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        <SelectItem value="DRAFT">Rascunho</SelectItem>
+                        <SelectItem value="SENT">Enviado</SelectItem>
+                        <SelectItem value="VIEWED">Visualizado</SelectItem>
+                        <SelectItem value="APPROVED">Aprovado</SelectItem>
+                        <SelectItem value="REJECTED">Rejeitado</SelectItem>
+                        <SelectItem value="Pendente">Pendente</SelectItem>
+                        <SelectItem value="PAID">Pago</SelectItem>
+                        <SelectItem value="OVERDUE">Vencido</SelectItem>
+                        <SelectItem value="CANCELLED">Cancelado</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="tags"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Tags</FormLabel>
+                    <FormControl>
+                      <Input
+                        placeholder="Digite as tags separadas por vírgula"
+                        value={field.value?.join(", ") || ""}
+                        onChange={(e) => {
+                          const tags = e.target.value
+                            .split(",")
+                            .map((tag) => tag.trim())
+                            .filter((tag) => tag.length > 0);
+                          field.onChange(tags);
+                        }}
+                      />
+                    </FormControl>
+                    <div className="flex flex-wrap gap-1 mt-2">
+                      {field.value?.map((tag, index) => (
+                        <Badge key={index} variant="secondary">
+                          {tag}
+                        </Badge>
+                      ))}
+                    </div>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
             </div>
 
             {/* Notes */}

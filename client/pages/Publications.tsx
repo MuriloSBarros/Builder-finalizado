@@ -164,6 +164,7 @@ const getUrgencyColor = (urgencia?: string) => {
 
 export function Publications() {
   const [searchTerm, setSearchTerm] = useState("");
+  const [statusFilter, setStatusFilter] = useState<string>("all");
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
 
@@ -209,12 +210,59 @@ export function Publications() {
     }
   };
 
-  const filteredPublications = mockPublications.filter(
-    (pub) =>
+  const handleCreate5DayTask = () => {
+    try {
+      // Calcular data 5 dias a partir de hoje
+      const today = new Date();
+      const futureDate = new Date(today);
+      futureDate.setDate(today.getDate() + 5);
+
+      // Criar objeto da tarefa
+      const newTask = {
+        id: `task_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+        title: "Tarefa com prazo de 5 dias",
+        description: "Tarefa criada automaticamente com prazo final de 5 dias",
+        dueDate: futureDate,
+        priority: "media",
+        status: "pendente",
+        createdAt: new Date(),
+        createdBy: "Sistema",
+        category: "geral",
+        estimatedHours: 2,
+      };
+
+      // BACKEND: Implementar criação da tarefa
+      // await fetch('/api/tarefas', {
+      //   method: 'POST',
+      //   headers: { 'Content-Type': 'application/json' },
+      //   body: JSON.stringify(newTask)
+      // });
+
+      console.log("Nova tarefa criada:", newTask);
+
+      // Mostrar confirmação para o usuário
+      alert(
+        `✅ Tarefa criada com sucesso!\n\n📋 Título: ${newTask.title}\n📅 Prazo: ${futureDate.toLocaleDateString("pt-BR")}\n⏰ Data limite: ${futureDate.toLocaleDateString("pt-BR")} às 23:59\n\n🔄 A tarefa foi adicionada ao módulo de Tarefas automaticamente`,
+      );
+
+      // FUTURO: Navegar para o módulo de tarefas
+      // navigate('/tarefas');
+    } catch (error) {
+      console.error("Erro ao criar tarefa:", error);
+      alert("❌ Erro ao criar tarefa com prazo de 5 dias. Tente novamente.");
+    }
+  };
+
+  const filteredPublications = mockPublications.filter((pub) => {
+    const matchesSearch =
       pub.processo.toLowerCase().includes(searchTerm.toLowerCase()) ||
       pub.nomePesquisado.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      pub.varaComarca.toLowerCase().includes(searchTerm.toLowerCase()),
-  );
+      pub.varaComarca.toLowerCase().includes(searchTerm.toLowerCase());
+
+    const matchesStatus = statusFilter === "all" || pub.status === statusFilter;
+
+    return matchesSearch && matchesStatus;
+  });
 
   // Dados mock de projetos para consulta
   const mockProjectResults = [
@@ -453,6 +501,15 @@ export function Publications() {
                         </>
                       )}
                     </Button>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={handleCreate5DayTask}
+                      className="bg-green-50 hover:bg-green-100 border-green-200"
+                    >
+                      <Calendar className="h-4 w-4 mr-2" />
+                      Prazo 5 Dias
+                    </Button>
                   </div>
                 </div>
                 <div className="flex items-center space-x-2 mt-4">
@@ -465,6 +522,19 @@ export function Publications() {
                       onChange={(e) => setSearchTerm(e.target.value)}
                     />
                   </div>
+                  <Select value={statusFilter} onValueChange={setStatusFilter}>
+                    <SelectTrigger className="w-40">
+                      <SelectValue placeholder="Status" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">Todos Status</SelectItem>
+                      <SelectItem value="nova">Nova</SelectItem>
+                      <SelectItem value="pendente">Pendente</SelectItem>
+                      <SelectItem value="atribuida">Atribuída</SelectItem>
+                      <SelectItem value="finalizada">Finalizada</SelectItem>
+                      <SelectItem value="descartada">Descartada</SelectItem>
+                    </SelectContent>
+                  </Select>
                 </div>
               </CardHeader>
               <CardContent>

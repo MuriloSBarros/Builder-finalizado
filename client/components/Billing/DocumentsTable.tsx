@@ -162,6 +162,7 @@ export function DocumentsTable({
             <TableHead>Data/Vencimento</TableHead>
             <TableHead>Valor</TableHead>
             <TableHead>Status</TableHead>
+            <TableHead>Tags</TableHead>
             <TableHead>Tipo</TableHead>
             <TableHead className="w-12">Ações</TableHead>
           </TableRow>
@@ -169,7 +170,7 @@ export function DocumentsTable({
         <TableBody>
           {documents.length === 0 ? (
             <TableRow>
-              <TableCell colSpan={8} className="text-center py-8 text-muted-foreground">
+              <TableCell colSpan={9} className="text-center py-8 text-muted-foreground">
                 Nenhum documento encontrado
               </TableCell>
             </TableRow>
@@ -238,6 +239,24 @@ export function DocumentsTable({
                       </Badge>
                     </div>
                   )}
+                </TableCell>
+                <TableCell>
+                  <div className="flex flex-wrap gap-1">
+                    {document.tags && document.tags.length > 0 ? (
+                      document.tags.slice(0, 2).map((tag, index) => (
+                        <Badge key={index} variant="outline" className="text-xs">
+                          {tag}
+                        </Badge>
+                      ))
+                    ) : (
+                      <span className="text-xs text-muted-foreground">-</span>
+                    )}
+                    {document.tags && document.tags.length > 2 && (
+                      <Badge variant="outline" className="text-xs">
+                        +{document.tags.length - 2}
+                      </Badge>
+                    )}
+                  </div>
                 </TableCell>
                 <TableCell>
                   <div className="space-y-1">

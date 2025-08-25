@@ -185,7 +185,6 @@ Equipe Financeira`;
               <SelectContent>
                 <SelectItem value="whatsapp">📱 WhatsApp</SelectItem>
                 <SelectItem value="email">📧 Email</SelectItem>
-                <SelectItem value="sms">💬 SMS</SelectItem>
               </SelectContent>
             </Select>
           </div>
