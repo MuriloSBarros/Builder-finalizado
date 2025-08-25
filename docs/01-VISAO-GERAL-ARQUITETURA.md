@@ -3,6 +3,7 @@
 ## 🎯 VISÃO GERAL E ARQUITETURA
 
 ### Resumo Executivo
+
 Sistema SAAS (Software as a Service) para gestão completa de escritórios de advocacia, oferecendo múltiplos módulos integrados com isolamento de dados por tenant e diferentes níveis de acesso por tipo de conta.
 
 ---
@@ -10,19 +11,21 @@ Sistema SAAS (Software as a Service) para gestão completa de escritórios de ad
 ## 🏗️ ARQUITETURA GERAL
 
 ### Stack Tecnológico Principal
+
 - **Frontend**: React 18 + TypeScript + Vite + TailwindCSS
-- **Backend**: Node.js + Express + TypeScript  
+- **Backend**: Node.js + Express + TypeScript
 - **Banco de Dados**: PostgreSQL com separação por Schema
 - **Autenticação**: JWT + Refresh Token Rotativo
 - **Armazenamento**: AWS S3 para arquivos
 - **Notificações**: Sistema interno + APIs externas
 
 ### Arquitetura Multi-Tenant
+
 ```
 PostgreSQL Database
 ├── tenant_1_schema/
 │   ├── users
-│   ├── clients  
+│   ├── clients
 │   ├── projects
 │   ├── tasks
 │   └── ...
@@ -41,12 +44,14 @@ PostgreSQL Database
 ## 🔐 SISTEMA DE SEGURANÇA
 
 ### Autenticação e Autorização
+
 - **JWT Access Token**: 15 minutos de validade
 - **Refresh Token Rotativo**: 7 dias, renovado a cada uso
 - **Hash de Senhas**: bcrypt com salt rounds 12
 - **Rate Limiting**: Por endpoint e por tenant
 
 ### Isolamento de Dados
+
 - **Schema por Tenant**: Isolamento completo no PostgreSQL
 - **Middleware de Tenant**: Identificação automática via JWT
 - **Validação de Acesso**: Por tipo de conta e tenant
@@ -56,16 +61,19 @@ PostgreSQL Database
 ## 👥 TIPOS DE CONTA
 
 ### 1. Conta Simples
+
 - **Dashboard**: Apenas estatísticas de clientes (gráficos financeiros zerados)
 - **Funcionalidades**: CRM, Projetos, Tarefas básicas
 - **Limitações**: Sem acesso a dados financeiros detalhados
 
-### 2. Conta Composta  
+### 2. Conta Composta
+
 - **Dashboard**: Acesso completo a todos os gráficos
 - **Funcionalidades**: Todos os módulos exceto Configurações
 - **Permissões**: Visualização e edição de dados financeiros
 
 ### 3. Conta Gerencial
+
 - **Dashboard**: Acesso total + métricas avançadas
 - **Funcionalidades**: Todos os módulos incluindo Configurações
 - **Permissões**: Administração completa do tenant
@@ -75,12 +83,14 @@ PostgreSQL Database
 ## 🔗 INTEGRAÇÕES EXTERNAS
 
 ### APIs Principais
+
 - **Resend API**: Envio de emails e notificações
 - **Stripe API**: Processamento de pagamentos
 - **WhatsApp Business API**: Notificações via n8n
 - **APIs Jurídicas**: CNJ-DATAJUD / Codilo / JusBrasil
 
 ### Rate Limiting Strategy
+
 ```javascript
 // Configuração de Rate Limiting
 {
@@ -100,18 +110,18 @@ graph TB
     A[CRM - Clientes] --> B[Cobrança]
     A --> C[Gestão Recebíveis]
     A --> D[Dashboard]
-    
+
     E[Projetos] --> F[Tarefas]
     E --> D
-    
+
     G[Fluxo de Caixa] --> D
     G --> H[Relatórios]
-    
+
     B --> C
     C --> I[Notificações]
-    
+
     J[Painel Publicações] --> K[Dados OAB]
-    
+
     L[Configurações] --> M[Usuários]
     L --> N[Empresa]
     L --> I
@@ -124,25 +134,29 @@ graph TB
 ### Para TODAS as operações (Create, Update, Delete):
 
 1. **🔍 Validação de Entrada**
+
    - Schema validation (Zod)
    - Verificação de permissões
    - Validação de tenant
 
 2. **💾 Operação no Banco**
+
    - Transação segura
    - Registro na tabela principal
    - Log de auditoria
 
 3. **📝 Registro de Auditoria**
+
    ```sql
    INSERT INTO audit_log (
-     tenant_id, user_id, table_name, 
-     operation, old_data, new_data, 
+     tenant_id, user_id, table_name,
+     operation, old_data, new_data,
      timestamp, ip_address
    )
    ```
 
 4. **🔔 Sistema de Notificações**
+
    - **Interna**: Para contas do mesmo tenant
    - **Externa**: Para clientes (quando aplicável)
    - **Log**: Registro de todas as notificações
@@ -156,6 +170,7 @@ graph TB
 ## 🗃️ ESTRUTURA DE DADOS
 
 ### Schema Base por Tenant
+
 ```sql
 -- Tabelas principais por tenant
 CREATE SCHEMA tenant_{id};
@@ -205,6 +220,7 @@ CREATE TABLE tenant_{id}.audit_log (
 ## 🔒 ADMINISTRAÇÃO GLOBAL
 
 ### Schema Admin (Fora dos Tenants)
+
 ```sql
 CREATE SCHEMA admin;
 
@@ -234,12 +250,14 @@ CREATE TABLE admin.system_logs (
 ## 📈 MONITORAMENTO E OBSERVABILIDADE
 
 ### Métricas de Sistema
+
 - **Performance**: Tempo de resposta por endpoint
 - **Utilização**: Queries por tenant, storage usado
 - **Erros**: Taxa de erro por módulo/API
 - **Segurança**: Tentativas de login, acessos suspeitos
 
 ### Alertas Críticos
+
 - **Alta utilização** de CPU/Memória
 - **Falhas** em APIs externas
 - **Tentativas** de acesso não autorizado
@@ -250,12 +268,14 @@ CREATE TABLE admin.system_logs (
 ## 🚀 ESCALABILIDADE
 
 ### Horizontal Scaling
+
 - **Load Balancer**: Distribuição de carga
 - **Microservices**: Separação por módulo (futuro)
 - **Cache**: Redis para dados frequentes
 - **CDN**: Para arquivos estáticos
 
-### Vertical Scaling  
+### Vertical Scaling
+
 - **Database**: Read replicas para consultas
 - **Storage**: S3 com CloudFront
 - **Background Jobs**: Queue system (Bull/BullMQ)
@@ -271,6 +291,6 @@ CREATE TABLE admin.system_logs (
 
 ---
 
-*📅 Criado em: $(date)*  
-*🔄 Última atualização: $(date)*  
-*👤 Autor: Documentação Técnica*
+_📅 Criado em: $(date)_  
+_🔄 Última atualização: $(date)_  
+_👤 Autor: Documentação Técnica_
