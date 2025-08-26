@@ -319,7 +319,7 @@ export function Tasks() {
   // Calculate task statistics
 
   // Get unique assignees for filter
-  const assignees = [...new Set(tasks.map((task: any) => task.assigned_to))];
+  const assignees = [...new Set(tasks.map((task: any) => task.assignedTo))];
 
   return (
     <DashboardLayout>
