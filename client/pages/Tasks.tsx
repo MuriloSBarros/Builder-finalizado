@@ -498,7 +498,7 @@ export function Tasks() {
               </div>
             )}
             {!tasksLoading && !tasksError && (
-            {viewMode === 'kanban' ? (
+            viewMode === 'kanban' ? (
               <TaskBoard
                 boards={taskBoards}
                 onAddTask={handleAddTask}
@@ -517,7 +517,7 @@ export function Tasks() {
                 onMoveTask={handleMoveTask}
               />
             )}
-            )}
+            )
           </CardContent>
         </Card>
 

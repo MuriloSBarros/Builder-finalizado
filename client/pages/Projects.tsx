@@ -453,7 +453,7 @@ export function Projects() {
               </div>
             )}
             {!projectsLoading && !projectsError && (
-            {viewMode === 'kanban' ? (
+            viewMode === 'kanban' ? (
               <ProjectKanban
                 stages={projectStages}
                 onAddProject={handleAddProject}
@@ -470,7 +470,7 @@ export function Projects() {
                 onViewProject={handleViewProject}
                 onMoveProject={handleMoveProject}
               />
-            )}
+            )
             )}
           </CardContent>
         </Card>
