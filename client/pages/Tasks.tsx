@@ -516,9 +516,8 @@ export function Tasks() {
                 onViewTask={handleViewTask}
                 onMoveTask={handleMoveTask}
               />
+            ))}
             )}
-            )
-          </CardContent>
         </Card>
 
         {/* Task Form Modal */}
