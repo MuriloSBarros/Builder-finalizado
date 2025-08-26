@@ -13,5 +13,7 @@ router.delete('/clients/:id', authenticateToken, tenantMiddleware, crmController
 // Deals/Pipeline
 router.get('/deals', authenticateToken, tenantMiddleware, crmController.getDeals);
 router.post('/deals', authenticateToken, tenantMiddleware, crmController.createDeal);
+router.put('/deals/:id', authenticateToken, tenantMiddleware, crmController.updateDeal);
+router.delete('/deals/:id', authenticateToken, tenantMiddleware, crmController.deleteDeal);
 
 export { router as crmRoutes };

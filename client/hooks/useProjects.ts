@@ -19,7 +19,7 @@ export const useProjects = (filters?: any) => {
 
       setProjects(projectsData);
       setStats(statsData);
-    } catch (err) {
+    } catch (err: any) {
       setError(err.message);
       console.error('Projects fetch error:', err);
     } finally {
@@ -30,7 +30,7 @@ export const useProjects = (filters?: any) => {
   const createProject = async (projectData: any) => {
     try {
       const newProject = await apiService.createProject(projectData);
-      setProjects(prev => [newProject, ...prev]);
+      setProjects((prev: any) => [newProject, ...prev]);
       await fetchProjects(); // Refresh stats
       return newProject;
     } catch (err) {
@@ -42,7 +42,7 @@ export const useProjects = (filters?: any) => {
   const updateProject = async (id: string, projectData: any) => {
     try {
       const updatedProject = await apiService.updateProject(id, projectData);
-      setProjects(prev => prev.map(project => 
+      setProjects((prev: any) => prev.map((project: any) => 
         project.id === id ? updatedProject : project
       ));
       await fetchProjects(); // Refresh stats
@@ -56,7 +56,7 @@ export const useProjects = (filters?: any) => {
   const deleteProject = async (id: string) => {
     try {
       await apiService.deleteProject(id);
-      setProjects(prev => prev.filter(project => project.id !== id));
+      setProjects((prev: any) => prev.filter((project: any) => project.id !== id));
       await fetchProjects(); // Refresh stats
     } catch (err) {
       console.error('Delete project error:', err);

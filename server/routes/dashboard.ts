@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import { dashboardController } from '../controllers/dashboardController';
-import { authenticateToken, tenantMiddleware, requireAccountType } from '../config/auth';
+import { authenticateToken, tenantMiddleware } from '../config/auth';
 
 const router = Router();
 

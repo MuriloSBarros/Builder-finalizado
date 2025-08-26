@@ -193,7 +193,7 @@ export class CRMController {
 
       const result = await tenantDb.query(`
         UPDATE \${schema}.clients 
-        SET is_active = false, updated_at = NOW()
+        SET status = 'inactive', updated_at = NOW()
         WHERE id = $1
         RETURNING name
       `, [id]);
@@ -276,6 +276,65 @@ export class CRMController {
     } catch (error) {
       console.error('Create deal error:', error);
       res.status(500).json({ error: 'Erro ao criar negócio' });
+    }
+  }
+
+  async updateDeal(req: AuthenticatedRequest, res: Response) {
+    try {
+      const { id } = req.params;
+      const tenantDb = req.db;
+      const dealData = req.body;
+
+      const result = await tenantDb.query(`
+        UPDATE \${schema}.deals SET
+          title = $1, contact_name = $2, organization = $3, email = $4, mobile = $5,
+          address = $6, budget = $7, currency = $8, stage = $9, tags = $10,
+          description = $11, updated_at = NOW()
+        WHERE id = $12
+        RETURNING *
+      `, [
+        dealData.title,
+        dealData.contactName,
+        dealData.organization,
+        dealData.email,
+        dealData.mobile,
+        dealData.address,
+        dealData.budget,
+        dealData.currency,
+        dealData.stage,
+        dealData.tags,
+        dealData.description,
+        id,
+      ]);
+
+      if (result.rows.length === 0) {
+        return res.status(404).json({ error: 'Negócio não encontrado' });
+      }
+
+      res.json(result.rows[0]);
+    } catch (error) {
+      console.error('Update deal error:', error);
+      res.status(500).json({ error: 'Erro ao atualizar negócio' });
+    }
+  }
+
+  async deleteDeal(req: AuthenticatedRequest, res: Response) {
+    try {
+      const { id } = req.params;
+      const tenantDb = req.db;
+
+      const result = await tenantDb.query(`
+        DELETE FROM \${schema}.deals WHERE id = $1 RETURNING title
+      `, [id]);
+
+      if (result.rows.length === 0) {
+        return res.status(404).json({ error: 'Negócio não encontrado' });
+      }
+
+      res.json({ message: 'Negócio removido com sucesso' });
+    } catch (error) {
+      console.error('Delete deal error:', error);
+      res.status(500).json({ error: 'Erro ao remover negócio' });
     }
   }
 }

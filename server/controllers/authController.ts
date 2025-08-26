@@ -188,21 +188,40 @@ export class AuthController {
       // Verificar refresh token
       const decoded = await authService.verifyRefreshToken(refreshToken);
 
-      // Buscar tenant do usuário
+      // Buscar tenant do usuário - precisa buscar em todos os tenants
       const tenantResult = await db.query(`
         SELECT t.id, t.name 
         FROM admin.tenants t
-        WHERE EXISTS (
-          SELECT 1 FROM "${t.schema}".users u 
-          WHERE u.id = $1 AND u.is_active = true
-        )
-      `, [decoded.userId]);
+        WHERE t.is_active = true
+      `);
 
-      if (tenantResult.rows.length === 0) {
+      let user = null;
+      let tenant = null;
+
+      for (const t of tenantResult.rows) {
+        try {
+          const tenantDb = db.getTenantConnection(t.id);
+          const userResult = await tenantDb.query(`
+            SELECT id, email, name, account_type, is_active
+            FROM \${schema}.users 
+            WHERE id = $1 AND is_active = true
+          `, [decoded.userId]);
+
+          if (userResult.rows.length > 0) {
+            user = userResult.rows[0];
+            tenant = t;
+            break;
+          }
+        } catch (error) {
+          // Schema pode não existir, continuar procurando
+          continue;
+        }
+      }
+
+      if (!user || !tenant) {
         return res.status(401).json({ error: 'Usuário não encontrado' });
       }
 
-      const tenant = tenantResult.rows[0];
       const tenantDb = db.getTenantConnection(tenant.id);
 
       // Verificar se refresh token existe no banco
@@ -230,19 +249,6 @@ export class AuthController {
         SET is_active = false 
         WHERE id = $1
       `, [validToken.id]);
-
-      // Buscar dados atualizados do usuário
-      const userResult = await tenantDb.query(`
-        SELECT id, email, name, account_type, is_active
-        FROM \${schema}.users 
-        WHERE id = $1
-      `, [decoded.userId]);
-
-      const user = userResult.rows[0];
-
-      if (!user || !user.is_active) {
-        return res.status(401).json({ error: 'Usuário inativo' });
-      }
 
       // Gerar novos tokens
       const newTokens = authService.generateTokens({
@@ -277,15 +283,19 @@ export class AuthController {
       const accessToken = authHeader && authHeader.split(' ')[1];
 
       if (accessToken) {
-        const decoded = await authService.verifyAccessToken(accessToken);
-        const tenantDb = db.getTenantConnection(decoded.tenantId);
+        try {
+          const decoded = await authService.verifyAccessToken(accessToken);
+          const tenantDb = db.getTenantConnection(decoded.tenantId);
 
-        // Invalidar todos os refresh tokens do usuário
-        await tenantDb.query(`
-          UPDATE \${schema}.refresh_tokens 
-          SET is_active = false 
-          WHERE user_id = $1
-        `, [decoded.userId]);
+          // Invalidar todos os refresh tokens do usuário
+          await tenantDb.query(`
+            UPDATE \${schema}.refresh_tokens 
+            SET is_active = false 
+            WHERE user_id = $1
+          `, [decoded.userId]);
+        } catch (error) {
+          // Token pode estar expirado, ignorar erro
+        }
       }
 
       res.json({ message: 'Logout realizado com sucesso' });

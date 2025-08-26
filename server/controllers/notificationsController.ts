@@ -48,7 +48,7 @@ export class NotificationsController {
 
       await tenantDb.query(`
         UPDATE \${schema}.notifications 
-        SET read = true, updated_at = NOW()
+        SET read = true
         WHERE user_id = $1 AND read = false
       `, [req.user.userId]);
 

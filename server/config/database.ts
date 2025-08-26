@@ -21,12 +21,88 @@ export class DatabaseManager {
       const duration = Date.now() - start;
       
       if (duration > 1000) {
-        console.warn('Slow query detected:', { text, duration, params });
+        console.warn('Slow query detected:', { text: text.substring(0, 100), duration });
       }
       
       return res;
     } catch (error) {
-      console.error('Database query error:', { text, params, error: error.message });
+      console.error('Database query error:', { 
+        text: text.substring(0, 100), 
+        params, 
+        error: error.message 
+      });
+      throw error;
+    }
+  }
+
+  async initializeDatabase() {
+    try {
+      console.log('🔧 Inicializando banco de dados...');
+
+      // Criar schema admin
+      await this.query(`CREATE SCHEMA IF NOT EXISTS admin`);
+
+      // Criar tabela de tenants
+      await this.query(`
+        CREATE TABLE IF NOT EXISTS admin.tenants (
+          id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+          name VARCHAR NOT NULL,
+          admin_email VARCHAR UNIQUE NOT NULL,
+          oab_number VARCHAR,
+          schema_name VARCHAR UNIQUE,
+          plan_type VARCHAR DEFAULT 'basic',
+          is_active BOOLEAN DEFAULT true,
+          max_users INTEGER DEFAULT 5,
+          max_storage_gb INTEGER DEFAULT 10,
+          created_at TIMESTAMP DEFAULT NOW(),
+          updated_at TIMESTAMP DEFAULT NOW()
+        )
+      `);
+
+      // Criar tabela de migrations
+      await this.query(`
+        CREATE TABLE IF NOT EXISTS admin.tenant_migrations (
+          id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+          tenant_id UUID REFERENCES admin.tenants(id),
+          migration_name VARCHAR NOT NULL,
+          executed_at TIMESTAMP DEFAULT NOW(),
+          UNIQUE(tenant_id, migration_name)
+        )
+      `);
+
+      // Criar tenant demo se não existir
+      const demoTenant = await this.query(`
+        SELECT id FROM admin.tenants WHERE admin_email = 'admin@escritorio.com'
+      `);
+
+      if (demoTenant.rows.length === 0) {
+        console.log('📝 Criando tenant de demonstração...');
+        
+        const tenantResult = await this.query(`
+          INSERT INTO admin.tenants (name, admin_email, oab_number, is_active)
+          VALUES ('Escritório Silva & Associados', 'admin@escritorio.com', '123456/SP', true)
+          RETURNING id
+        `);
+
+        const tenantId = tenantResult.rows[0].id;
+        await this.createTenantSchema(tenantId);
+
+        // Criar usuário demo
+        const bcrypt = require('bcryptjs');
+        const passwordHash = await bcrypt.hash('123456', 12);
+        
+        const tenantDb = this.getTenantConnection(tenantId);
+        await tenantDb.query(`
+          INSERT INTO \${schema}.users (email, password_hash, name, account_type, is_active)
+          VALUES ('admin@escritorio.com', $1, 'Dr. Advogado', 'gerencial', true)
+        `, [passwordHash]);
+
+        console.log('✅ Tenant demo criado - Email: admin@escritorio.com | Senha: 123456');
+      }
+
+      console.log('✅ Banco de dados inicializado!');
+    } catch (error) {
+      console.error('❌ Erro ao inicializar banco:', error);
       throw error;
     }
   }
@@ -245,6 +321,9 @@ export class DatabaseManager {
           intervalo_dias INTEGER DEFAULT 30,
           proxima_fatura_data DATE,
           urgencia VARCHAR CHECK (urgencia IN ('baixa', 'media', 'alta')) DEFAULT 'media',
+          cliente_nome VARCHAR,
+          cliente_email VARCHAR,
+          cliente_telefone VARCHAR,
           criado_por VARCHAR,
           observacoes TEXT,
           created_at TIMESTAMP DEFAULT NOW(),
@@ -267,6 +346,24 @@ export class DatabaseManager {
           urgencia VARCHAR CHECK (urgencia IN ('baixa', 'media', 'alta')) DEFAULT 'media',
           numero_processo VARCHAR,
           cliente VARCHAR,
+          created_at TIMESTAMP DEFAULT NOW(),
+          updated_at TIMESTAMP DEFAULT NOW()
+        );
+
+        -- Deals table (CRM Pipeline)
+        CREATE TABLE IF NOT EXISTS "${schemaName}".deals (
+          id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+          title VARCHAR NOT NULL,
+          contact_name VARCHAR NOT NULL,
+          organization VARCHAR,
+          email VARCHAR NOT NULL,
+          mobile VARCHAR NOT NULL,
+          address VARCHAR,
+          budget DECIMAL(15,2) DEFAULT 0,
+          currency VARCHAR DEFAULT 'BRL',
+          stage VARCHAR CHECK (stage IN ('contacted', 'proposal', 'won', 'lost')) DEFAULT 'contacted',
+          tags TEXT[],
+          description TEXT,
           created_at TIMESTAMP DEFAULT NOW(),
           updated_at TIMESTAMP DEFAULT NOW()
         );
@@ -332,9 +429,12 @@ export class DatabaseManager {
         CREATE INDEX IF NOT EXISTS idx_cash_flow_date ON "${schemaName}".cash_flow(date);
         CREATE INDEX IF NOT EXISTS idx_publications_user_id ON "${schemaName}".publications(user_id);
         CREATE INDEX IF NOT EXISTS idx_audit_log_timestamp ON "${schemaName}".audit_log(timestamp);
+        CREATE INDEX IF NOT EXISTS idx_notifications_user_read ON "${schemaName}".notifications(user_id, read);
+        CREATE INDEX IF NOT EXISTS idx_receivables_status ON "${schemaName}".receivables_invoices(status);
+        CREATE INDEX IF NOT EXISTS idx_receivables_vencimento ON "${schemaName}".receivables_invoices(data_vencimento);
       `);
 
-      -- Criar função de auditoria
+      // Criar função de auditoria
       await this.query(`
         CREATE OR REPLACE FUNCTION "${schemaName}".audit_trigger_function()
         RETURNS TRIGGER AS $trigger$
@@ -368,9 +468,9 @@ export class DatabaseManager {
         `);
       }
 
-      console.log(`Schema ${schemaName} created successfully`);
+      console.log(`✅ Schema ${schemaName} criado com sucesso`);
     } catch (error) {
-      console.error(`Error creating schema ${schemaName}:`, error);
+      console.error(`❌ Erro ao criar schema ${schemaName}:`, error);
       throw error;
     }
   }

@@ -51,7 +51,7 @@ export class NotificationService {
 
       // Criar notificação para cada usuário
       const notifications = await Promise.all(
-        users.rows.map(user => 
+        users.rows.map((user: any) => 
           this.createNotification({
             ...data,
             userId: user.id
@@ -112,7 +112,7 @@ export class NotificationService {
       
       const result = await tenantDb.query(`
         UPDATE \${schema}.notifications 
-        SET read = true, updated_at = NOW()
+        SET read = true
         WHERE id = $1
         RETURNING *
       `, [notificationId]);

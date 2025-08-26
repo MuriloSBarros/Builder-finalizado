@@ -219,7 +219,7 @@ export class CashFlowController {
 
       const csvContent = [
         headers.join(','),
-        ...result.rows.map(row => [
+        ...result.rows.map((row: any) => [
           row.date,
           row.type === 'income' ? 'Receita' : 'Despesa',
           `"${row.description}"`,

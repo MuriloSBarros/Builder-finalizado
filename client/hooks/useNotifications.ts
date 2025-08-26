@@ -19,7 +19,7 @@ export const useNotifications = (filters?: any) => {
 
       setNotifications(notificationsData);
       setUnreadCount(unreadData.unreadCount);
-    } catch (err) {
+    } catch (err: any) {
       setError(err.message);
       console.error('Notifications fetch error:', err);
     } finally {
@@ -30,7 +30,7 @@ export const useNotifications = (filters?: any) => {
   const markAsRead = async (id: string) => {
     try {
       await apiService.markNotificationAsRead(id);
-      setNotifications(prev => prev.map(notif => 
+      setNotifications((prev: any) => prev.map((notif: any) => 
         notif.id === id ? { ...notif, read: true } : notif
       ));
       setUnreadCount(prev => Math.max(0, prev - 1));
@@ -43,7 +43,7 @@ export const useNotifications = (filters?: any) => {
   const markAllAsRead = async () => {
     try {
       await apiService.markAllNotificationsAsRead();
-      setNotifications(prev => prev.map(notif => ({ ...notif, read: true })));
+      setNotifications((prev: any) => prev.map((notif: any) => ({ ...notif, read: true })));
       setUnreadCount(0);
     } catch (err) {
       console.error('Mark all as read error:', err);
@@ -54,10 +54,10 @@ export const useNotifications = (filters?: any) => {
   const deleteNotification = async (id: string) => {
     try {
       await apiService.deleteNotification(id);
-      setNotifications(prev => prev.filter(notif => notif.id !== id));
+      setNotifications((prev: any) => prev.filter((notif: any) => notif.id !== id));
       
       // Atualizar contador se era não lida
-      const notification = notifications.find(n => n.id === id);
+      const notification = notifications.find((n: any) => n.id === id);
       if (notification && !notification.read) {
         setUnreadCount(prev => Math.max(0, prev - 1));
       }

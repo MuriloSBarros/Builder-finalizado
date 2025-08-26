@@ -1,36 +1,13 @@
-/**
- * SISTEMA DE GESTÃO JURÍDICA - DASHBOARD PRINCIPAL
- * ================================================
- *
- * Dashboard central do sistema de gestão para escritórios de advocacia.
- * Fornece uma visão geral completa das operações do escritório incluindo:
- *
- * MÉTRICAS PRINCIPAIS:
- * - Receitas e despesas do período
- * - Saldo atual e tendências
- * - Número de clientes ativos
- *
- * SEÇÕES DE MONITORAMENTO:
- * - Notificações urgentes e lembretes
- * - Projetos com prazos próximos
- * - Faturas a vencer
- * - Atividades recentes
- *
- * FUNCIONALIDADES:
- * - Navegação suave entre módulos
- * - Gráficos e visualizações
- * - Links rápidos para ações principais
- * - Feedback visual aprimorado
- *
- * Autor: Sistema de Gestão Jurídica
- * Data: 2024
- * Versão: 2.0
- */
-
-import React from 'react';
-import { DashboardLayout } from '@/components/Layout/DashboardLayout';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
+import React, { useState, useMemo } from "react";
+import { useClients } from '../hooks/useClients';
+import {
+  createSafeOnOpenChange,
+  createSafeDialogHandler,
+} from "@/lib/dialog-fix";
+import { DashboardLayout } from "@/components/Layout/DashboardLayout";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -38,213 +15,479 @@ import {
   BreadcrumbList,
   BreadcrumbPage,
   BreadcrumbSeparator,
-} from '@/components/ui/breadcrumb';
+} from "@/components/ui/breadcrumb";
 import {
-  TrendingUp,
-  TrendingDown,
-  DollarSign,
   Users,
-  Calendar,
-  AlertCircle,
-  FileText,
-  Clock,
   Plus,
-} from 'lucide-react';
-import { cn } from '@/lib/utils';
-import { DashboardCharts } from '@/components/Dashboard/Charts';
-import { useNavigate } from 'react-router-dom';
+  Search,
+  Filter,
+  Target,
+  BarChart3,
+  TrendingUp,
+  Grid3X3,
+  List,
+  Edit2,
+} from "lucide-react";
+import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { ClientForm } from "@/components/CRM/ClientForm";
+import { ClientsTable } from "@/components/CRM/ClientsTable";
+import { Pipeline } from "@/components/CRM/Pipeline";
+import { AdvancedFilters } from "@/components/CRM/AdvancedFilters";
+import { DealForm } from "@/components/CRM/DealForm";
+import { ClientViewDialog } from "@/components/CRM/ClientViewDialog";
+import { DealViewDialog } from "@/components/CRM/DealViewDialog";
+import { Client, Deal, PipelineStage, DealStage } from "@/types/crm";
+import { Badge } from "@/components/ui/badge";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { MoreHorizontal, Eye, Edit, Trash2 } from "lucide-react";
 
-// Mock data - would come from API in real app
-const metrics = {
-  revenue: {
-    value: 45280.00,
-    change: 15,
-    trend: 'up' as const,
-  },
-  expenses: {
-    value: 12340.00,
-    change: -8,
-    trend: 'down' as const,
-  },
-  balance: {
-    value: 32940.00,
-    change: 23,
-    trend: 'up' as const,
-  },
-  clients: {
-    value: 127,
-    change: 12,
-    trend: 'up' as const,
-    period: 'este mês',
-  },
-};
 
-const recentActivities = [
-  {
-    id: 1,
-    type: 'client',
-    message: 'Novo cliente adicionado: Maria Silva',
-    time: '2 horas atrás',
-    icon: Users,
-    color: 'text-blue-600',
-  },
-  {
-    id: 2,
-    type: 'invoice',
-    message: 'Fatura INV-001 vencendo em 3 dias',
-    time: '4 horas atrás',
-    icon: AlertCircle,
-    color: 'text-yellow-600',
-  },
-  {
-    id: 3,
-    type: 'project',
-    message: 'Projeto "Ação Trabalhista" atualizado',
-    time: '6 horas atrás',
-    icon: FileText,
-    color: 'text-green-600',
-  },
-  {
-    id: 4,
-    type: 'task',
-    message: 'Tarefa "Revisar contrato" completada',
-    time: '1 dia atrás',
-    icon: Clock,
-    color: 'text-purple-600',
-  },
-];
+interface PipelineListViewProps {
+  deals: Deal[];
+  stages: PipelineStage[];
+  onEditDeal: (deal: Deal) => void;
+  onDeleteDeal: (dealId: string) => void;
+  onMoveDeal: (dealId: string, newStage: DealStage) => void;
+  onViewDeal: (deal: Deal) => void;
+}
 
-const urgentProjects = [
-  { name: 'Ação Previdenciária - João Santos', deadline: '2024-01-15', status: 'Em Andamento' },
-  { name: 'Divórcio Consensual - Ana Costa', deadline: '2024-01-18', status: 'Revisão' },
-  { name: 'Recuperação Judicial - Tech LTDA', deadline: '2024-01-20', status: 'Aguardando Cliente' },
-];
+function PipelineListView({
+  deals,
+  stages,
+  onEditDeal,
+  onDeleteDeal,
+  onMoveDeal,
+  onViewDeal,
+}: PipelineListViewProps) {
+  const getStageInfo = (stageId: string) => {
+    const stage = stages.find((s) => s.id === stageId);
+    return stage || { name: stageId, color: "gray" };
+  };
 
-const upcomingInvoices = [
-  { number: 'INV-001', client: 'Maria Silva', amount: 2500.00, dueDate: '2024-01-15' },
-  { number: 'INV-002', client: 'João Santos', amount: 4800.00, dueDate: '2024-01-16' },
-  { number: 'INV-003', client: 'Tech LTDA', amount: 12000.00, dueDate: '2024-01-18' },
-];
+  const getStageColor = (color: string) => {
+    const colors = {
+      blue: "bg-blue-100 text-blue-800",
+      yellow: "bg-yellow-100 text-yellow-800",
+      purple: "bg-purple-100 text-purple-800",
+      orange: "bg-orange-100 text-orange-800",
+      green: "bg-green-100 text-green-800",
+      red: "bg-red-100 text-red-800",
+      gray: "bg-gray-100 text-gray-800",
+    };
+    return colors[color] || colors.gray;
+  };
 
-function MetricCard({ 
-  title, 
-  value, 
-  change, 
-  trend, 
-  icon: Icon, 
-  format = 'currency',
-  className 
-}: {
-  title: string;
-  value: number;
-  change: number;
-  trend: 'up' | 'down';
-  icon: React.ElementType;
-  format?: 'currency' | 'number';
-  className?: string;
-}) {
-  const formattedValue = format === 'currency' 
-    ? new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(value)
-    : value.toLocaleString('pt-BR');
+  const formatCurrency = (value: number) => {
+    return new Intl.NumberFormat("pt-BR", {
+      style: "currency",
+      currency: "BRL",
+    }).format(value);
+  };
 
   return (
-    <Card className={cn("relative overflow-hidden", className)}>
-      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-        <CardTitle className="text-sm font-medium text-muted-foreground">
-          {title}
-        </CardTitle>
-        <Icon className="h-4 w-4 text-muted-foreground" />
-      </CardHeader>
-      <CardContent>
-        <div className="text-2xl font-bold">{formattedValue}</div>
-        <div className="flex items-center text-xs text-muted-foreground">
-          {trend === 'up' ? (
-            <TrendingUp className="mr-1 h-3 w-3 text-green-600" />
-          ) : (
-            <TrendingDown className="mr-1 h-3 w-3 text-red-600" />
-          )}
-          <span className={trend === 'up' ? 'text-green-600' : 'text-red-600'}>
-            {change > 0 ? '+' : ''}{change}% mês
-          </span>
+    <div className="space-y-3">
+      {deals.map((deal) => {
+        const stageInfo = getStageInfo(deal.stage);
+        return (
+          <Card key={deal.id} className="hover:shadow-md transition-shadow">
+            <CardContent className="p-4">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center space-x-4 flex-1">
+                  <Avatar className="h-10 w-10">
+                    <AvatarFallback>
+                      {deal.title.substring(0, 2).toUpperCase()}
+                    </AvatarFallback>
+                  </Avatar>
+
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center space-x-2 mb-1">
+                      <h3 className="font-semibold text-sm truncate">
+                        {deal.title}
+                      </h3>
+                      <Badge className={getStageColor(stageInfo.color)}>
+                        {stageInfo.name}
+                      </Badge>
+                    </div>
+
+                    <div className="flex items-center space-x-4 text-xs text-muted-foreground">
+                      <span>{deal.clientName}</span>
+                      <span>•</span>
+                      <span>{formatCurrency(deal.value)}</span>
+                      <span>•</span>
+                      <span>
+                        Criado:{" "}
+                        {new Date(deal.createdAt).toLocaleDateString("pt-BR")}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="flex items-center space-x-2">
+                  <div className="text-right">
+                    <div className="text-sm font-medium">
+                      {deal.probability}%
+                    </div>
+                    <div className="text-xs text-muted-foreground">Prob.</div>
+                  </div>
+
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button variant="ghost" size="sm">
+                        <MoreHorizontal className="h-4 w-4" />
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end">
+                      <DropdownMenuItem onClick={() => onViewDeal(deal)}>
+                        <Eye className="h-4 w-4 mr-2" />
+                        Visualizar
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => onEditDeal(deal)}>
+                        <Edit className="h-4 w-4 mr-2" />
+                        Editar
+                      </DropdownMenuItem>
+                      <DropdownMenuItem
+                        onClick={() => onDeleteDeal(deal.id)}
+                        className="text-red-600"
+                      >
+                        <Trash2 className="h-4 w-4 mr-2" />
+                        Excluir
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        );
+      })}
+
+      {deals.length === 0 && (
+        <div className="text-center py-8 text-muted-foreground">
+          Nenhum deal encontrado no pipeline.
         </div>
-      </CardContent>
-    </Card>
+      )}
+    </div>
   );
 }
 
-export function Dashboard() {
-  const navigate = useNavigate();
+export function CRM() {
+  const [activeTab, setActiveTab] = useState("clients");
+  const [showClientForm, setShowClientForm] = useState(false);
+  const [showAdvancedFilters, setShowAdvancedFilters] = useState(false);
+  const [showDealForm, setShowDealForm] = useState(false);
+  const [showClientView, setShowClientView] = useState(false);
+  const [showDealView, setShowDealView] = useState(false);
+  const [editingClient, setEditingClient] = useState<Client | undefined>();
+  const [editingDeal, setEditingDeal] = useState<Deal | undefined>();
+  const [viewingClient, setViewingClient] = useState<Client | null>(null);
+  const [viewingDeal, setViewingDeal] = useState<Deal | null>(null);
+  const [dealInitialStage, setDealInitialStage] = useState<
+    DealStage | undefined
+  >();
+  const [selectedClients, setSelectedClients] = useState<string[]>([]);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [dealSearchTerm, setDealSearchTerm] = useState("");
+  const [statusFilter, setStatusFilter] = useState<string>("all");
+  const [advancedFilters, setAdvancedFilters] = useState<any>(null);
+  const [pipelineViewMode, setPipelineViewMode] = useState<"kanban" | "list">(
+    "kanban",
+  );
+  const [editingStages, setEditingStages] = useState(false);
+  const [tempStageNames, setTempStageNames] = useState<{
+    [key: string]: string;
+  }>({});
 
-  const handleViewAllNotifications = () => {
-    // Redirect to notifications page instead of showing notification
-    navigate('/notificacoes');
-  };
+  // Use hooks para dados reais
+  const { 
+    clients, 
+    loading: clientsLoading, 
+    error: clientsError,
+    createClient,
+    updateClient,
+    deleteClient 
+  } = useClients({ search: searchTerm, status: statusFilter });
 
-  const handleViewAllProjects = () => {
-    // Enhanced smooth transition with page fade
-    const button = document.activeElement as HTMLElement;
-    if (button) {
-      button.style.transition = 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)';
-      button.style.transform = 'scale(0.95)';
-      button.style.opacity = '0.7';
+  const [deals, setDeals] = useState<Deal[]>([]);
+  const [dealsLoading, setDealsLoading] = useState(true);
 
-      // Add ripple effect
-      const ripple = document.createElement('span');
-      ripple.style.cssText = `
-        position: absolute;
-        border-radius: 50%;
-        background: rgba(59, 130, 246, 0.3);
-        transform: scale(0);
-        animation: ripple 0.6s linear;
-        pointer-events: none;
-      `;
-      button.style.position = 'relative';
-      button.style.overflow = 'hidden';
-      button.appendChild(ripple);
+  // Carregar deals
+  useEffect(() => {
+    const fetchDeals = async () => {
+      try {
+        const dealsData = await apiService.getDeals();
+        setDeals(dealsData);
+      } catch (error) {
+        console.error('Error fetching deals:', error);
+      } finally {
+        setDealsLoading(false);
+      }
+    };
 
-      setTimeout(() => {
-        button.style.transform = 'scale(1)';
-        button.style.opacity = '1';
+    fetchDeals();
+  }, []);
+  // Create safe dialog handler
+  const safeSetEditingStages = createSafeOnOpenChange((open: boolean) =>
+    setEditingStages(open),
+  );
 
-        // Smooth page transition
-        document.body.style.transition = 'opacity 0.2s ease-out';
-        document.body.style.opacity = '0.95';
+  // Filter clients based on search, status, and advanced filters
+  const filteredClients = useMemo(() => {
+    return clients.filter((client) => {
+      const matchesSearch =
+        client.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        client.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        client.organization?.toLowerCase().includes(searchTerm.toLowerCase());
+      const matchesStatus =
+        statusFilter === "all" || client.status === statusFilter;
 
-        setTimeout(() => {
-          navigate('/projetos');
-          document.body.style.opacity = '1';
-        }, 100);
-      }, 150);
-    } else {
-      navigate('/projetos');
+      // Apply advanced filters if they exist
+      if (advancedFilters) {
+        if (
+          advancedFilters.levels.length > 0 &&
+          !advancedFilters.levels.includes(client.level || "")
+        ) {
+          return false;
+        }
+        if (advancedFilters.locations.length > 0) {
+          const clientLocation = `${client.city} - ${client.state}`;
+          if (!advancedFilters.locations.includes(clientLocation)) {
+            return false;
+          }
+        }
+        if (advancedFilters.hasOrganization) {
+          if (
+            advancedFilters.hasOrganization === "with_org" &&
+            !client.organization
+          ) {
+            return false;
+          }
+          if (
+            advancedFilters.hasOrganization === "without_org" &&
+            client.organization
+          ) {
+            return false;
+          }
+        }
+        if (advancedFilters.tags.length > 0) {
+          const hasMatchingTag = advancedFilters.tags.some((tag: string) =>
+            client.tags.some((clientTag) =>
+              clientTag.toLowerCase().includes(tag.toLowerCase()),
+            ),
+          );
+          if (!hasMatchingTag) {
+            return false;
+          }
+        }
+      }
+
+      return matchesSearch && matchesStatus;
+    });
+  }, [clients, searchTerm, statusFilter, advancedFilters]);
+
+  // Filter deals based on search term
+  const filteredDeals = useMemo(() => {
+    return deals.filter((deal) => {
+      const matchesSearch =
+        deal.title.toLowerCase().includes(dealSearchTerm.toLowerCase()) ||
+        deal.contactName.toLowerCase().includes(dealSearchTerm.toLowerCase()) ||
+        deal.organization?.toLowerCase().includes(dealSearchTerm.toLowerCase());
+      return matchesSearch;
+    });
+  }, [deals, dealSearchTerm]);
+
+  // Initial pipeline stages configuration
+  // PIPELINE SIMPLIFICADO: Apenas 4 estágios conforme solicitado
+  const [pipelineStagesConfig, setPipelineStagesConfig] = useState([
+    { id: "contacted", name: "Em Contato", color: "blue" },
+    { id: "proposal", name: "Com Proposta", color: "yellow" },
+    { id: "won", name: "Cliente Bem Sucedido", color: "green" },
+    { id: "lost", name: "Cliente Perdido", color: "red" },
+  ]);
+
+  // REMOVIDOS: opportunity, advanced, general conforme solicitação
+  // IMPLEMENTAÇÃO FUTURA: Editar nomes dos stages também deve atualizar nos deals
+
+  // Pipeline stages with deals
+  const pipelineStages: PipelineStage[] = pipelineStagesConfig.map((stage) => ({
+    ...stage,
+    deals: filteredDeals.filter((deal) => deal.stage === stage.id),
+  }));
+
+  const handleSubmitClient = (data: any) => {
+    try {
+      if (editingClient) {
+        updateClient(editingClient.id, data);
+        setEditingClient(undefined);
+      } else {
+        createClient(data);
+      }
+      setShowClientForm(false);
+    } catch (error) {
+      console.error('Error submitting client:', error);
+      alert('Erro ao salvar cliente. Tente novamente.');
     }
   };
 
-  const handleViewAllInvoices = () => {
-    // Enhanced smooth transition for invoices
-    const button = document.activeElement as HTMLElement;
-    if (button) {
-      button.style.transition = 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)';
-      button.style.transform = 'scale(0.95)';
-      button.style.opacity = '0.7';
-
-      setTimeout(() => {
-        button.style.transform = 'scale(1)';
-        button.style.opacity = '1';
-
-        // Smooth page transition with visual feedback
-        document.body.style.transition = 'opacity 0.2s ease-out';
-        document.body.style.opacity = '0.95';
-
-        setTimeout(() => {
-          navigate('/cobranca');
-          document.body.style.opacity = '1';
-        }, 100);
-      }, 150);
-    } else {
-      navigate('/cobranca');
-    }
+  const handleSelectClient = (clientId: string) => {
+    setSelectedClients((prev) =>
+      prev.includes(clientId)
+        ? prev.filter((id) => id !== clientId)
+        : [...prev, clientId],
+    );
   };
+
+  const handleSelectAllClients = (checked: boolean) => {
+    setSelectedClients(
+      checked ? filteredClients.map((client) => client.id) : [],
+    );
+  };
+
+  const handleEditClient = (client: Client) => {
+    setEditingClient(client);
+    setShowClientForm(true);
+  };
+
+  const handleDeleteClient = (clientId: string) => {
+    setClients(clients.filter((client) => client.id !== clientId));
+    setSelectedClients(selectedClients.filter((id) => id !== clientId));
+  };
+
+  const handleViewClient = (client: Client) => {
+    setViewingClient(client);
+    setShowClientView(true);
+  };
+
+  const handleEditFromView = (client: Client) => {
+    setEditingClient(client);
+    setShowClientView(false);
+    setShowClientForm(true);
+  };
+
+  const handleAddDeal = (stage: DealStage) => {
+    setDealInitialStage(stage);
+    setEditingDeal(undefined);
+    setShowDealForm(true);
+  };
+
+  const handleEditDeal = (deal: Deal) => {
+    setEditingDeal(deal);
+    setDealInitialStage(undefined);
+    setShowDealForm(true);
+  };
+
+  const handleViewDeal = (deal: Deal) => {
+    setViewingDeal(deal);
+    setShowDealView(true);
+  };
+
+  const handleEditFromDealView = (deal: Deal) => {
+    setEditingDeal(deal);
+    setShowDealView(false);
+    setShowDealForm(true);
+  };
+
+  const handleDeleteDeal = (dealId: string) => {
+    setDeals(deals.filter((deal) => deal.id !== dealId));
+  };
+
+  const handleMoveDeal = (dealId: string, newStage: DealStage) => {
+    setDeals(
+      deals.map((deal) =>
+        deal.id === dealId
+          ? { ...deal, stage: newStage, updatedAt: new Date().toISOString() }
+          : deal,
+      ),
+    );
+  };
+
+  const handleApplyAdvancedFilters = (filters: any) => {
+    setAdvancedFilters(filters);
+  };
+
+  const clearAdvancedFilters = () => {
+    setAdvancedFilters(null);
+  };
+
+  const handleSubmitDeal = (data: any) => {
+    if (editingDeal) {
+      setDeals(
+        deals.map((deal) =>
+          deal.id === editingDeal.id
+            ? { ...deal, ...data, updatedAt: new Date().toISOString() }
+            : deal,
+        ),
+      );
+      setEditingDeal(undefined);
+    } else {
+      const newDeal: Deal = {
+        ...data,
+        id: Date.now().toString(),
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      };
+      setDeals([...deals, newDeal]);
+
+      // NOVIDADE: Enviar notificação quando novo negócio for adicionado ao Pipeline
+      // Em produção, isso seria uma chamada para API de notificações
+      console.log("📢 NOTIFICAÇÃO ENVIADA: Novo negócio no pipeline", {
+        type: "info",
+        title: "Novo Negócio Adicionado",
+        message: `${newDeal.title} foi adicionado ao Pipeline de Vendas`,
+        category: "pipeline",
+        createdBy: "Usuário Atual", // Em produção: pegar do contexto de auth
+        dealData: {
+          id: newDeal.id,
+          title: newDeal.title,
+          contactName: newDeal.contactName,
+          stage: newDeal.stage,
+          budget: newDeal.budget,
+          tags: newDeal.tags,
+        },
+      });
+
+      // FUTURO: Integração com sistema de notificações
+      // await NotificationService.create({
+      //   type: 'deal_created',
+      //   title: 'Novo Negócio Adicionado',
+      //   message: `${newDeal.title} foi adicionado ao Pipeline de Vendas`,
+      //   entityId: newDeal.id,
+      //   entityType: 'deal',
+      //   userId: currentUser.id,
+      //   metadata: { stage: newDeal.stage, budget: newDeal.budget }
+      // });
+    }
+    setShowDealForm(false);
+    setDealInitialStage(undefined);
+  };
+
+  // Calculate metrics
+  const totalClients = clients.length;
+  const activeClients = clients.filter((c) => c.status === "active").length;
+  const totalRevenuePotential = deals.reduce(
+    (sum, deal) => sum + deal.budget,
+    0,
+  );
+  const wonDeals = deals.filter((d) => d.stage === "won").length;
 
   return (
     <DashboardLayout>
@@ -253,155 +496,390 @@ export function Dashboard() {
         <Breadcrumb>
           <BreadcrumbList>
             <BreadcrumbItem>
-              <BreadcrumbPage>Dashboard</BreadcrumbPage>
+              <BreadcrumbLink href="/">Home</BreadcrumbLink>
+            </BreadcrumbItem>
+            <BreadcrumbSeparator />
+            <BreadcrumbItem>
+              <BreadcrumbPage>CRM</BreadcrumbPage>
             </BreadcrumbItem>
           </BreadcrumbList>
         </Breadcrumb>
 
         {/* Page Header */}
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight">Dashboard</h1>
-          <p className="text-muted-foreground">
-            Visão geral do seu escritório de advocacia
-          </p>
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-3xl font-bold tracking-tight">CRM</h1>
+            <p className="text-muted-foreground">
+              Gerenciamento de clientes e relacionamentos
+            </p>
+          </div>
+          <Button onClick={() => setShowClientForm(true)}>
+            <Plus className="h-4 w-4 mr-2" />
+            Adicionar Cliente
+          </Button>
         </div>
 
-        {/* Metric Cards */}
+        {/* Metrics Cards */}
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-          <MetricCard
-            title="💰 RECEITAS"
-            value={metrics.revenue.value}
-            change={metrics.revenue.change}
-            trend={metrics.revenue.trend}
-            icon={DollarSign}
-            className="metric-revenue"
-          />
-          <MetricCard
-            title="📉 DESPESAS"
-            value={metrics.expenses.value}
-            change={metrics.expenses.change}
-            trend={metrics.expenses.trend}
-            icon={TrendingDown}
-            className="metric-expense"
-          />
-          <MetricCard
-            title="🏦 SALDO"
-            value={metrics.balance.value}
-            change={metrics.balance.change}
-            trend={metrics.balance.trend}
-            icon={TrendingUp}
-            className="metric-balance-positive"
-          />
-          <MetricCard
-            title="👥 CLIENTES"
-            value={metrics.clients.value}
-            change={metrics.clients.change}
-            trend={metrics.clients.trend}
-            icon={Users}
-            format="number"
-            className="metric-clients"
-          />
-        </div>
-
-        {/* Charts Section */}
-        <DashboardCharts />
-
-        {/* Activity Sections */}
-        <div className="grid gap-4 md:grid-cols-3">
-          {/* Recent Activities */}
           <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0">
-              <CardTitle className="text-lg">Notificações</CardTitle>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={handleViewAllNotifications}
-                className="transition-all duration-200 hover:scale-105 active:scale-95"
-              >
-                Ver todas
-              </Button>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">
+                Total de Clientes
+              </CardTitle>
+              <Users className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
-            <CardContent className="space-y-4">
-              {recentActivities.map((activity) => (
-                <div key={activity.id} className="flex items-start space-x-3">
-                  <activity.icon className={cn("h-4 w-4 mt-1", activity.color)} />
-                  <div className="flex-1 space-y-1">
-                    <p className="text-sm">{activity.message}</p>
-                    <p className="text-xs text-muted-foreground">{activity.time}</p>
-                  </div>
-                </div>
-              ))}
-              <Button variant="outline" size="sm" className="w-full" onClick={handleViewAllNotifications}>
-                <Plus className="h-4 w-4 mr-2" />
-                Ver mais
-              </Button>
+            <CardContent>
+              <div className="text-2xl font-bold">{totalClients}</div>
+              <p className="text-xs text-muted-foreground">
+                {activeClients} ativos
+              </p>
             </CardContent>
           </Card>
 
-          {/* Urgent Projects */}
           <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0">
-              <CardTitle className="text-lg">Projetos Urgentes</CardTitle>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={handleViewAllProjects}
-                className="transition-all duration-200 hover:scale-105 active:scale-95"
-              >
-                Ver todos
-              </Button>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">
+                Pipeline Total
+              </CardTitle>
+              <Target className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
-            <CardContent className="space-y-4">
-              {urgentProjects.map((project, index) => (
-                <div key={index} className="flex flex-col space-y-2 p-3 border rounded-lg">
-                  <h4 className="text-sm font-medium">{project.name}</h4>
-                  <div className="flex items-center justify-between text-xs">
-                    <span className="text-muted-foreground">
-                      <Calendar className="h-3 w-3 inline mr-1" />
-                      {new Date(project.deadline).toLocaleDateString('pt-BR')}
-                    </span>
-                    <span className="px-2 py-1 bg-yellow-100 text-yellow-800 rounded-full">
-                      {project.status}
-                    </span>
-                  </div>
-                </div>
-              ))}
+            <CardContent>
+              <div className="text-2xl font-bold">
+                {new Intl.NumberFormat("pt-BR", {
+                  style: "currency",
+                  currency: "BRL",
+                }).format(totalRevenuePotential)}
+              </div>
+              <p className="text-xs text-muted-foreground">
+                {deals.length} negócios ativos
+              </p>
             </CardContent>
           </Card>
 
-          {/* Upcoming Invoices */}
           <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0">
-              <CardTitle className="text-lg">Faturas Vencendo</CardTitle>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={handleViewAllInvoices}
-                className="transition-all duration-200 hover:scale-105 active:scale-95"
-              >
-                Ver todas
-              </Button>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">
+                Taxa de Conversão
+              </CardTitle>
+              <BarChart3 className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
-            <CardContent className="space-y-4">
-              {upcomingInvoices.map((invoice, index) => (
-                <div key={index} className="flex flex-col space-y-2 p-3 border rounded-lg">
-                  <div className="flex items-center justify-between">
-                    <h4 className="text-sm font-medium">{invoice.number}</h4>
-                    <span className="text-sm font-bold text-green-600">
-                      {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(invoice.amount)}
-                    </span>
-                  </div>
-                  <div className="flex items-center justify-between text-xs">
-                    <span className="text-muted-foreground">{invoice.client}</span>
-                    <span className="text-red-600">
-                      Vence: {new Date(invoice.dueDate).toLocaleDateString('pt-BR')}
-                    </span>
-                  </div>
-                </div>
-              ))}
+            <CardContent>
+              <div className="text-2xl font-bold">
+                {deals.length > 0
+                  ? Math.round((wonDeals / deals.length) * 100)
+                  : 0}
+                %
+              </div>
+              <p className="text-xs text-muted-foreground">
+                {wonDeals} negócios fechados
+              </p>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">
+                Receita Fechada
+              </CardTitle>
+              <TrendingUp className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">
+                {new Intl.NumberFormat("pt-BR", {
+                  style: "currency",
+                  currency: "BRL",
+                }).format(
+                  deals
+                    .filter((d) => d.stage === "won")
+                    .reduce((sum, deal) => sum + deal.budget, 0),
+                )}
+              </div>
+              <p className="text-xs text-muted-foreground">Este mês</p>
             </CardContent>
           </Card>
         </div>
+
+        {/* Tabs */}
+        <Tabs value={activeTab} onValueChange={setActiveTab}>
+          <TabsList>
+            <TabsTrigger value="clients">Clientes</TabsTrigger>
+            <TabsTrigger value="pipeline">Pipeline de Vendas</TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="clients" className="space-y-4">
+            {/* Toolbar */}
+            <div className="flex items-center space-x-4">
+              <div className="flex-1 max-w-md">
+                <div className="relative">
+                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                  <Input
+                    placeholder="Procurar clientes..."
+                    className="pl-10"
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                  />
+                </div>
+              </div>
+              <Select value={statusFilter} onValueChange={setStatusFilter}>
+                <SelectTrigger className="w-40">
+                  <SelectValue placeholder="Status" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Todos</SelectItem>
+                  <SelectItem value="active">Ativo</SelectItem>
+                  <SelectItem value="inactive">Inativo</SelectItem>
+                  <SelectItem value="pending">Pendente</SelectItem>
+                </SelectContent>
+              </Select>
+              <Button
+                variant="outline"
+                onClick={() => setShowAdvancedFilters(true)}
+              >
+                <Filter className="h-4 w-4 mr-2" />
+                Mais Filtros
+                {advancedFilters && (
+                  <Badge variant="secondary" className="ml-2">
+                    Ativos
+                  </Badge>
+                )}
+              </Button>
+              {advancedFilters && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={clearAdvancedFilters}
+                >
+                  Limpar Filtros
+                </Button>
+              )}
+            </div>
+
+            {/* Clients Table */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center">
+                  <Users className="h-5 w-5 mr-2" />
+                  Lista de Clientes ({filteredClients.length})
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <ClientsTable
+                  clients={filteredClients}
+                  selectedClients={selectedClients}
+                  onSelectClient={handleSelectClient}
+                  onSelectAll={handleSelectAllClients}
+                  onEditClient={handleEditClient}
+                  onDeleteClient={handleDeleteClient}
+                  onViewClient={handleViewClient}
+                />
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="pipeline" className="space-y-4">
+            <Card>
+              <CardHeader>
+                <div className="flex items-center justify-between">
+                  <CardTitle className="flex items-center">
+                    <Target className="h-5 w-5 mr-2" />
+                    Pipeline de Vendas
+                  </CardTitle>
+                  <div className="flex items-center space-x-2">
+                    {/* View Mode Toggle */}
+                    <div className="flex border rounded-lg p-1">
+                      <Button
+                        variant={
+                          pipelineViewMode === "kanban" ? "default" : "ghost"
+                        }
+                        size="sm"
+                        onClick={() => setPipelineViewMode("kanban")}
+                      >
+                        <Grid3X3 className="h-4 w-4 mr-1" />
+                        Kanban
+                      </Button>
+                      <Button
+                        variant={
+                          pipelineViewMode === "list" ? "default" : "ghost"
+                        }
+                        size="sm"
+                        onClick={() => setPipelineViewMode("list")}
+                      >
+                        <List className="h-4 w-4 mr-1" />
+                        Lista
+                      </Button>
+                    </div>
+
+                    {/* Edit Stages Button */}
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => {
+                        setEditingStages(true);
+                        const initialNames = {};
+                        pipelineStagesConfig.forEach((stage) => {
+                          initialNames[stage.id] = stage.name;
+                        });
+                        setTempStageNames(initialNames);
+                      }}
+                    >
+                      <Edit2 className="h-4 w-4 mr-1" />
+                      Editar Nomes
+                    </Button>
+                  </div>
+                </div>
+              </CardHeader>
+              <CardContent>
+                {/* Search filter for deals */}
+                <div className="mb-4">
+                  <div className="relative max-w-md">
+                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                    <Input
+                      placeholder="Procurar por título do negócio..."
+                      className="pl-10"
+                      value={dealSearchTerm}
+                      onChange={(e) => setDealSearchTerm(e.target.value)}
+                    />
+                  </div>
+                </div>
+                {pipelineViewMode === "kanban" ? (
+                  <Pipeline
+                    stages={pipelineStages}
+                    onAddDeal={handleAddDeal}
+                    onEditDeal={handleEditDeal}
+                    onDeleteDeal={handleDeleteDeal}
+                    onMoveDeal={handleMoveDeal}
+                    onViewDeal={handleViewDeal}
+                  />
+                ) : (
+                  <PipelineListView
+                    deals={filteredDeals}
+                    stages={pipelineStages}
+                    onEditDeal={handleEditDeal}
+                    onDeleteDeal={handleDeleteDeal}
+                    onMoveDeal={handleMoveDeal}
+                    onViewDeal={handleViewDeal}
+                  />
+                )}
+              </CardContent>
+            </Card>
+          </TabsContent>
+        </Tabs>
+
+        {/* Client Form Modal */}
+        <ClientForm
+          open={showClientForm}
+          onOpenChange={setShowClientForm}
+          client={editingClient}
+          onSubmit={handleSubmitClient}
+          isEditing={!!editingClient}
+          existingTags={
+            /* Extrair todas as tags únicas dos clientes existentes */
+            Array.from(
+              new Set(clients.flatMap((client) => client.tags || [])),
+            ).sort()
+          }
+        />
+
+        {/* Advanced Filters Dialog */}
+        <AdvancedFilters
+          open={showAdvancedFilters}
+          onOpenChange={setShowAdvancedFilters}
+          onApplyFilters={handleApplyAdvancedFilters}
+          existingTags={
+            /* IMPLEMENTAÇÃO MELHORADA: Extrair todas as tags únicas dos clientes existentes */
+            Array.from(
+              new Set(clients.flatMap((client) => client.tags || [])),
+            ).sort()
+          }
+        />
+
+        {/* Deal Form Modal */}
+        <DealForm
+          open={showDealForm}
+          onOpenChange={setShowDealForm}
+          deal={editingDeal}
+          initialStage={dealInitialStage}
+          onSubmit={handleSubmitDeal}
+          isEditing={!!editingDeal}
+        />
+
+        {/* Client View Dialog */}
+        <ClientViewDialog
+          open={showClientView}
+          onOpenChange={setShowClientView}
+          client={viewingClient}
+          onEdit={handleEditFromView}
+        />
+
+        {/* Deal View Dialog */}
+        <DealViewDialog
+          open={showDealView}
+          onOpenChange={setShowDealView}
+          deal={viewingDeal}
+          onEdit={handleEditFromDealView}
+        />
+
+        {/* Stage Names Editing Dialog */}
+        <Dialog open={editingStages} onOpenChange={safeSetEditingStages}>
+          <DialogContent className="max-w-md">
+            <DialogHeader>
+              <DialogTitle>Editar Nomes dos Stages</DialogTitle>
+              <DialogDescription>
+                Personalize os nomes dos stages do pipeline de vendas.
+              </DialogDescription>
+            </DialogHeader>
+
+            <div className="space-y-4">
+              {pipelineStagesConfig.map((stage) => (
+                <div key={stage.id}>
+                  <label className="text-sm font-medium">
+                    {stage.name} (Atual)
+                  </label>
+                  <Input
+                    value={tempStageNames[stage.id] || stage.name}
+                    onChange={(e) =>
+                      setTempStageNames({
+                        ...tempStageNames,
+                        [stage.id]: e.target.value,
+                      })
+                    }
+                    placeholder={stage.name}
+                  />
+                </div>
+              ))}
+            </div>
+
+            <div className="flex justify-end space-x-2 mt-6">
+              <Button
+                variant="outline"
+                onClick={createSafeDialogHandler(() => {
+                  safeSetEditingStages(false);
+                  setTempStageNames({});
+                })}
+              >
+                Cancelar
+              </Button>
+              <Button
+                onClick={createSafeDialogHandler(() => {
+                  console.log("Salvando stages:", tempStageNames);
+                  setPipelineStagesConfig((prev) => {
+                    const newConfig = prev.map((stage) => ({
+                      ...stage,
+                      name: tempStageNames[stage.id] || stage.name,
+                    }));
+                    console.log("Nova configuração:", newConfig);
+                    return newConfig;
+                  });
+                  safeSetEditingStages(false);
+                  setTempStageNames({});
+                  alert("Nomes dos stages atualizados com sucesso!");
+                })}
+              >
+                Salvar Alterações
+              </Button>
+            </div>
+          </DialogContent>
+        </Dialog>
       </div>
     </DashboardLayout>
   );

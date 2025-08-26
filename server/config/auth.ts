@@ -75,7 +75,7 @@ export const authenticateToken = async (req: AuthenticatedRequest, res: Response
     req.user = decoded;
     req.tenantId = decoded.tenantId;
     next();
-  } catch (error) {
+  } catch (error: any) {
     if (error.name === 'TokenExpiredError') {
       return res.status(401).json({ 
         error: 'Token expirado', 
@@ -112,6 +112,6 @@ export const tenantMiddleware = (req: AuthenticatedRequest, res: Response, next:
   }
 
   // Configurar conexão com schema específico do tenant
-  req.db = global.db.getTenantConnection(tenantId);
+  req.db = (global as any).db.getTenantConnection(tenantId);
   next();
 };

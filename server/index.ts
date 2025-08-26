@@ -35,7 +35,10 @@ export function createServer() {
   app.use(express.urlencoded({ extended: true }));
 
   // Make database available globally
-  global.db = db;
+  (global as any).db = db;
+
+  // Initialize database on startup
+  db.initializeDatabase().catch(console.error);
 
   // Health check
   app.get("/health", async (req, res) => {
@@ -49,7 +52,7 @@ export function createServer() {
           server: 'running'
         }
       });
-    } catch (error) {
+    } catch (error: any) {
       res.status(503).json({ 
         status: 'unhealthy', 
         error: error.message 
@@ -59,7 +62,7 @@ export function createServer() {
 
   // Example API routes
   app.get("/api/ping", (_req, res) => {
-    const ping = process.env.PING_MESSAGE ?? "ping";
+    const ping = process.env.PING_MESSAGE ?? "pong";
     res.json({ message: ping });
   });
 

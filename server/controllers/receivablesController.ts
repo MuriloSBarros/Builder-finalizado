@@ -99,9 +99,9 @@ export class ReceivablesController {
       const result = await tenantDb.query(`
         SELECT 
           ri.*,
-          c.name as cliente_nome,
-          c.email as cliente_email,
-          c.mobile as cliente_telefone
+          c.name as cliente_nome_ref,
+          c.email as cliente_email_ref,
+          c.mobile as cliente_telefone_ref
         FROM \${schema}.receivables_invoices ri
         LEFT JOIN \${schema}.clients c ON c.id = ri.client_id
         ${whereClause}
@@ -132,9 +132,10 @@ export class ReceivablesController {
         INSERT INTO \${schema}.receivables_invoices (
           client_id, numero_fatura, valor, descricao, servico_prestado,
           data_emissao, data_vencimento, status, recorrente, intervalo_dias,
-          proxima_fatura_data, urgencia, criado_por, observacoes, created_at, updated_at
+          proxima_fatura_data, urgencia, cliente_nome, cliente_email, cliente_telefone,
+          criado_por, observacoes, created_at, updated_at
         ) VALUES (
-          $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, NOW(), NOW()
+          $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, NOW(), NOW()
         ) RETURNING *
       `, [
         invoiceData.clienteId,
@@ -149,6 +150,9 @@ export class ReceivablesController {
         invoiceData.intervaloDias,
         invoiceData.proximaFaturaData,
         invoiceData.urgencia,
+        invoiceData.clienteNome,
+        invoiceData.clienteEmail,
+        invoiceData.clienteTelefone,
         req.user.name,
         invoiceData.observacoes,
       ]);
@@ -169,9 +173,9 @@ export class ReceivablesController {
       const result = await tenantDb.query(`
         UPDATE \${schema}.receivables_invoices SET
           numero_fatura = $1, valor = $2, descricao = $3, servico_prestado = $4,
-          data_vencimento = $5, status = $6, urgencia = $7, observacoes = $8,
-          updated_at = NOW()
-        WHERE id = $9
+          data_vencimento = $5, status = $6, urgencia = $7, cliente_nome = $8,
+          cliente_email = $9, cliente_telefone = $10, observacoes = $11, updated_at = NOW()
+        WHERE id = $12
         RETURNING *
       `, [
         invoiceData.numeroFatura,
@@ -181,6 +185,9 @@ export class ReceivablesController {
         invoiceData.dataVencimento,
         invoiceData.status,
         invoiceData.urgencia,
+        invoiceData.clienteNome,
+        invoiceData.clienteEmail,
+        invoiceData.clienteTelefone,
         invoiceData.observacoes,
         id,
       ]);

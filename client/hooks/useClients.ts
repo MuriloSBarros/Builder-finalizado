@@ -22,7 +22,7 @@ export const useClients = (filters?: any) => {
           limit: data.limit || 50,
         });
       }
-    } catch (err) {
+    } catch (err: any) {
       setError(err.message);
       console.error('Clients fetch error:', err);
     } finally {
@@ -33,7 +33,7 @@ export const useClients = (filters?: any) => {
   const createClient = async (clientData: any) => {
     try {
       const newClient = await apiService.createClient(clientData);
-      setClients(prev => [newClient, ...prev]);
+      setClients((prev: any) => [newClient, ...prev]);
       return newClient;
     } catch (err) {
       console.error('Create client error:', err);
@@ -44,7 +44,7 @@ export const useClients = (filters?: any) => {
   const updateClient = async (id: string, clientData: any) => {
     try {
       const updatedClient = await apiService.updateClient(id, clientData);
-      setClients(prev => prev.map(client => 
+      setClients((prev: any) => prev.map((client: any) => 
         client.id === id ? updatedClient : client
       ));
       return updatedClient;
@@ -57,7 +57,7 @@ export const useClients = (filters?: any) => {
   const deleteClient = async (id: string) => {
     try {
       await apiService.deleteClient(id);
-      setClients(prev => prev.filter(client => client.id !== id));
+      setClients((prev: any) => prev.filter((client: any) => client.id !== id));
     } catch (err) {
       console.error('Delete client error:', err);
       throw err;

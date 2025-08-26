@@ -1,4 +1,5 @@
 import React, { useState, useMemo } from 'react';
+import { useProjects } from '@/hooks/useProjects';
 import { DashboardLayout } from '@/components/Layout/DashboardLayout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -46,137 +47,6 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { MoreHorizontal, Eye, Edit, Trash2 } from 'lucide-react';
 
-// Mock data - in real app would come from API
-const mockProjects: Project[] = [
-  {
-    id: '1',
-    title: 'Ação Previdenciária - João Santos',
-    description: 'Revisão de aposentadoria negada pelo INSS. Cliente tem direito a aposentadoria especial por tempo de contribuição.',
-    clientName: 'João Santos',
-    clientId: '1',
-    organization: '',
-    contacts: [
-      {
-        id: '1',
-        name: 'João Santos',
-        email: 'joao@email.com',
-        phone: '(11) 99999-1234',
-        role: 'Cliente'
-      }
-    ],
-    address: 'Rua das Flores, 123, São Paulo - SP',
-    budget: 8500,
-    currency: 'BRL',
-    status: 'proposal',
-    startDate: '2024-01-05T00:00:00Z',
-    dueDate: '2024-03-15T00:00:00Z',
-    tags: ['Previdenciário', 'INSS', 'Urgente'],
-    assignedTo: ['Dr. Silva', 'Ana Paralegal'],
-    priority: 'high',
-    progress: 65,
-    createdAt: '2024-01-05T10:00:00Z',
-    updatedAt: '2024-01-20T14:30:00Z',
-    notes: 'Cliente já possui todos os documentos necessários. Aguardando resposta do INSS.',
-    attachments: []
-  },
-  {
-    id: '2',
-    title: 'Divórcio Consensual - Maria e Carlos',
-    description: 'Processo de divórcio consensual com partilha de bens. Casal possui imóvel e veículos para partilha.',
-    clientName: 'Maria Silva',
-    clientId: '2',
-    contacts: [
-      {
-        id: '2',
-        name: 'Maria Silva',
-        email: 'maria@email.com',
-        phone: '(11) 88888-5678',
-        role: 'Cliente'
-      },
-      {
-        id: '3',
-        name: 'Carlos Santos',
-        email: 'carlos@email.com',
-        phone: '(11) 77777-9999',
-        role: 'Ex-cônjuge'
-      }
-    ],
-    address: 'Av. Paulista, 1000, São Paulo - SP',
-    budget: 12000,
-    currency: 'BRL',
-    status: 'won',
-    startDate: '2024-01-10T00:00:00Z',
-    dueDate: '2024-02-28T00:00:00Z',
-    tags: ['Família', 'Divórcio', 'Consensual'],
-    assignedTo: ['Dra. Costa'],
-    priority: 'medium',
-    progress: 80,
-    createdAt: '2024-01-10T09:15:00Z',
-    updatedAt: '2024-01-22T11:45:00Z',
-    notes: 'Documentação completa. Aguardando agendamento da audiência.',
-    attachments: []
-  },
-  {
-    id: '3',
-    title: 'Recuperação Judicial - Tech LTDA',
-    description: 'Processo de recuperação judicial para empresa de tecnologia com dificuldades financeiras.',
-    clientName: 'Tech LTDA',
-    clientId: '3',
-    organization: 'Tech Solutions LTDA',
-    contacts: [
-      {
-        id: '4',
-        name: 'Roberto Tech',
-        email: 'roberto@techltda.com',
-        phone: '(11) 66666-8888',
-        role: 'Sócio-Diretor'
-      }
-    ],
-    address: 'Rua da Inovação, 500, São Paulo - SP',
-    budget: 45000,
-    currency: 'BRL',
-    status: 'contacted',
-    startDate: '2024-01-12T00:00:00Z',
-    dueDate: '2024-04-30T00:00:00Z',
-    tags: ['Empresarial', 'Recuperação', 'Urgente'],
-    assignedTo: ['Dr. Oliveira', 'Dr. Silva', 'Ana Paralegal'],
-    priority: 'urgent',
-    progress: 40,
-    createdAt: '2024-01-12T14:20:00Z',
-    updatedAt: '2024-01-25T16:10:00Z',
-    notes: 'Empresa em situação crítica. Prioridade máxima.',
-    attachments: []
-  },
-  {
-    id: '4',
-    title: 'Ação Trabalhista - Pedro Souza',
-    description: 'Ação contra ex-empregador por horas extras não pagas e verbas rescisórias.',
-    clientName: 'Pedro Souza',
-    contacts: [
-      {
-        id: '5',
-        name: 'Pedro Souza',
-        email: 'pedro@email.com',
-        phone: '(11) 55555-7777',
-        role: 'Cliente'
-      }
-    ],
-    address: 'Rua do Trabalho, 789, São Paulo - SP',
-    budget: 15000,
-    currency: 'BRL',
-    status: 'contacted',
-    startDate: '2024-01-25T00:00:00Z',
-    dueDate: '2024-05-15T00:00:00Z',
-    tags: ['Trabalhista', 'Horas Extras'],
-    assignedTo: ['Dra. Trabalho'],
-    priority: 'medium',
-    progress: 10,
-    createdAt: '2024-01-25T08:30:00Z',
-    updatedAt: '2024-01-25T08:30:00Z',
-    notes: 'Início da coleta de documentos.',
-    attachments: []
-  }
-];
 
 interface ProjectCompactViewProps {
   projects: Project[];
@@ -300,12 +170,21 @@ export function Projects() {
   const [showProjectView, setShowProjectView] = useState(false);
   const [editingProject, setEditingProject] = useState<Project | undefined>();
   const [viewingProject, setViewingProject] = useState<Project | null>(null);
-  const [projects, setProjects] = useState<Project[]>(mockProjects);
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [priorityFilter, setPriorityFilter] = useState<string>('all');
   const [viewMode, setViewMode] = useState<'kanban' | 'compact'>('kanban');
 
+  // Use real API data for projects
+  const { 
+    projects, 
+    stats,
+    loading: projectsLoading, 
+    error: projectsError,
+    createProject,
+    updateProject,
+    deleteProject 
+  } = useProjects({ search: searchTerm, status: statusFilter, priority: priorityFilter });
   // Filter projects based on search, status, and priority
   const filteredProjects = useMemo(() => {
     return projects.filter((project) => {
@@ -348,32 +227,18 @@ export function Projects() {
 
   const handleSubmitProject = (data: any) => {
     if (editingProject) {
-      setProjects(projects.map(project =>
-        project.id === editingProject.id
-          ? {
-              ...project,
-              ...data,
-              startDate: data.startDate + 'T00:00:00Z',
-              dueDate: data.dueDate + 'T00:00:00Z',
-              updatedAt: new Date().toISOString(),
-              assignedTo: project.assignedTo, // Keep existing assignments
-              attachments: project.attachments, // Keep existing attachments
-            }
-          : project
-      ));
-      setEditingProject(undefined);
-    } else {
-      const newProject: Project = {
+      updateProject(editingProject.id, {
         ...data,
-        id: Date.now().toString(),
         startDate: data.startDate + 'T00:00:00Z',
         dueDate: data.dueDate + 'T00:00:00Z',
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-        assignedTo: ['Dr. Silva'], // Default assignment
-        attachments: [],
-      };
-      setProjects([...projects, newProject]);
+      });
+      setEditingProject(undefined);
+    } else {
+      createProject({
+        ...data,
+        startDate: data.startDate + 'T00:00:00Z',
+        dueDate: data.dueDate + 'T00:00:00Z',
+      });
     }
     setShowProjectForm(false);
   };
@@ -390,15 +255,14 @@ export function Projects() {
   };
 
   const handleDeleteProject = (projectId: string) => {
-    setProjects(projects.filter(project => project.id !== projectId));
+    deleteProject(projectId);
   };
 
   const handleMoveProject = (projectId: string, newStatus: ProjectStatus) => {
-    setProjects(projects.map(project =>
-      project.id === projectId
-        ? { ...project, status: newStatus, updatedAt: new Date().toISOString() }
-        : project
-    ));
+    const projectToUpdate = projects.find(p => p.id === projectId);
+    if (projectToUpdate) {
+      updateProject(projectId, { ...projectToUpdate, status: newStatus });
+    }
   };
 
   const handleViewProject = (project: Project) => {
@@ -413,11 +277,11 @@ export function Projects() {
   };
 
   // Calculate metrics with new CRM-style statuses
-  const totalProjects = projects.length;
-  const activeProjects = projects.filter(p => !['won', 'lost'].includes(p.status)).length;
-  const overdueProjects = projects.filter(p => new Date(p.dueDate) < new Date() && !['won', 'lost'].includes(p.status)).length;
-  const totalRevenue = projects.filter(p => p.status === 'won').reduce((sum, project) => sum + project.budget, 0);
-  const avgProgress = activeProjects > 0 ? Math.round(projects.filter(p => !['won', 'lost'].includes(p.status)).reduce((sum, project) => sum + project.progress, 0) / activeProjects) : 0;
+  const totalProjects = stats?.total_projects || 0;
+  const activeProjects = stats?.active_projects || 0;
+  const overdueProjects = stats?.overdue_projects || 0;
+  const totalRevenue = stats?.total_revenue || 0;
+  const avgProgress = stats?.avg_progress || 0;
 
   return (
     <DashboardLayout>
@@ -577,6 +441,18 @@ export function Projects() {
             </CardTitle>
           </CardHeader>
           <CardContent>
+            {projectsLoading && (
+              <div className="text-center py-8">
+                <div className="animate-spin h-8 w-8 border-4 border-primary border-t-transparent rounded-full mx-auto"></div>
+                <p className="text-sm text-muted-foreground mt-2">Carregando projetos...</p>
+              </div>
+            )}
+            {projectsError && (
+              <div className="text-center py-8 text-red-600">
+                <p>Erro ao carregar projetos: {projectsError}</p>
+              </div>
+            )}
+            {!projectsLoading && !projectsError && (
             {viewMode === 'kanban' ? (
               <ProjectKanban
                 stages={projectStages}
@@ -594,6 +470,7 @@ export function Projects() {
                 onViewProject={handleViewProject}
                 onMoveProject={handleMoveProject}
               />
+            )}
             )}
           </CardContent>
         </Card>

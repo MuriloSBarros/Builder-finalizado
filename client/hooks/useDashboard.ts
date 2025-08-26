@@ -19,7 +19,7 @@ export const useDashboard = () => {
 
       setMetrics(metricsData);
       setActivities(activitiesData);
-    } catch (err) {
+    } catch (err: any) {
       setError(err.message);
       console.error('Dashboard data fetch error:', err);
     } finally {

@@ -19,7 +19,7 @@ export const useTasks = (filters?: any) => {
 
       setTasks(tasksData);
       setStats(statsData);
-    } catch (err) {
+    } catch (err: any) {
       setError(err.message);
       console.error('Tasks fetch error:', err);
     } finally {
@@ -30,7 +30,7 @@ export const useTasks = (filters?: any) => {
   const createTask = async (taskData: any) => {
     try {
       const newTask = await apiService.createTask(taskData);
-      setTasks(prev => [newTask, ...prev]);
+      setTasks((prev: any) => [newTask, ...prev]);
       await fetchTasks(); // Refresh stats
       return newTask;
     } catch (err) {
@@ -42,7 +42,7 @@ export const useTasks = (filters?: any) => {
   const updateTask = async (id: string, taskData: any) => {
     try {
       const updatedTask = await apiService.updateTask(id, taskData);
-      setTasks(prev => prev.map(task => 
+      setTasks((prev: any) => prev.map((task: any) => 
         task.id === id ? updatedTask : task
       ));
       await fetchTasks(); // Refresh stats
@@ -56,7 +56,7 @@ export const useTasks = (filters?: any) => {
   const deleteTask = async (id: string) => {
     try {
       await apiService.deleteTask(id);
-      setTasks(prev => prev.filter(task => task.id !== id));
+      setTasks((prev: any) => prev.filter((task: any) => task.id !== id));
       await fetchTasks(); // Refresh stats
     } catch (err) {
       console.error('Delete task error:', err);

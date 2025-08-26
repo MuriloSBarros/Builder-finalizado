@@ -186,6 +186,21 @@ class ApiService {
     return await response.json();
   }
 
+  async updateDeal(id: string, dealData: any) {
+    const response = await this.request(`/crm/deals/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(dealData),
+    });
+    return await response.json();
+  }
+
+  async deleteDeal(id: string) {
+    const response = await this.request(`/crm/deals/${id}`, {
+      method: 'DELETE',
+    });
+    return await response.json();
+  }
+
   // PROJECTS
   async getProjects(params?: any) {
     const queryString = params ? `?${new URLSearchParams(params).toString()}` : '';

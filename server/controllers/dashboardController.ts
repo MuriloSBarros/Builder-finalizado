@@ -10,7 +10,7 @@ export class DashboardController {
       // Para Conta Simples, dados financeiros são zerados
       if (accountType === 'simples') {
         const clientsResult = await tenantDb.query(`
-          SELECT COUNT(*) as total FROM \${schema}.clients WHERE is_active = true
+          SELECT COUNT(*) as total FROM \${schema}.clients WHERE status = 'active'
         `);
 
         const clientsGrowth = await tenantDb.query(`
@@ -20,7 +20,7 @@ export class DashboardController {
               COUNT(*) as new_clients
             FROM \${schema}.clients
             WHERE created_at >= DATE_TRUNC('month', NOW() - INTERVAL '1 month')
-              AND is_active = true
+              AND status = 'active'
             GROUP BY DATE_TRUNC('month', created_at)
           )
           SELECT 
@@ -85,7 +85,7 @@ export class DashboardController {
       };
 
       const clientsResult = await tenantDb.query(`
-        SELECT COUNT(*) as total FROM \${schema}.clients WHERE is_active = true
+        SELECT COUNT(*) as total FROM \${schema}.clients WHERE status = 'active'
       `);
 
       const clientsGrowth = await tenantDb.query(`
@@ -95,7 +95,7 @@ export class DashboardController {
             COUNT(*) as new_clients
           FROM \${schema}.clients
           WHERE created_at >= DATE_TRUNC('month', NOW() - INTERVAL '1 month')
-            AND is_active = true
+            AND status = 'active'
           GROUP BY DATE_TRUNC('month', created_at)
         )
         SELECT 
