@@ -1,4 +1,6 @@
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect } from "react";
+import { useClients } from "@/hooks/useClients";
+import { apiService } from "@/services/api";
 import {
   createSafeOnOpenChange,
   createSafeDialogHandler,
@@ -59,96 +61,6 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { MoreHorizontal, Eye, Edit, Trash2 } from "lucide-react";
-
-// Mock data - in real app would come from API
-const mockClients: Client[] = [
-  {
-    id: "1",
-    name: "Maria Silva Santos",
-    organization: "Silva & Associates",
-    email: "maria@silva.com.br",
-    mobile: "(11) 99999-1234",
-    country: "BR",
-    state: "São Paulo",
-    address: "Rua Augusta, 123, Cerqueira César",
-    city: "São Paulo",
-    zipCode: "01305-000",
-    budget: 15000,
-    currency: "BRL",
-    level: "Premium",
-    tags: ["Direito Civil", "Prioritário", "Empresa", "Premium"],
-    description: "Cliente premium com múltiplos casos",
-    cpf: "123.456.789-00",
-    rg: "12.345.678-9",
-    professionalTitle: "Empresária",
-    maritalStatus: "married",
-    birthDate: "1980-05-15",
-    inssStatus: "active",
-    amountPaid: 8000,
-    referredBy: "João Advogado",
-    registeredBy: "Dr. Silva - Sócio Gerente",
-    createdAt: "2024-01-01T10:00:00Z",
-    updatedAt: "2024-01-15T14:30:00Z",
-    status: "active",
-  },
-  {
-    id: "2",
-    name: "João Carlos Oliveira",
-    email: "joao@email.com",
-    mobile: "(11) 88888-5678",
-    country: "BR",
-    state: "Rio de Janeiro",
-    address: "Av. Copacabana, 456",
-    city: "Rio de Janeiro",
-    zipCode: "22070-000",
-    budget: 8500,
-    currency: "BRL",
-    tags: ["Trabalhista", "Demissão", "Rescisão"],
-    description: "Caso trabalhista - demissão sem justa causa",
-    cpf: "987.654.321-00",
-    maritalStatus: "single",
-    birthDate: "1985-09-20",
-    inssStatus: "inactive",
-    registeredBy: "Dra. Costa - Sócia Diretora",
-    createdAt: "2024-01-05T09:15:00Z",
-    updatedAt: "2024-01-10T16:45:00Z",
-    status: "active",
-  },
-];
-
-const mockDeals: Deal[] = [
-  {
-    id: "1",
-    title: "Consultoria Jurídica Empresarial",
-    contactName: "Ana Costa",
-    organization: "TechStart LTDA",
-    email: "ana@techstart.com",
-    mobile: "(11) 77777-9999",
-    address: "Rua da Inovação, 789, Vila Olímpia, São Paulo - SP",
-    budget: 25000,
-    currency: "BRL",
-    stage: "proposal",
-    tags: ["Direito Empresarial", "Startup"],
-    description: "Necessita de assessoria jurídica para expansão da empresa",
-    createdAt: "2024-01-10T10:00:00Z",
-    updatedAt: "2024-01-15T14:30:00Z",
-  },
-  {
-    id: "2",
-    title: "Ação Previdenciária",
-    contactName: "Roberto Silva",
-    email: "roberto@email.com",
-    mobile: "(11) 66666-8888",
-    address: "Rua das Flores, 321, Centro, São Paulo - SP",
-    budget: 12000,
-    currency: "BRL",
-    stage: "contacted",
-    tags: ["Previdenciário"],
-    description: "Aposentadoria negada pelo INSS",
-    createdAt: "2024-01-12T11:30:00Z",
-    updatedAt: "2024-01-16T09:15:00Z",
-  },
-];
 
 interface PipelineListViewProps {
   deals: Deal[];
@@ -292,8 +204,7 @@ export function CRM() {
   const [dealInitialStage, setDealInitialStage] = useState<
     DealStage | undefined
   >();
-  const [clients, setClients] = useState<Client[]>(mockClients);
-  const [deals, setDeals] = useState<Deal[]>(mockDeals);
+  const [deals, setDeals] = useState<Deal[]>([]);
   const [selectedClients, setSelectedClients] = useState<string[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [dealSearchTerm, setDealSearchTerm] = useState("");
@@ -306,6 +217,29 @@ export function CRM() {
   const [tempStageNames, setTempStageNames] = useState<{
     [key: string]: string;
   }>({});
+
+  // Use real API data for clients
+  const { 
+    clients, 
+    loading: clientsLoading, 
+    error: clientsError,
+    createClient,
+    updateClient,
+    deleteClient 
+  } = useClients({ search: searchTerm, status: statusFilter });
+
+  // Load deals from API
+  useEffect(() => {
+    const fetchDeals = async () => {
+      try {
+        const dealsData = await apiService.getDeals();
+        setDeals(dealsData);
+      } catch (error) {
+        console.error('Error fetching deals:', error);
+      }
+    };
+    fetchDeals();
+  }, []);
 
   // Create safe dialog handler
   const safeSetEditingStages = createSafeOnOpenChange((open: boolean) =>
@@ -397,49 +331,10 @@ export function CRM() {
 
   const handleSubmitClient = (data: any) => {
     if (editingClient) {
-      setClients(
-        clients.map((client) =>
-          client.id === editingClient.id
-            ? { ...client, ...data, updatedAt: new Date().toISOString() }
-            : client,
-        ),
-      );
+      updateClient(editingClient.id, data);
       setEditingClient(undefined);
     } else {
-      const newClient: Client = {
-        ...data,
-        id: Date.now().toString(),
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-        status: "active" as const,
-      };
-      setClients([...clients, newClient]);
-
-      // NOVIDADE: Enviar notificação quando novo cliente for cadastrado
-      // Em produção, isso seria uma chamada para API de notificações
-      console.log("📢 NOTIFICAÇÃO ENVIADA: Novo cliente cadastrado", {
-        type: "info",
-        title: "Novo Cliente Cadastrado",
-        message: `${newClient.name} foi adicionado ao CRM`,
-        category: "client",
-        createdBy: "Usuário Atual", // Em produção: pegar do contexto de auth
-        clientData: {
-          id: newClient.id,
-          name: newClient.name,
-          email: newClient.email,
-          tags: newClient.tags,
-        },
-      });
-
-      // FUTURO: Integração com sistema de notificações
-      // await NotificationService.create({
-      //   type: 'client_created',
-      //   title: 'Novo Cliente Cadastrado',
-      //   message: `${newClient.name} foi adicionado ao CRM`,
-      //   entityId: newClient.id,
-      //   entityType: 'client',
-      //   userId: currentUser.id
-      // });
+      createClient(data);
     }
     setShowClientForm(false);
   };
@@ -464,7 +359,7 @@ export function CRM() {
   };
 
   const handleDeleteClient = (clientId: string) => {
-    setClients(clients.filter((client) => client.id !== clientId));
+    deleteClient(clientId);
     setSelectedClients(selectedClients.filter((id) => id !== clientId));
   };
 
@@ -503,17 +398,22 @@ export function CRM() {
   };
 
   const handleDeleteDeal = (dealId: string) => {
-    setDeals(deals.filter((deal) => deal.id !== dealId));
+    apiService.deleteDeal(dealId).then(() => {
+      setDeals(deals.filter((deal) => deal.id !== dealId));
+    });
   };
 
   const handleMoveDeal = (dealId: string, newStage: DealStage) => {
-    setDeals(
-      deals.map((deal) =>
-        deal.id === dealId
-          ? { ...deal, stage: newStage, updatedAt: new Date().toISOString() }
-          : deal,
-      ),
-    );
+    const dealToUpdate = deals.find(d => d.id === dealId);
+    if (dealToUpdate) {
+      apiService.updateDeal(dealId, { ...dealToUpdate, stage: newStage }).then(() => {
+        setDeals(deals.map((deal) =>
+          deal.id === dealId
+            ? { ...deal, stage: newStage, updatedAt: new Date().toISOString() }
+            : deal,
+        ));
+      });
+    }
   };
 
   const handleApplyAdvancedFilters = (filters: any) => {
@@ -526,59 +426,26 @@ export function CRM() {
 
   const handleSubmitDeal = (data: any) => {
     if (editingDeal) {
-      setDeals(
-        deals.map((deal) =>
+      apiService.updateDeal(editingDeal.id, data).then(() => {
+        setDeals(deals.map((deal) =>
           deal.id === editingDeal.id
             ? { ...deal, ...data, updatedAt: new Date().toISOString() }
             : deal,
-        ),
-      );
+        ));
+      });
       setEditingDeal(undefined);
     } else {
-      const newDeal: Deal = {
-        ...data,
-        id: Date.now().toString(),
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-      };
-      setDeals([...deals, newDeal]);
-
-      // NOVIDADE: Enviar notificação quando novo negócio for adicionado ao Pipeline
-      // Em produção, isso seria uma chamada para API de notificações
-      console.log("📢 NOTIFICAÇÃO ENVIADA: Novo negócio no pipeline", {
-        type: "info",
-        title: "Novo Negócio Adicionado",
-        message: `${newDeal.title} foi adicionado ao Pipeline de Vendas`,
-        category: "pipeline",
-        createdBy: "Usuário Atual", // Em produção: pegar do contexto de auth
-        dealData: {
-          id: newDeal.id,
-          title: newDeal.title,
-          contactName: newDeal.contactName,
-          stage: newDeal.stage,
-          budget: newDeal.budget,
-          tags: newDeal.tags,
-        },
+      apiService.createDeal(data).then((newDeal) => {
+        setDeals([...deals, newDeal]);
       });
-
-      // FUTURO: Integração com sistema de notificações
-      // await NotificationService.create({
-      //   type: 'deal_created',
-      //   title: 'Novo Negócio Adicionado',
-      //   message: `${newDeal.title} foi adicionado ao Pipeline de Vendas`,
-      //   entityId: newDeal.id,
-      //   entityType: 'deal',
-      //   userId: currentUser.id,
-      //   metadata: { stage: newDeal.stage, budget: newDeal.budget }
-      // });
     }
     setShowDealForm(false);
     setDealInitialStage(undefined);
   };
 
   // Calculate metrics
-  const totalClients = clients.length;
-  const activeClients = clients.filter((c) => c.status === "active").length;
+  const totalClients = clients?.length || 0;
+  const activeClients = clients?.filter((c: any) => c.status === "active").length || 0;
   const totalRevenuePotential = deals.reduce(
     (sum, deal) => sum + deal.budget,
     0,
@@ -760,7 +627,7 @@ export function CRM() {
               </CardHeader>
               <CardContent>
                 <ClientsTable
-                  clients={filteredClients}
+                  clients={clientsLoading ? [] : filteredClients}
                   selectedClients={selectedClients}
                   onSelectClient={handleSelectClient}
                   onSelectAll={handleSelectAllClients}
@@ -768,6 +635,17 @@ export function CRM() {
                   onDeleteClient={handleDeleteClient}
                   onViewClient={handleViewClient}
                 />
+                {clientsLoading && (
+                  <div className="text-center py-8">
+                    <div className="animate-spin h-8 w-8 border-4 border-primary border-t-transparent rounded-full mx-auto"></div>
+                    <p className="text-sm text-muted-foreground mt-2">Carregando clientes...</p>
+                  </div>
+                )}
+                {clientsError && (
+                  <div className="text-center py-8 text-red-600">
+                    <p>Erro ao carregar clientes: {clientsError}</p>
+                  </div>
+                )}
               </CardContent>
             </Card>
           </TabsContent>

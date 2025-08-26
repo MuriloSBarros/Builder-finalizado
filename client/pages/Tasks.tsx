@@ -1,4 +1,5 @@
 import React, { useState, useMemo } from 'react';
+import { useTasks } from '@/hooks/useTasks';
 import { DashboardLayout } from '@/components/Layout/DashboardLayout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -45,157 +46,6 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { MoreHorizontal, Eye, Edit, Trash2 } from 'lucide-react';
 
-// Mock data - in real app would come from API
-const mockTasks: Task[] = [
-  {
-    id: '1',
-    title: 'Revisar contrato de prestação de serviços',
-    description: 'Analisar cláusulas contratuais e identificar possíveis riscos jurídicos para o cliente.',
-    startDate: '2024-01-20T00:00:00Z',
-    endDate: '2024-01-25T00:00:00Z',
-    status: 'in_progress',
-    priority: 'high',
-    assignedTo: 'Dr. Silva',
-    projectId: '1',
-    projectTitle: 'Ação Previdenciária - João Santos',
-    clientId: '1',
-    clientName: 'João Santos',
-    tags: ['Contrato', 'Revisão', 'Urgente'],
-    estimatedHours: 4,
-    actualHours: 2.5,
-    progress: 60,
-    createdAt: '2024-01-20T09:00:00Z',
-    updatedAt: '2024-01-22T14:30:00Z',
-    notes: 'Cliente solicitou urgência devido a prazo de assinatura.',
-    attachments: [],
-    subtasks: [
-      {
-        id: '1',
-        title: 'Ler contrato completo',
-        completed: true,
-        createdAt: '2024-01-20T09:00:00Z',
-        completedAt: '2024-01-21T10:30:00Z',
-      },
-      {
-        id: '2',
-        title: 'Identificar cláusulas problemáticas',
-        completed: true,
-        createdAt: '2024-01-20T09:00:00Z',
-        completedAt: '2024-01-22T11:15:00Z',
-      },
-      {
-        id: '3',
-        title: 'Elaborar parecer jurídico',
-        completed: false,
-        createdAt: '2024-01-20T09:00:00Z',
-      },
-      {
-        id: '4',
-        title: 'Enviar relatório ao cliente',
-        completed: false,
-        createdAt: '2024-01-20T09:00:00Z',
-      },
-    ],
-  },
-  {
-    id: '2',
-    title: 'Preparar petição inicial',
-    description: 'Elaborar petição inicial para ação de divórcio consensual.',
-    startDate: '2024-01-18T00:00:00Z',
-    endDate: '2024-01-30T00:00:00Z',
-    status: 'not_started',
-    priority: 'medium',
-    assignedTo: 'Dra. Costa',
-    projectId: '2',
-    projectTitle: 'Divórcio Consensual - Maria e Carlos',
-    clientId: '2',
-    clientName: 'Maria Silva',
-    tags: ['Petição', 'Divórcio', 'Família'],
-    estimatedHours: 6,
-    actualHours: 0,
-    progress: 0,
-    createdAt: '2024-01-18T10:15:00Z',
-    updatedAt: '2024-01-18T10:15:00Z',
-    notes: 'Aguardando documentos do cliente.',
-    attachments: [],
-    subtasks: [
-      {
-        id: '5',
-        title: 'Coletar documentos necessários',
-        completed: false,
-        createdAt: '2024-01-18T10:15:00Z',
-      },
-      {
-        id: '6',
-        title: 'Redigir petição',
-        completed: false,
-        createdAt: '2024-01-18T10:15:00Z',
-      },
-    ],
-  },
-  {
-    id: '3',
-    title: 'Acompanhar audiência no INSS',
-    description: 'Comparecer à audiência administrativa no INSS para defesa do cliente.',
-    startDate: '2024-01-15T00:00:00Z',
-    endDate: '2024-01-28T00:00:00Z',
-    status: 'completed',
-    priority: 'urgent',
-    assignedTo: 'Dr. Silva',
-    projectId: '1',
-    projectTitle: 'Ação Previdenciária - João Santos',
-    clientId: '1',
-    clientName: 'João Santos',
-    tags: ['INSS', 'Audiência', 'Previdenciário'],
-    estimatedHours: 3,
-    actualHours: 3.5,
-    progress: 100,
-    createdAt: '2024-01-15T08:00:00Z',
-    updatedAt: '2024-01-28T16:45:00Z',
-    completedAt: '2024-01-28T16:45:00Z',
-    notes: 'Audiência realizada com sucesso. Aguardando decisão.',
-    attachments: [],
-    subtasks: [
-      {
-        id: '7',
-        title: 'Preparar documentação',
-        completed: true,
-        createdAt: '2024-01-15T08:00:00Z',
-        completedAt: '2024-01-20T09:30:00Z',
-      },
-      {
-        id: '8',
-        title: 'Comparecer à audiência',
-        completed: true,
-        createdAt: '2024-01-15T08:00:00Z',
-        completedAt: '2024-01-28T16:45:00Z',
-      },
-    ],
-  },
-  {
-    id: '4',
-    title: 'Análise de viabilidade processual',
-    description: 'Estudar caso e avaliar chances de sucesso na ação judicial.',
-    startDate: '2024-01-25T00:00:00Z',
-    endDate: '2024-02-05T00:00:00Z',
-    status: 'on_hold',
-    priority: 'low',
-    assignedTo: 'Ana Paralegal',
-    projectId: '4',
-    projectTitle: 'Ação Trabalhista - Pedro Souza',
-    clientId: '4',
-    clientName: 'Pedro Souza',
-    tags: ['Análise', 'Trabalhista', 'Viabilidade'],
-    estimatedHours: 8,
-    actualHours: 1,
-    progress: 15,
-    createdAt: '2024-01-25T11:20:00Z',
-    updatedAt: '2024-01-26T14:10:00Z',
-    notes: 'Pausado até recebimento de documentos adicionais.',
-    attachments: [],
-    subtasks: [],
-  },
-];
 
 interface TasksListViewProps {
   tasks: Task[];
@@ -338,13 +188,28 @@ export function Tasks() {
   const [showTaskView, setShowTaskView] = useState(false);
   const [editingTask, setEditingTask] = useState<Task | undefined>();
   const [viewingTask, setViewingTask] = useState<Task | null>(null);
-  const [tasks, setTasks] = useState<Task[]>(mockTasks);
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [priorityFilter, setPriorityFilter] = useState<string>('all');
   const [assigneeFilter, setAssigneeFilter] = useState<string>('all');
   const [viewMode, setViewMode] = useState<'kanban' | 'list'>('kanban');
 
+  // Use real API data for tasks
+  const { 
+    tasks, 
+    stats: taskStats,
+    loading: tasksLoading, 
+    error: tasksError,
+    createTask,
+    updateTask,
+    deleteTask,
+    toggleSubtask 
+  } = useTasks({ 
+    search: searchTerm, 
+    status: statusFilter, 
+    priority: priorityFilter, 
+    assignee: assigneeFilter 
+  });
   // Filter tasks based on search, status, priority, and assignee
   const filteredTasks = useMemo(() => {
     return tasks.filter((task) => {
@@ -394,62 +259,18 @@ export function Tasks() {
 
   const handleSubmitTask = (data: any) => {
     if (editingTask) {
-      setTasks(tasks.map(task =>
-        task.id === editingTask.id
-          ? {
-              ...task,
-              ...data,
-              startDate: data.startDate + 'T00:00:00Z',
-              endDate: data.endDate + 'T00:00:00Z',
-              updatedAt: new Date().toISOString(),
-              attachments: task.attachments, // Keep existing attachments
-            }
-          : task
-      ));
-      setEditingTask(undefined);
-    } else {
-      const newTask: Task = {
+      updateTask(editingTask.id, {
         ...data,
-        id: Date.now().toString(),
         startDate: data.startDate + 'T00:00:00Z',
         endDate: data.endDate + 'T00:00:00Z',
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-        attachments: [],
-        clientName: data.projectId ? 'Cliente do Projeto' : undefined,
-        projectTitle: data.projectId ? 'Projeto Relacionado' : undefined,
-      };
-      setTasks([...tasks, newTask]);
-
-      // NOVIDADE: Enviar notificação quando nova tarefa for criada
-      // Em produção, isso seria uma chamada para API de notificações
-      console.log("📢 NOTIFICAÇÃO ENVIADA: Nova tarefa criada", {
-        type: 'info',
-        title: 'Nova Tarefa Criada',
-        message: `${newTask.title} foi atribuída${newTask.assignedTo ? ` a ${newTask.assignedTo}` : ''}`,
-        category: 'task',
-        createdBy: 'Usuário Atual', // Em produção: pegar do contexto de auth
-        taskData: {
-          id: newTask.id,
-          title: newTask.title,
-          assignedTo: newTask.assignedTo,
-          priority: newTask.priority,
-          endDate: newTask.endDate,
-          projectTitle: newTask.projectTitle,
-          tags: newTask.tags
-        }
       });
-
-      // FUTURO: Integração com sistema de notificações
-      // await NotificationService.create({
-      //   type: 'task_created',
-      //   title: 'Nova Tarefa Criada',
-      //   message: `${newTask.title} foi${newTask.assignedTo ? ` atribuída a ${newTask.assignedTo}` : ' criada'}`,
-      //   entityId: newTask.id,
-      //   entityType: 'task',
-      //   userId: currentUser.id,
-      //   assignedUserId: newTask.assignedTo ? getUserIdByName(newTask.assignedTo) : null
-      // });
+      setEditingTask(undefined);
+    } else {
+      createTask({
+        ...data,
+        startDate: data.startDate + 'T00:00:00Z',
+        endDate: data.endDate + 'T00:00:00Z',
+      });
     }
     setShowTaskForm(false);
   };
@@ -465,21 +286,19 @@ export function Tasks() {
   };
 
   const handleDeleteTask = (taskId: string) => {
-    setTasks(tasks.filter(task => task.id !== taskId));
+    deleteTask(taskId);
   };
 
   const handleMoveTask = (taskId: string, newStatus: TaskStatus) => {
-    setTasks(tasks.map(task =>
-      task.id === taskId
-        ? {
-            ...task,
-            status: newStatus,
-            updatedAt: new Date().toISOString(),
-            completedAt: newStatus === 'completed' ? new Date().toISOString() : undefined,
-            progress: newStatus === 'completed' ? 100 : task.progress
-          }
-        : task
-    ));
+    const taskToUpdate = tasks.find(t => t.id === taskId);
+    if (taskToUpdate) {
+      updateTask(taskId, {
+        ...taskToUpdate,
+        status: newStatus,
+        completedAt: newStatus === 'completed' ? new Date().toISOString() : undefined,
+        progress: newStatus === 'completed' ? 100 : taskToUpdate.progress
+      });
+    }
   };
 
   const handleViewTask = (task: Task) => {
@@ -494,61 +313,13 @@ export function Tasks() {
   };
 
   const handleToggleSubtask = (taskId: string, subtaskId: string) => {
-    setTasks(tasks.map(task =>
-      task.id === taskId
-        ? {
-            ...task,
-            subtasks: task.subtasks.map(subtask =>
-              subtask.id === subtaskId
-                ? {
-                    ...subtask,
-                    completed: !subtask.completed,
-                    completedAt: !subtask.completed ? new Date().toISOString() : undefined
-                  }
-                : subtask
-            ),
-            updatedAt: new Date().toISOString()
-          }
-        : task
-    ));
+    toggleSubtask(taskId, subtaskId);
   };
 
   // Calculate task statistics
-  const taskStats: TaskStats = useMemo(() => {
-    const total = tasks.length;
-    const notStarted = tasks.filter(t => t.status === 'not_started').length;
-    const inProgress = tasks.filter(t => t.status === 'in_progress').length;
-    const completed = tasks.filter(t => t.status === 'completed').length;
-    const overdue = tasks.filter(t =>
-      new Date(t.endDate) < new Date() &&
-      !['completed', 'cancelled'].includes(t.status)
-    ).length;
-    const completionRate = total > 0 ? Math.round((completed / total) * 100) : 0;
-
-    // Calculate average completion time
-    const completedTasks = tasks.filter(t => t.status === 'completed' && t.completedAt);
-    const avgCompletionTime = completedTasks.length > 0
-      ? Math.round(completedTasks.reduce((sum, task) => {
-          const start = new Date(task.createdAt);
-          const end = new Date(task.completedAt!);
-          const diffDays = (end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24);
-          return sum + diffDays;
-        }, 0) / completedTasks.length)
-      : 0;
-
-    return {
-      total,
-      notStarted,
-      inProgress,
-      completed,
-      overdue,
-      completionRate,
-      averageCompletionTime: avgCompletionTime
-    };
-  }, [tasks]);
 
   // Get unique assignees for filter
-  const assignees = [...new Set(tasks.map(task => task.assignedTo))];
+  const assignees = [...new Set(tasks.map((task: any) => task.assignedTo))];
 
   return (
     <DashboardLayout>
@@ -608,7 +379,7 @@ export function Tasks() {
             <CardContent>
               <div className="text-2xl font-bold">{taskStats.total}</div>
               <p className="text-xs text-muted-foreground">
-                {taskStats.inProgress} em progresso
+                {taskStats?.in_progress || 0} em progresso
               </p>
             </CardContent>
           </Card>
@@ -619,9 +390,9 @@ export function Tasks() {
               <TrendingUp className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{taskStats.completionRate}%</div>
+              <div className="text-2xl font-bold">{taskStats?.completion_rate || 0}%</div>
               <p className="text-xs text-muted-foreground">
-                {taskStats.completed} concluídas
+                {taskStats?.completed || 0} concluídas
               </p>
             </CardContent>
           </Card>
@@ -632,7 +403,7 @@ export function Tasks() {
               <AlertTriangle className="h-4 w-4 text-red-500" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-red-600">{taskStats.overdue}</div>
+              <div className="text-2xl font-bold text-red-600">{taskStats?.overdue || 0}</div>
               <p className="text-xs text-muted-foreground">
                 Necessitam atenção
               </p>
@@ -645,7 +416,7 @@ export function Tasks() {
               <Timer className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{taskStats.averageCompletionTime}d</div>
+              <div className="text-2xl font-bold">{taskStats?.average_completion_time || 0}d</div>
               <p className="text-xs text-muted-foreground">
                 Para conclusão
               </p>
@@ -715,7 +486,19 @@ export function Tasks() {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            {viewMode === 'kanban' ? (
+            {tasksLoading && (
+              <div className="text-center py-8">
+                <div className="animate-spin h-8 w-8 border-4 border-primary border-t-transparent rounded-full mx-auto"></div>
+                <p className="text-sm text-muted-foreground mt-2">Carregando tarefas...</p>
+              </div>
+            )}
+            {tasksError && (
+              <div className="text-center py-8 text-red-600">
+                <p>Erro ao carregar tarefas: {tasksError}</p>
+              </div>
+            )}
+            {!tasksLoading && !tasksError && (
+            viewMode === 'kanban' ? (
               <TaskBoard
                 boards={taskBoards}
                 onAddTask={handleAddTask}
@@ -733,7 +516,7 @@ export function Tasks() {
                 onViewTask={handleViewTask}
                 onMoveTask={handleMoveTask}
               />
-            )}
+            ))}
           </CardContent>
         </Card>
 
