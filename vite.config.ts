@@ -8,6 +8,7 @@ export default defineConfig(({ mode }) => ({
     // Use default React plugin instead of SWC for WebContainer compatibility
     jsxRuntime: 'automatic'
   })],
+  server: {
     host: "::",
     port: 8080,
     fs: {
@@ -18,10 +19,9 @@ export default defineConfig(({ mode }) => ({
   build: {
     outDir: "dist/spa",
   },
-  plugins: [react(), expressPlugin()],
   resolve: {
     alias: {
-      "@": resolve(__dirname, "./client"),
+      "@": path.resolve(__dirname, "./client"),
       "@shared": path.resolve(__dirname, "./shared"),
     },
   },
