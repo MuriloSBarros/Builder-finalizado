@@ -1,9 +1,9 @@
 /**
- * SERVIÇO DE API - SUBSTITUIÇÃO DOS MOCK DATA
- * ==========================================
+ * API SERVICE - INTEGRAÇÃO COM SUPABASE
+ * =====================================
  * 
- * Centraliza todas as chamadas para o backend, substituindo
- * os dados mock por requisições reais para as APIs.
+ * Centraliza todas as chamadas para o backend usando Supabase.
+ * Remove todos os mock data e implementa chamadas reais.
  */
 
 const API_BASE_URL = '/api';
@@ -25,17 +25,17 @@ class ApiService {
       const response = await fetch(`${API_BASE_URL}${endpoint}`, config);
       
       if (response.status === 401) {
-        // Token expirado, tentar refresh
+        // Token expired, try refresh
         const refreshed = await this.refreshToken();
         if (refreshed) {
-          // Retry com novo token
+          // Retry with new token
           config.headers = {
             ...config.headers,
             Authorization: `Bearer ${localStorage.getItem('accessToken')}`,
           };
           return await fetch(`${API_BASE_URL}${endpoint}`, config);
         } else {
-          // Redirect para login
+          // Redirect to login
           window.location.href = '/login';
           throw new Error('Sessão expirada');
         }

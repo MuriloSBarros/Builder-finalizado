@@ -1,6 +1,7 @@
 import jwt from 'jsonwebtoken';
 import bcrypt from 'bcryptjs';
 import { Request, Response, NextFunction } from 'express';
+import { db } from './database';
 
 export interface JWTPayload {
   userId: string;
@@ -61,7 +62,7 @@ export class AuthService {
 
 export const authService = new AuthService();
 
-// Middleware de autenticação
+// Authentication middleware
 export const authenticateToken = async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
   const authHeader = req.headers['authorization'];
   const token = authHeader && authHeader.split(' ')[1];
@@ -86,7 +87,7 @@ export const authenticateToken = async (req: AuthenticatedRequest, res: Response
   }
 };
 
-// Middleware de validação de tipo de conta
+// Account type validation middleware
 export const requireAccountType = (allowedTypes: string[]) => {
   return (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
     const userAccountType = req.user.accountType;
@@ -103,7 +104,7 @@ export const requireAccountType = (allowedTypes: string[]) => {
   };
 };
 
-// Middleware de tenant
+// Tenant middleware
 export const tenantMiddleware = (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
   const tenantId = req.user.tenantId;
 
@@ -111,7 +112,7 @@ export const tenantMiddleware = (req: AuthenticatedRequest, res: Response, next:
     return res.status(403).json({ error: 'Tenant não identificado' });
   }
 
-  // Configurar conexão com schema específico do tenant
-  req.db = (global as any).db.getTenantConnection(tenantId);
+  // Set up tenant-specific database connection
+  req.db = db.getTenantConnection(tenantId);
   next();
 };

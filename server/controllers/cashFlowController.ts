@@ -5,61 +5,37 @@ export class CashFlowController {
   async getTransactions(req: AuthenticatedRequest, res: Response) {
     try {
       const tenantDb = req.db;
-      const { search, type, category, status, startDate, endDate } = req.query;
+      const { search, type, category, status } = req.query;
 
-      let whereClause = 'WHERE 1=1';
-      const params: any[] = [];
-      let paramCount = 0;
+      let options: any = {
+        order: { column: 'date', ascending: false }
+      };
 
-      if (search) {
-        paramCount++;
-        whereClause += ` AND description ILIKE $${paramCount}`;
-        params.push(`%${search}%`);
-      }
-
+      // Apply filters
       if (type && type !== 'all') {
-        paramCount++;
-        whereClause += ` AND type = $${paramCount}`;
-        params.push(type);
+        options.eq = { ...options.eq, type };
       }
 
       if (category && category !== 'all') {
-        paramCount++;
-        whereClause += ` AND category_id = $${paramCount}`;
-        params.push(category);
+        options.eq = { ...options.eq, category_id: category };
       }
 
       if (status && status !== 'all') {
-        paramCount++;
-        whereClause += ` AND status = $${paramCount}`;
-        params.push(status);
+        options.eq = { ...options.eq, status };
       }
 
-      if (startDate) {
-        paramCount++;
-        whereClause += ` AND date >= $${paramCount}`;
-        params.push(startDate);
+      const { rows: transactions } = await tenantDb.query('cash_flow', options);
+
+      // Filter by search term (client-side for now)
+      let filteredTransactions = transactions;
+      if (search) {
+        const searchTerm = search.toString().toLowerCase();
+        filteredTransactions = transactions.filter((transaction: any) =>
+          transaction.description.toLowerCase().includes(searchTerm)
+        );
       }
 
-      if (endDate) {
-        paramCount++;
-        whereClause += ` AND date <= $${paramCount}`;
-        params.push(endDate);
-      }
-
-      const result = await tenantDb.query(`
-        SELECT 
-          cf.*,
-          p.title as project_title,
-          c.name as client_name
-        FROM \${schema}.cash_flow cf
-        LEFT JOIN \${schema}.projects p ON p.id = cf.project_id
-        LEFT JOIN \${schema}.clients c ON c.id = cf.client_id
-        ${whereClause}
-        ORDER BY cf.date DESC, cf.created_at DESC
-      `, params);
-
-      res.json(result.rows);
+      res.json(filteredTransactions);
     } catch (error) {
       console.error('Get transactions error:', error);
       res.status(500).json({ error: 'Erro ao buscar transações' });
@@ -71,32 +47,12 @@ export class CashFlowController {
       const tenantDb = req.db;
       const transactionData = req.body;
 
-      const result = await tenantDb.query(`
-        INSERT INTO \${schema}.cash_flow (
-          type, amount, category_id, description, date, payment_method, status,
-          project_id, client_id, tags, notes, is_recurring, recurring_frequency,
-          created_by, created_at, updated_at
-        ) VALUES (
-          $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, NOW(), NOW()
-        ) RETURNING *
-      `, [
-        transactionData.type,
-        transactionData.amount,
-        transactionData.categoryId,
-        transactionData.description,
-        transactionData.date,
-        transactionData.paymentMethod,
-        transactionData.status,
-        transactionData.projectId || null,
-        transactionData.clientId || null,
-        transactionData.tags,
-        transactionData.notes,
-        transactionData.isRecurring,
-        transactionData.recurringFrequency,
-        req.user.name,
-      ]);
+      const transaction = await tenantDb.insert('cash_flow', {
+        ...transactionData,
+        created_by: req.user.name,
+      });
 
-      res.status(201).json(result.rows[0]);
+      res.status(201).json(transaction);
     } catch (error) {
       console.error('Create transaction error:', error);
       res.status(500).json({ error: 'Erro ao criar transação' });
@@ -109,37 +65,13 @@ export class CashFlowController {
       const tenantDb = req.db;
       const transactionData = req.body;
 
-      const result = await tenantDb.query(`
-        UPDATE \${schema}.cash_flow SET
-          type = $1, amount = $2, category_id = $3, description = $4, date = $5,
-          payment_method = $6, status = $7, project_id = $8, client_id = $9,
-          tags = $10, notes = $11, is_recurring = $12, recurring_frequency = $13,
-          last_modified_by = $14, updated_at = NOW()
-        WHERE id = $15
-        RETURNING *
-      `, [
-        transactionData.type,
-        transactionData.amount,
-        transactionData.categoryId,
-        transactionData.description,
-        transactionData.date,
-        transactionData.paymentMethod,
-        transactionData.status,
-        transactionData.projectId || null,
-        transactionData.clientId || null,
-        transactionData.tags,
-        transactionData.notes,
-        transactionData.isRecurring,
-        transactionData.recurringFrequency,
-        req.user.name,
-        id,
-      ]);
+      const transaction = await tenantDb.update('cash_flow', id, {
+        ...transactionData,
+        last_modified_by: req.user.name,
+        updated_at: new Date().toISOString(),
+      });
 
-      if (result.rows.length === 0) {
-        return res.status(404).json({ error: 'Transação não encontrada' });
-      }
-
-      res.json(result.rows[0]);
+      res.json(transaction);
     } catch (error) {
       console.error('Update transaction error:', error);
       res.status(500).json({ error: 'Erro ao atualizar transação' });
@@ -151,14 +83,7 @@ export class CashFlowController {
       const { id } = req.params;
       const tenantDb = req.db;
 
-      const result = await tenantDb.query(`
-        DELETE FROM \${schema}.cash_flow WHERE id = $1 RETURNING description
-      `, [id]);
-
-      if (result.rows.length === 0) {
-        return res.status(404).json({ error: 'Transação não encontrada' });
-      }
-
+      await tenantDb.delete('cash_flow', id);
       res.json({ message: 'Transação removida com sucesso' });
     } catch (error) {
       console.error('Delete transaction error:', error);
@@ -169,68 +94,32 @@ export class CashFlowController {
   async exportCSV(req: AuthenticatedRequest, res: Response) {
     try {
       const tenantDb = req.db;
-      const { startDate, endDate } = req.query;
 
-      let whereClause = 'WHERE 1=1';
-      const params: any[] = [];
+      const { rows: transactions } = await tenantDb.query('cash_flow', {
+        order: { column: 'date', ascending: false }
+      });
 
-      if (startDate) {
-        params.push(startDate);
-        whereClause += ` AND date >= $${params.length}`;
-      }
-
-      if (endDate) {
-        params.push(endDate);
-        whereClause += ` AND date <= $${params.length}`;
-      }
-
-      const result = await tenantDb.query(`
-        SELECT 
-          date,
-          type,
-          description,
-          amount,
-          category_id,
-          payment_method,
-          status,
-          tags,
-          notes,
-          created_by,
-          created_at
-        FROM \${schema}.cash_flow
-        ${whereClause}
-        ORDER BY date DESC
-      `, params);
-
-      // Converter para CSV
+      // Convert to CSV
       const headers = [
         'Data',
         'Tipo',
         'Descrição',
         'Valor',
         'Categoria',
-        'Forma de Pagamento',
         'Status',
-        'Tags',
-        'Observações',
-        'Criado Por',
-        'Data de Criação'
+        'Forma de Pagamento'
       ];
 
       const csvContent = [
         headers.join(','),
-        ...result.rows.map((row: any) => [
+        ...transactions.map((row: any) => [
           row.date,
           row.type === 'income' ? 'Receita' : 'Despesa',
           `"${row.description}"`,
           row.amount,
           row.category_id,
-          row.payment_method || '',
           row.status,
-          `"${(row.tags || []).join(', ')}"`,
-          `"${row.notes || ''}"`,
-          row.created_by || '',
-          row.created_at
+          row.payment_method || ''
         ].join(','))
       ].join('\n');
 

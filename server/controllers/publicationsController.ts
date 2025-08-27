@@ -4,32 +4,32 @@ import { AuthenticatedRequest } from '../config/auth';
 export class PublicationsController {
   async getPublications(req: AuthenticatedRequest, res: Response) {
     try {
-      const tenantDb = req.db;
       const { search, status } = req.query;
 
-      let whereClause = 'WHERE user_id = $1'; // ISOLAMENTO POR USUÁRIO
-      const params: any[] = [req.user.userId];
-      let paramCount = 1;
+      let options: any = {
+        eq: { user_id: req.user.userId }, // USER isolation
+        order: { column: 'data_publicacao', ascending: false }
+      };
 
-      if (search) {
-        paramCount++;
-        whereClause += ` AND (processo ILIKE $${paramCount} OR nome_pesquisado ILIKE $${paramCount} OR vara_comarca ILIKE $${paramCount})`;
-        params.push(`%${search}%`);
-      }
-
+      // Apply status filter
       if (status && status !== 'all') {
-        paramCount++;
-        whereClause += ` AND status = $${paramCount}`;
-        params.push(status);
+        options.eq.status = status;
       }
 
-      const result = await tenantDb.query(`
-        SELECT * FROM \${schema}.publications 
-        ${whereClause}
-        ORDER BY data_publicacao DESC, created_at DESC
-      `, params);
+      const { rows: publications } = await db.query('publications', options);
 
-      res.json(result.rows);
+      // Filter by search term (client-side for now)
+      let filteredPublications = publications;
+      if (search) {
+        const searchTerm = search.toString().toLowerCase();
+        filteredPublications = publications.filter((pub: any) =>
+          pub.processo.toLowerCase().includes(searchTerm) ||
+          pub.nome_pesquisado.toLowerCase().includes(searchTerm) ||
+          pub.vara_comarca.toLowerCase().includes(searchTerm)
+        );
+      }
+
+      res.json(filteredPublications);
     } catch (error) {
       console.error('Get publications error:', error);
       res.status(500).json({ error: 'Erro ao buscar publicações' });
@@ -39,27 +39,23 @@ export class PublicationsController {
   async getPublicationById(req: AuthenticatedRequest, res: Response) {
     try {
       const { id } = req.params;
-      const tenantDb = req.db;
 
-      const result = await tenantDb.query(`
-        SELECT * FROM \${schema}.publications 
-        WHERE id = $1 AND user_id = $2
-      `, [id, req.user.userId]);
+      const { rows: publications } = await db.query('publications', {
+        eq: { id, user_id: req.user.userId }
+      });
 
-      if (result.rows.length === 0) {
+      if (publications.length === 0) {
         return res.status(404).json({ error: 'Publicação não encontrada' });
       }
 
-      const publication = result.rows[0];
+      const publication = publications[0];
 
-      // Se status é 'nova', mudar automaticamente para 'pendente'
+      // Auto-update status from 'nova' to 'pendente'
       if (publication.status === 'nova') {
-        await tenantDb.query(`
-          UPDATE \${schema}.publications 
-          SET status = 'pendente', updated_at = NOW()
-          WHERE id = $1
-        `, [id]);
-        
+        await db.update('publications', id, {
+          status: 'pendente',
+          updated_at: new Date().toISOString(),
+        });
         publication.status = 'pendente';
       }
 
@@ -74,20 +70,14 @@ export class PublicationsController {
     try {
       const { id } = req.params;
       const { status, responsavel } = req.body;
-      const tenantDb = req.db;
 
-      const result = await tenantDb.query(`
-        UPDATE \${schema}.publications 
-        SET status = $1, responsavel = $2, updated_at = NOW()
-        WHERE id = $3 AND user_id = $4
-        RETURNING *
-      `, [status, responsavel, id, req.user.userId]);
+      const publication = await db.update('publications', id, {
+        status,
+        responsavel,
+        updated_at: new Date().toISOString(),
+      });
 
-      if (result.rows.length === 0) {
-        return res.status(404).json({ error: 'Publicação não encontrada' });
-      }
-
-      res.json(result.rows[0]);
+      res.json(publication);
     } catch (error) {
       console.error('Update publication status error:', error);
       res.status(500).json({ error: 'Erro ao atualizar status' });
@@ -96,26 +86,29 @@ export class PublicationsController {
 
   async loadPublications(req: AuthenticatedRequest, res: Response) {
     try {
-      // Simular carregamento de publicações de APIs jurídicas
-      // Em produção, aqui seria integração com CNJ-DATAJUD, Codilo, JusBrasil
-      
-      const tenantDb = req.db;
+      // Simulate loading publications from legal APIs
       const mockPublications = [
         {
+          user_id: req.user.userId,
+          tenant_id: req.tenantId,
           data_publicacao: new Date('2024-01-28'),
           processo: '1001234-56.2024.8.26.0100',
           diario: 'Diário de Justiça Eletrônico',
           vara_comarca: '1ª Vara Cível - São Paulo/SP',
           nome_pesquisado: 'João Silva Santos',
+          status: 'nova',
           conteudo: 'Intimação para audiência de conciliação...',
           urgencia: 'alta',
         },
         {
+          user_id: req.user.userId,
+          tenant_id: req.tenantId,
           data_publicacao: new Date('2024-01-28'),
           processo: '2001234-56.2024.8.26.0200',
           diario: 'Diário Oficial do Estado',
           vara_comarca: '2ª Vara Criminal - Rio de Janeiro/RJ',
           nome_pesquisado: 'Maria Oliveira Costa',
+          status: 'nova',
           conteudo: 'Sentença publicada nos autos...',
           urgencia: 'media',
         },
@@ -123,25 +116,8 @@ export class PublicationsController {
 
       const insertedPublications = [];
       for (const pub of mockPublications) {
-        const result = await tenantDb.query(`
-          INSERT INTO \${schema}.publications (
-            user_id, data_publicacao, processo, diario, vara_comarca, nome_pesquisado,
-            status, conteudo, urgencia, created_at, updated_at
-          ) VALUES (
-            $1, $2, $3, $4, $5, $6, 'nova', $7, $8, NOW(), NOW()
-          ) RETURNING *
-        `, [
-          req.user.userId,
-          pub.data_publicacao,
-          pub.processo,
-          pub.diario,
-          pub.vara_comarca,
-          pub.nome_pesquisado,
-          pub.conteudo,
-          pub.urgencia,
-        ]);
-
-        insertedPublications.push(result.rows[0]);
+        const publication = await db.insert('publications', pub);
+        insertedPublications.push(publication);
       }
 
       res.json({
@@ -162,8 +138,7 @@ export class PublicationsController {
         return res.status(400).json({ error: 'Número da OAB e estado são obrigatórios' });
       }
 
-      // Simular consulta de processos
-      // Em produção, aqui seria integração com APIs jurídicas
+      // Mock search results
       const mockResults = [
         {
           id: '1',
@@ -176,18 +151,6 @@ export class PublicationsController {
           advogado: `${oabNumber}/${oabState}`,
           tipo: 'Ação Trabalhista',
           valor: 'R$ 45.000,00',
-        },
-        {
-          id: '2',
-          numero: 'PROJ-2025-002',
-          cliente: 'LUIZ ANSELMO',
-          vara: '2ª Vara Trabalhista - São Paulo/SP',
-          status: 'Aguardando Documentos',
-          ultimaMovimentacao: 'Solicitação de documentos complementares',
-          dataUltimaMovimentacao: new Date('2025-01-20'),
-          advogado: `${oabNumber}/${oabState}`,
-          tipo: 'Revisão Contratual',
-          valor: 'R$ 28.500,00',
         },
       ];
 

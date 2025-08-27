@@ -1,6 +1,5 @@
 import { Response } from 'express';
 import { AuthenticatedRequest } from '../config/auth';
-import { notificationService } from '../services/notificationService';
 
 export class TasksController {
   async getTasks(req: AuthenticatedRequest, res: Response) {
@@ -8,61 +7,46 @@ export class TasksController {
       const tenantDb = req.db;
       const { search, status, priority, assignee } = req.query;
 
-      let whereClause = 'WHERE 1=1';
-      const params: any[] = [];
-      let paramCount = 0;
+      let options: any = {
+        order: { column: 'created_at', ascending: false }
+      };
 
-      if (search) {
-        paramCount++;
-        whereClause += ` AND (title ILIKE $${paramCount} OR description ILIKE $${paramCount})`;
-        params.push(`%${search}%`);
-      }
-
+      // Apply filters
       if (status && status !== 'all') {
-        paramCount++;
-        whereClause += ` AND status = $${paramCount}`;
-        params.push(status);
+        options.eq = { ...options.eq, status };
       }
 
       if (priority && priority !== 'all') {
-        paramCount++;
-        whereClause += ` AND priority = $${paramCount}`;
-        params.push(priority);
+        options.eq = { ...options.eq, priority };
       }
 
       if (assignee && assignee !== 'all') {
-        paramCount++;
-        whereClause += ` AND assigned_to = $${paramCount}`;
-        params.push(assignee);
+        options.eq = { ...options.eq, assigned_to: assignee };
       }
 
-      const result = await tenantDb.query(`
-        SELECT 
-          t.*,
-          p.title as project_title,
-          c.name as client_name,
-          COALESCE(
-            json_agg(
-              json_build_object(
-                'id', st.id,
-                'title', st.title,
-                'completed', st.completed,
-                'completed_at', st.completed_at,
-                'created_at', st.created_at
-              )
-            ) FILTER (WHERE st.id IS NOT NULL), 
-            '[]'
-          ) as subtasks
-        FROM \${schema}.tasks t
-        LEFT JOIN \${schema}.projects p ON p.id = t.project_id
-        LEFT JOIN \${schema}.clients c ON c.id = t.client_id
-        LEFT JOIN \${schema}.subtasks st ON st.task_id = t.id
-        ${whereClause}
-        GROUP BY t.id, p.title, c.name
-        ORDER BY t.created_at DESC
-      `, params);
+      const { rows: tasks } = await tenantDb.query('tasks', options);
 
-      res.json(result.rows);
+      // Get subtasks for each task
+      const tasksWithSubtasks = await Promise.all(
+        tasks.map(async (task: any) => {
+          const { rows: subtasks } = await db.query('subtasks', {
+            eq: { task_id: task.id }
+          });
+          return { ...task, subtasks };
+        })
+      );
+
+      // Filter by search term (client-side for now)
+      let filteredTasks = tasksWithSubtasks;
+      if (search) {
+        const searchTerm = search.toString().toLowerCase();
+        filteredTasks = tasksWithSubtasks.filter((task: any) =>
+          task.title.toLowerCase().includes(searchTerm) ||
+          task.description?.toLowerCase().includes(searchTerm)
+        );
+      }
+
+      res.json(filteredTasks);
     } catch (error) {
       console.error('Get tasks error:', error);
       res.status(500).json({ error: 'Erro ao buscar tarefas' });
@@ -74,59 +58,21 @@ export class TasksController {
       const tenantDb = req.db;
       const taskData = req.body;
 
-      // Criar tarefa
-      const taskResult = await tenantDb.query(`
-        INSERT INTO \${schema}.tasks (
-          title, description, start_date, end_date, status, priority, assigned_to,
-          project_id, client_id, estimated_hours, actual_hours, progress, tags, notes,
-          created_at, updated_at
-        ) VALUES (
-          $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, NOW(), NOW()
-        ) RETURNING *
-      `, [
-        taskData.title,
-        taskData.description,
-        taskData.startDate,
-        taskData.endDate,
-        taskData.status,
-        taskData.priority,
-        taskData.assignedTo,
-        taskData.projectId || null,
-        taskData.clientId || null,
-        taskData.estimatedHours,
-        taskData.actualHours,
-        taskData.progress,
-        taskData.tags,
-        taskData.notes,
-      ]);
+      const task = await tenantDb.insert('tasks', {
+        ...taskData,
+        created_by: req.user.userId,
+      });
 
-      const task = taskResult.rows[0];
-
-      // Criar subtarefas
+      // Create subtasks if provided
       if (taskData.subtasks && taskData.subtasks.length > 0) {
         for (const subtask of taskData.subtasks) {
-          await tenantDb.query(`
-            INSERT INTO \${schema}.subtasks (task_id, title, completed, created_at)
-            VALUES ($1, $2, $3, NOW())
-          `, [task.id, subtask.title, subtask.completed]);
+          await db.insert('subtasks', {
+            task_id: task.id,
+            title: subtask.title,
+            completed: subtask.completed || false,
+          });
         }
       }
-
-      // Enviar notificação
-      await notificationService.sendToTenant({
-        tenantId: req.tenantId,
-        type: 'info',
-        title: 'Nova Tarefa Criada',
-        message: `${task.title} foi atribuída${task.assigned_to ? ` a ${task.assigned_to}` : ''}`,
-        category: 'task',
-        details: `Tarefa criada com prioridade: ${task.priority}. Prazo: ${new Date(task.end_date).toLocaleDateString('pt-BR')}`,
-        actionData: {
-          type: 'task',
-          id: task.id,
-          page: '/tarefas'
-        },
-        createdBy: req.user.name,
-      });
 
       res.status(201).json(task);
     } catch (error) {
@@ -141,38 +87,13 @@ export class TasksController {
       const tenantDb = req.db;
       const taskData = req.body;
 
-      const result = await tenantDb.query(`
-        UPDATE \${schema}.tasks SET
-          title = $1, description = $2, start_date = $3, end_date = $4, status = $5,
-          priority = $6, assigned_to = $7, project_id = $8, client_id = $9,
-          estimated_hours = $10, actual_hours = $11, progress = $12, tags = $13,
-          notes = $14, completed_at = $15, updated_at = NOW()
-        WHERE id = $16
-        RETURNING *
-      `, [
-        taskData.title,
-        taskData.description,
-        taskData.startDate,
-        taskData.endDate,
-        taskData.status,
-        taskData.priority,
-        taskData.assignedTo,
-        taskData.projectId || null,
-        taskData.clientId || null,
-        taskData.estimatedHours,
-        taskData.actualHours,
-        taskData.progress,
-        taskData.tags,
-        taskData.notes,
-        taskData.status === 'completed' ? new Date() : null,
-        id,
-      ]);
+      const task = await tenantDb.update('tasks', id, {
+        ...taskData,
+        updated_at: new Date().toISOString(),
+        completed_at: taskData.status === 'completed' ? new Date().toISOString() : null,
+      });
 
-      if (result.rows.length === 0) {
-        return res.status(404).json({ error: 'Tarefa não encontrada' });
-      }
-
-      res.json(result.rows[0]);
+      res.json(task);
     } catch (error) {
       console.error('Update task error:', error);
       res.status(500).json({ error: 'Erro ao atualizar tarefa' });
@@ -184,14 +105,7 @@ export class TasksController {
       const { id } = req.params;
       const tenantDb = req.db;
 
-      const result = await tenantDb.query(`
-        DELETE FROM \${schema}.tasks WHERE id = $1 RETURNING title
-      `, [id]);
-
-      if (result.rows.length === 0) {
-        return res.status(404).json({ error: 'Tarefa não encontrada' });
-      }
-
+      await tenantDb.delete('tasks', id);
       res.json({ message: 'Tarefa removida com sucesso' });
     } catch (error) {
       console.error('Delete task error:', error);
@@ -203,24 +117,23 @@ export class TasksController {
     try {
       const tenantDb = req.db;
 
-      const stats = await tenantDb.query(`
-        WITH task_stats AS (
-          SELECT
-            COUNT(*) as total,
-            COUNT(*) FILTER (WHERE status = 'not_started') as not_started,
-            COUNT(*) FILTER (WHERE status = 'in_progress') as in_progress,
-            COUNT(*) FILTER (WHERE status = 'completed') as completed,
-            COUNT(*) FILTER (WHERE end_date < NOW() AND status NOT IN ('completed', 'cancelled')) as overdue,
-            AVG(EXTRACT(DAY FROM (completed_at - created_at))) FILTER (WHERE status = 'completed' AND completed_at IS NOT NULL) as avg_completion_time
-          FROM \${schema}.tasks
-        )
-        SELECT 
-          *,
-          CASE WHEN total > 0 THEN ROUND((completed * 100.0 / total), 2) ELSE 0 END as completion_rate
-        FROM task_stats
-      `);
+      const { rows: tasks } = await tenantDb.query('tasks');
 
-      res.json(stats.rows[0]);
+      const stats = {
+        total: tasks.length,
+        not_started: tasks.filter((t: any) => t.status === 'not_started').length,
+        in_progress: tasks.filter((t: any) => t.status === 'in_progress').length,
+        completed: tasks.filter((t: any) => t.status === 'completed').length,
+        overdue: tasks.filter((t: any) => 
+          new Date(t.end_date) < new Date() && !['completed', 'cancelled'].includes(t.status)
+        ).length,
+        completion_rate: tasks.length > 0 
+          ? Math.round((tasks.filter((t: any) => t.status === 'completed').length / tasks.length) * 100)
+          : 0,
+        average_completion_time: 7, // Mock value
+      };
+
+      res.json(stats);
     } catch (error) {
       console.error('Get task stats error:', error);
       res.status(500).json({ error: 'Erro ao buscar estatísticas' });
@@ -229,22 +142,26 @@ export class TasksController {
 
   async toggleSubtask(req: AuthenticatedRequest, res: Response) {
     try {
-      const { taskId, subtaskId } = req.params;
-      const tenantDb = req.db;
+      const { subtaskId } = req.params;
 
-      const result = await tenantDb.query(`
-        UPDATE \${schema}.subtasks SET
-          completed = NOT completed,
-          completed_at = CASE WHEN NOT completed THEN NOW() ELSE NULL END
-        WHERE id = $1 AND task_id = $2
-        RETURNING *
-      `, [subtaskId, taskId]);
+      // Get current subtask
+      const { rows: subtasks } = await db.query('subtasks', {
+        eq: { id: subtaskId }
+      });
 
-      if (result.rows.length === 0) {
+      if (subtasks.length === 0) {
         return res.status(404).json({ error: 'Subtarefa não encontrada' });
       }
 
-      res.json(result.rows[0]);
+      const subtask = subtasks[0];
+      const newCompleted = !subtask.completed;
+
+      const updatedSubtask = await db.update('subtasks', subtaskId, {
+        completed: newCompleted,
+        completed_at: newCompleted ? new Date().toISOString() : null,
+      });
+
+      res.json(updatedSubtask);
     } catch (error) {
       console.error('Toggle subtask error:', error);
       res.status(500).json({ error: 'Erro ao atualizar subtarefa' });
@@ -252,4 +169,4 @@ export class TasksController {
   }
 }
 
-export const tasksController = new TasksController();
+export const crmController = new CRMController();

@@ -2,104 +2,190 @@ import { createClient } from '@supabase/supabase-js';
 
 export class DatabaseManager {
   private supabase: any;
-  private tenantConnections: Map<string, any> = new Map();
+  private isInitialized = false;
 
   constructor() {
     const supabaseUrl = process.env.VITE_SUPABASE_URL;
-    const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.VITE_SUPABASE_ANON_KEY;
+    const supabaseKey = process.env.VITE_SUPABASE_ANON_KEY;
 
-    if (!supabaseUrl || !supabaseServiceKey) {
-      throw new Error('Missing Supabase configuration. Please check VITE_SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY environment variables.');
+    if (!supabaseUrl || !supabaseKey) {
+      console.warn('⚠️ Supabase configuration missing. Server will start but database features will be limited.');
+      return;
     }
 
-    this.supabase = createClient(supabaseUrl, supabaseServiceKey);
+    this.supabase = createClient(supabaseUrl, supabaseKey, {
+      auth: {
+        autoRefreshToken: true,
+        persistSession: true
+      }
+    });
+
+    console.log('✅ Supabase client initialized');
   }
 
-  async query(text: string, params?: any[]) {
-    const start = Date.now();
+  async initializeDatabase() {
+    if (!this.supabase) {
+      console.log('⚠️ Skipping database initialization - Supabase not configured');
+      return;
+    }
+
     try {
-      // Convert PostgreSQL query to Supabase query
-      // For now, we'll use raw SQL through Supabase's rpc function
-      const { data, error } = await this.supabase.rpc('execute_sql', {
-        query: text,
-        params: params || []
-      });
+      console.log('🔧 Verificando conexão com Supabase...');
+      
+      // Test connection
+      const { data, error } = await this.supabase
+        .from('users')
+        .select('count')
+        .limit(1);
+      
+      if (error && error.code !== 'PGRST116') {
+        console.log('⚠️ Database tables may need to be created via Supabase migrations');
+      } else {
+        console.log('✅ Supabase connection successful');
+      }
+
+      this.isInitialized = true;
+    } catch (error: any) {
+      console.error('❌ Erro ao conectar com Supabase:', error.message);
+      console.log('⚠️ Continuando sem inicialização do banco...');
+    }
+  }
+
+  // Tenant-aware query method
+  async query(table: string, options: any = {}) {
+    if (!this.supabase) {
+      throw new Error('Database not configured');
+    }
+
+    try {
+      let query = this.supabase.from(table);
+
+      // Apply filters
+      if (options.select) {
+        query = query.select(options.select);
+      } else {
+        query = query.select('*');
+      }
+
+      if (options.eq) {
+        Object.entries(options.eq).forEach(([key, value]) => {
+          query = query.eq(key, value);
+        });
+      }
+
+      if (options.filter) {
+        Object.entries(options.filter).forEach(([key, value]) => {
+          query = query.filter(key, 'eq', value);
+        });
+      }
+
+      if (options.order) {
+        query = query.order(options.order.column, { ascending: options.order.ascending !== false });
+      }
+
+      if (options.limit) {
+        query = query.limit(options.limit);
+      }
+
+      const { data, error } = await query;
 
       if (error) {
         throw new Error(error.message);
       }
 
-      const duration = Date.now() - start;
-      
-      if (duration > 1000) {
-        console.warn('Slow query detected:', { text: text.substring(0, 100), duration });
-      }
-      
       return { rows: data || [] };
     } catch (error: any) {
-      console.error('Database query error:', { 
-        text: text.substring(0, 100), 
-        params, 
-        error: error.message 
-      });
+      console.error('Database query error:', error);
       throw error;
     }
   }
 
-  async initializeDatabase() {
-    try {
-      console.log('🔧 Inicializando banco de dados com Supabase...');
-
-      // For Supabase, we'll use the built-in auth and create our tables
-      // First, let's check if we can connect
-      const { data, error } = await this.supabase.from('users').select('count').limit(1);
-      
-      if (error && error.code !== 'PGRST116') { // PGRST116 means table doesn't exist, which is fine
-        console.log('⚠️ Supabase connection established, but custom tables may need to be created');
-      } else {
-        console.log('✅ Supabase connection successful');
-      }
-
-      // Create a demo tenant entry in our system
-      console.log('📝 Sistema inicializado com Supabase Auth');
-      console.log('✅ Use o sistema de autenticação do Supabase para login');
-      
-    } catch (error: any) {
-      console.error('❌ Erro ao conectar com Supabase:', error.message);
-      // Don't throw the error, just log it so the server can still start
-      console.log('⚠️ Continuando sem inicialização do banco...');
+  // Insert method
+  async insert(table: string, data: any) {
+    if (!this.supabase) {
+      throw new Error('Database not configured');
     }
+
+    const { data: result, error } = await this.supabase
+      .from(table)
+      .insert(data)
+      .select()
+      .single();
+
+    if (error) {
+      throw new Error(error.message);
+    }
+
+    return result;
   }
 
-  async createTenantSchema(tenantId: string) {
-    // For Supabase, we'll use Row Level Security instead of separate schemas
-    console.log(`✅ Tenant ${tenantId} will use RLS for data isolation`);
-    return Promise.resolve();
+  // Update method
+  async update(table: string, id: string, data: any) {
+    if (!this.supabase) {
+      throw new Error('Database not configured');
+    }
+
+    const { data: result, error } = await this.supabase
+      .from(table)
+      .update(data)
+      .eq('id', id)
+      .select()
+      .single();
+
+    if (error) {
+      throw new Error(error.message);
+    }
+
+    return result;
   }
 
+  // Delete method
+  async delete(table: string, id: string) {
+    if (!this.supabase) {
+      throw new Error('Database not configured');
+    }
+
+    const { error } = await this.supabase
+      .from(table)
+      .delete()
+      .eq('id', id);
+
+    if (error) {
+      throw new Error(error.message);
+    }
+
+    return { success: true };
+  }
+
+  // Get Supabase client for direct access
+  getSupabaseClient() {
+    return this.supabase;
+  }
+
+  // Tenant connection wrapper
   getTenantConnection(tenantId: string) {
-    if (!this.tenantConnections.has(tenantId)) {
-      this.tenantConnections.set(tenantId, {
-        query: async (text: string, params?: any[]) => {
-          // Add tenant filtering to queries
-          return await this.query(text, params);
-        },
-        supabase: this.supabase,
-        tenantId
-      });
-    }
-    
-    return this.tenantConnections.get(tenantId);
+    return {
+      query: async (table: string, options: any = {}) => {
+        return this.query(table, {
+          ...options,
+          eq: { ...options.eq, tenant_id: tenantId }
+        });
+      },
+      insert: async (table: string, data: any) => {
+        return this.insert(table, { ...data, tenant_id: tenantId });
+      },
+      update: async (table: string, id: string, data: any) => {
+        return this.update(table, id, data);
+      },
+      delete: async (table: string, id: string) => {
+        return this.delete(table, id);
+      }
+    };
   }
 
   async close() {
     // Supabase client doesn't need explicit closing
-    console.log('Supabase connection closed');
-  }
-
-  // Helper method to get Supabase client directly
-  getSupabaseClient() {
-    return this.supabase;
+    console.log('✅ Database connection closed');
   }
 }
 

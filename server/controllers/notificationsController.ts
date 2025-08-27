@@ -1,22 +1,32 @@
 import { Response } from 'express';
 import { AuthenticatedRequest } from '../config/auth';
-import { notificationService } from '../services/notificationService';
 
 export class NotificationsController {
   async getNotifications(req: AuthenticatedRequest, res: Response) {
     try {
+      const tenantDb = req.db;
       const { type, category, read } = req.query;
-      
-      const filters: any = {};
-      if (type && type !== 'all') filters.type = type;
-      if (category && category !== 'all') filters.category = category;
-      if (read !== undefined && read !== 'all') filters.read = read === 'true';
 
-      const notifications = await notificationService.getNotifications(
-        req.user.userId,
-        req.tenantId,
-        filters
-      );
+      let options: any = {
+        eq: { user_id: req.user.userId },
+        order: { column: 'created_at', ascending: false },
+        limit: 50
+      };
+
+      // Apply filters
+      if (type && type !== 'all') {
+        options.eq.type = type;
+      }
+
+      if (category && category !== 'all') {
+        options.eq.category = category;
+      }
+
+      if (read !== undefined && read !== 'all') {
+        options.eq.read = read === 'true';
+      }
+
+      const { rows: notifications } = await tenantDb.query('notifications', options);
 
       res.json(notifications);
     } catch (error) {
@@ -28,12 +38,10 @@ export class NotificationsController {
   async markAsRead(req: AuthenticatedRequest, res: Response) {
     try {
       const { id } = req.params;
-      
-      const notification = await notificationService.markAsRead(id, req.tenantId);
-      
-      if (!notification) {
-        return res.status(404).json({ error: 'Notificação não encontrada' });
-      }
+
+      const notification = await db.update('notifications', id, {
+        read: true,
+      });
 
       res.json(notification);
     } catch (error) {
@@ -44,13 +52,16 @@ export class NotificationsController {
 
   async markAllAsRead(req: AuthenticatedRequest, res: Response) {
     try {
+      // For Supabase, we need to update each notification individually
       const tenantDb = req.db;
+      
+      const { rows: notifications } = await tenantDb.query('notifications', {
+        eq: { user_id: req.user.userId, read: false }
+      });
 
-      await tenantDb.query(`
-        UPDATE \${schema}.notifications 
-        SET read = true
-        WHERE user_id = $1 AND read = false
-      `, [req.user.userId]);
+      for (const notification of notifications) {
+        await db.update('notifications', notification.id, { read: true });
+      }
 
       res.json({ message: 'Todas as notificações foram marcadas como lidas' });
     } catch (error) {
@@ -62,9 +73,8 @@ export class NotificationsController {
   async deleteNotification(req: AuthenticatedRequest, res: Response) {
     try {
       const { id } = req.params;
-      
-      await notificationService.deleteNotification(id, req.tenantId);
-      
+
+      await db.delete('notifications', id);
       res.json({ message: 'Notificação removida com sucesso' });
     } catch (error) {
       console.error('Delete notification error:', error);
@@ -76,13 +86,11 @@ export class NotificationsController {
     try {
       const tenantDb = req.db;
 
-      const result = await tenantDb.query(`
-        SELECT COUNT(*) as unread_count
-        FROM \${schema}.notifications 
-        WHERE user_id = $1 AND read = false
-      `, [req.user.userId]);
+      const { rows: notifications } = await tenantDb.query('notifications', {
+        eq: { user_id: req.user.userId, read: false }
+      });
 
-      res.json({ unreadCount: parseInt(result.rows[0].unread_count) });
+      res.json({ unreadCount: notifications.length });
     } catch (error) {
       console.error('Get unread count error:', error);
       res.status(500).json({ error: 'Erro ao buscar contagem' });

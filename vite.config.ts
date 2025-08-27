@@ -1,19 +1,23 @@
-import { defineConfig, Plugin } from "vite";
-import react from "@vitejs/plugin-react-swc";
+import { defineConfig } from "vite";
+import react from "@vitejs/plugin-react";
 import path from "path";
 
 // https://vitejs.dev/config/
-export default defineConfig(({ mode }) => ({
-  plugins: [react({
-    // Use default React plugin instead of SWC for WebContainer compatibility
-    jsxRuntime: 'automatic'
-  })],
+export default defineConfig({
+  plugins: [react()], // Use default React plugin for WebContainer compatibility
   server: {
     host: "::",
     port: 8080,
+    proxy: {
+      '/api': {
+        target: 'http://localhost:3001',
+        changeOrigin: true,
+        secure: false,
+      }
+    },
     fs: {
       allow: ["./client", "./shared"],
-      deny: [".env", ".env.*", "*.{crt,pem}", "**/.git/**", "server/**"],
+      deny: [".env", ".env.*", "*.{crt,pem}", "**/.git/**"],
     },
   },
   build: {
@@ -25,17 +29,4 @@ export default defineConfig(({ mode }) => ({
       "@shared": path.resolve(__dirname, "./shared"),
     },
   },
-}));
-
-function expressPlugin(): Plugin {
-  return {
-    name: "express-plugin",
-    apply: "serve", // Only apply during development (serve mode)
-    configureServer(server) {
-      const app = createServer();
-
-      // Add Express app as middleware to Vite dev server
-      server.middlewares.use(app);
-    },
-  };
-}
+});

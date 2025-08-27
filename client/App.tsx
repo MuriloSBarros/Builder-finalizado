@@ -7,7 +7,7 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
-import { Dashboard } from "./pages/Dashboard";
+import Dashboard from "./pages/Dashboard";
 import { CRM } from "./pages/CRM";
 import { Projects } from "./pages/Projects";
 import { Tasks } from "./pages/Tasks";
@@ -20,6 +20,7 @@ import { Settings } from "./pages/Settings";
 import { Notifications } from "./pages/Notifications";
 import { Login } from "./pages/Login";
 import NotFound from "./pages/NotFound";
+import { AuthProvider } from "./hooks/useAuth";
 import { initializeResizeObserverFix } from "@/lib/resize-observer-fix";
 import {
   UIErrorBoundary,
@@ -36,30 +37,32 @@ const AppContent = () => {
   useResizeObserverErrorHandler();
 
   return (
-    <QueryClientProvider client={queryClient}>
-      <TooltipProvider>
-        <Toaster />
-        <Sonner />
-        <BrowserRouter>
-          <Routes>
-            <Route path="/" element={<Dashboard />} />
-            <Route path="/crm" element={<CRM />} />
-            <Route path="/projetos" element={<Projects />} />
-            <Route path="/tarefas" element={<Tasks />} />
-            <Route path="/cobranca" element={<Billing />} />
-            <Route path="/recebiveis" element={<Receivables />} />
-            <Route path="/fluxo-caixa" element={<CashFlow />} />
-            <Route path="/publicacoes" element={<Publications />} />
-            <Route path="/publicacoes/:id" element={<PublicationDetail />} />
-            <Route path="/configuracoes" element={<Settings />} />
-            <Route path="/notificacoes" element={<Notifications />} />
-            <Route path="/login" element={<Login />} />
-            {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-            <Route path="*" element={<NotFound />} />
-          </Routes>
-        </BrowserRouter>
-      </TooltipProvider>
-    </QueryClientProvider>
+    <AuthProvider>
+      <QueryClientProvider client={queryClient}>
+        <TooltipProvider>
+          <Toaster />
+          <Sonner />
+          <BrowserRouter>
+            <Routes>
+              <Route path="/" element={<Dashboard />} />
+              <Route path="/crm" element={<CRM />} />
+              <Route path="/projetos" element={<Projects />} />
+              <Route path="/tarefas" element={<Tasks />} />
+              <Route path="/cobranca" element={<Billing />} />
+              <Route path="/recebiveis" element={<Receivables />} />
+              <Route path="/fluxo-caixa" element={<CashFlow />} />
+              <Route path="/publicacoes" element={<Publications />} />
+              <Route path="/publicacoes/:id" element={<PublicationDetail />} />
+              <Route path="/configuracoes" element={<Settings />} />
+              <Route path="/notificacoes" element={<Notifications />} />
+              <Route path="/login" element={<Login />} />
+              {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+              <Route path="*" element={<NotFound />} />
+            </Routes>
+          </BrowserRouter>
+        </TooltipProvider>
+      </QueryClientProvider>
+    </AuthProvider>
   );
 };
 
